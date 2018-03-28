@@ -33,40 +33,40 @@
 			</div><!-- menu -->
 			<div id="content">
             <div class="noscript"><noscript>Hey there, it appears your Javascript is disabled. That's fine, the site works without it. However, you might prefer reading it with syntax highlighting, which requires Javascript!</noscript></div>
-<h2>Introduction</h2>
-<h3><a class="section" name="about-this-tutorial">About this tutorial</a></h3>
+<h2>Giới thiệu</h2>
+<h3><a class="section" name="about-this-tutorial">Giới thiệu</a></h3>
 
-<p>This is the beginning of Learn You Some Erlang for Great Good! Reading this tutorial should be one of your first steps in learning Erlang, so let's talk about it a bit.</p>
+<p>Khi bạn đang đọc tới những dòng chữ này có nghĩa là bạn bắt đầu tìm hiểu về ngôn ngữ lập trình Erlang, Vậy Erlang là gì ?</p>
 
 <img class="left" src="static/img/erlang.png" width="132" height="112" alt="Erlang logo" />
 
-<p>First of all, I began growing the idea of writing this after reading Miran Lipovača's <a class="external" href="http://learnyouahaskell.com/" title="Free Book!">Learn You a Haskell for great Good! (LYAH)</a> tutorial; I thought he did a great job making the language attractive and the learning experience friendly. As I already knew him, I asked him how he felt about me writing an Erlang version of his book. He liked the idea, being somewhat interested in Erlang.</p>
+<p>Đầu tiên, Tôi bắt đầu lên ý tưởng viết bài này sau khi đọc <a class="external" href="http://learnyouahaskell.com/" title="Free Book!">Learn You a Haskell for great Good! (LYAH)</a> của Miran Lipovača; tôi nghĩ rằng anh ấy đã thành công khi làm cho ngôn ngữ hấp dẫn và trải nghiệm việc học trở lên thân hiên hơn. Như tôi đã biết về  anh ấy, tôi đã hỏi anh ấy cảm nhận về  việc tôi đang viết một phiên bản về  Erlang dựa trên bản Haskell của anh ấy. He ấy đã rất thích ý tưởng đó , being somewhat interested in Erlang.</p>
 
-<p>So here I am typing this. Of course there were other sources to my motivation: I mainly find the entry to the language to be hard (the web has sparse documentation and otherwise you need to buy books), and I thought the community would benefit from a LYAH-like guide. Less importantly, I've seen people attributing Erlang too much or not enough merit sometimes based on sweeping generalizations. Then there are people who sure as hell believe Erlang is nothing but hype. If I'd like to convince them otherwise, I know they're not likely to read this in the first place.</p>
+<p>Vây nên tôi đang dánh máy để  viết bài này. Tất nhiên cũng có một số  nguồn khác thúc đẩy tôi nữa: Lí do chính là tôi thấy tiếp cận tới ngôn ngữ này khá khó( tài liệu trên web thưa thớt, mặt khác để  tìm học bạn cần phải mua sách), and tôi nghĩ rằng công đống sẽ được hưởng lợi từ hướng dẫn giống LYAH. Less importantly, I've seen people attributing Erlang too much or not enough merit sometimes based on sweeping generalizations. Then there are people who sure as hell believe Erlang is nothing but hype. If I'd like to convince them otherwise, I know they're not likely to read this in the first place.</p>
 
 <p>This book thus wants itself to be a way to learn Erlang for people who have basic knowledge of programming in imperative languages (such as C/C++, Java, Python, Ruby, etc) and may or may not know functional programming (Haskell, Scala, Erlang, Clojure, OCaml...). I also want to write this book in a honest manner, selling Erlang for what it is, acknowledging its weaknesses and strengths.</p>
 
 
-<h3><a class="section" name="what-is-erlang">So what's Erlang?</a></h3>
-<p>First of all, Erlang is a functional programming language. If you have ever worked with imperative languages, statements such as <code>i++</code> may be normal to you; in functional programming they are not allowed. In fact, changing the value of any variable is strictly forbidden! This may sound weird at first, but if you remember your math classes, it's in fact how you've learned it:</p>
+<h3><a class="section" name="what-is-erlang">Erlang là gì?</a></h3>
+<p>Trước tiên, Erlang là một ngôn ngữ lập trình hàm, một ngữ ngữ lập trình dựa trên toán học. nếu bạn đã từng làm việc với các ngôn ngữ lập trình mệnh lệnh trước đó, bạn sẽ khá thân thuộc với các câu lệnh <code>i++</code> nhưng trong ngôn ngữ lập trình hàm thì chúng không đuợc phép. và thực tế thay đổi giá trị của biến bất kỳ nào đều bị nghiêm cấm. Nghe có vẻ kỳ lạ nếu bạn đến từ các ngôn ngữ lập trình mệnh lệnh hay hướng đối tượng thì thay đổi giá trị một biến hoàn toàn bình thường nhưng nếu bạn nhớ lại toán học bạn đã tưng học ở trường, bạn đã đựoc dạy:</p>
 <pre class="brush:eshell">
 y = 2
 x = y + 3
 x = 2 + 3
 x = 5
 </pre>
-<p>Had I added the following:</p>
+<p>Sau đó tôi sẽ thêm:</p>
 <pre class="brush:eshell">
 x = 5 + 1
 x = x
 &there4; 5 = 6
 </pre>
-<p>You would have been very confused. Functional programming recognizes this: If I say <var>x</var> is 5, then I can't logically claim it is also 6! This would be dishonest. This is also why a function with the same parameter should always return the same result:</p>
+<p>Oh, 5 = 6 có điều gì đó sai sai, bạn sẽ cảm thấy rất bối rối, lập trình hàm ghi nhận: nếu tôi nói <var>x</var> bằng 5, thì tôi không thể bảo nó cũng bằng 6 được! Nếu nó cũng bằng 6 là không hợp lí. hãy liên hệ với toán học , trong một bài toán khi một biến đựoc gán với một giá trị rồi thì đó là giá trị duy nhất và không thay đổi, đó cũng là lý do vì sao một hàm có cùng tham số  nên luôn trả về  cùng một kết quả:</p>
 <pre class="brush:eshell">
 x = add_two_to(3) = 5
 &there4; x = 5
 </pre>
-<p>Functions always returning the same result for the same parameter is called referential transparency. It's what lets us replace <code>add_two_to(3)</code> with 5, as the result of <code>3+2</code> will always be 5. That means we can then glue dozens of functions together in order to resolve more complex problems while being sure nothing will break. Logical and clean isn't it? There's a problem though:</p>
+<p>Những hàm luôn trả về  cùng một kết quả với cùng tham số  đựoc gọi là tham chiếu minh bạch ( Referential transparency ), và bạn lên ghi nhớ vì sau này bạn sẽ còn gặp rất nhiều không chỉ trong hướng dẫn này mà còn trong các hướng dẫn và sách khác nữa. Do đó với kết quả phía trên khi ta thay thế  hàm <code>add_two_to(3)</code> bằng 5,  kết quả của phép tính <code>3+2</code> sẽ luôn bằng 5. Điều này càng có nghĩa chắc chắn hơn nếu ta gộp 1 tá các hàm lại cùng nhau theo thứ tự để giải quyết các vấn đề phức tạp hơn mà không ảnh hưởng tới kết quả. Tuy vậy có một vấn đề ở đây:</p>
 <pre class="brush:eshell">
 x = today() = 2009/10/22
   -- wait a day --
@@ -74,30 +74,40 @@ x = today() = 2009/10/23
 x = x
 &there4; 2009/10/22 = 2009/10/23
 </pre>
-<p>Oh no! My beautiful equations! They suddenly all turned wrong! How come my function returns a different result every day?</p>
-<p>Obviously, there are some cases where it's useful to break referential transparency. Erlang has this very pragmatic approach with functional programming: obey its purest principles (referential transparency, avoiding mutable data, etc), but break away from them when real world problems pop up.</p>
+<p>Oh không, có vẻ đột nhiên tất cả những gì mà đã nói lúc trước về hàm có cùng tham số thì kết quả trả về là như nhau , nhưng trong truòng hợp thì không đúng, vậy làm thế nào mà mà kết quả hàm của tôi lại khác nhau sau mỗi ngày ?</p>
+<p>Rõ ràng, có một số trường hợp vi phạm quy tắc của tham chiếu minh bạch. Do đó, Erlang có một cách giải quyết vấn đề này cùng với lập trình hàm: dựa trên một tập các nguyên tắc thuần nhất (tham chiếu mình bạch, tránh thay đỏi dữ liêu,... ), but break away from them when real world problems pop up.</p>
 
 <img class="right" src="static/img/envelope.png" width="206" height="161" alt="An envelope" />
 
-<p>Now, we defined Erlang as a functional programming language, but there's also a large emphasis on concurrency and high reliability. To be able to have dozens of tasks being performed at the same time, Erlang uses the <a class="external" href="http://en.wikipedia.org/wiki/Actor_model" title="A more technical definition">actor model</a>, and each actor is a separate process in the virtual machine. In a nutshell, if you were an actor in Erlang's world, you would be a lonely person, sitting in a dark room with no window, waiting by your mailbox to get a message. Once you get a message, you react to it in a specific way: you pay the bills when receiving them, you respond to Birthday cards with a "Thank you" letter and you ignore the letters you can't understand.</p>
+<p>chúng ta đã xác định Erlang như là một ngôn ngữ lập trình hàm, nhưng cũng đồng thời nhấn mạnh về  tính đồng thời (concurrency) và độ ổn định cao (high reliability). xét về  tính dồng thời để có thể  thực hiện một tá các công việc tại cùng một thời điểm, Erlang sử  dụng một mô hình <a class="external" href="http://en.wikipedia.org/wiki/Actor_model" title="A more technical definition">actor model</a>, trong mô hình này mỗi một actor là một tiến trình tách biệt trong máy ảo. Tóm lại theo một cách cụ thể, nếu bạn là một actor trong thế  giới của Erlang, hãy hình dùng bạn sẽ là một người cô độc sống tách biết với thế giới, xung quanh bạn chỉ có màn đêm với bốn bức tường và một hòm thư, bạn sẽ chờ để  nhận những bức thư được gưi đén hòm thứ của bạn và phản hồi chúng tùy theo nội dung của mỗi bức thư: vd nếu bạn nhận được một bức kèm với nội dung là hóa đơn tiền điện bạn sẽ phản hồi bằng cách thanh toán hóa đơn đó, hay như nhận được một tấm thiệp sinh nhật của một người, bạn sẽ phải phản hồi lại cùng với lời nhắn "Cám ơn" và bạn có thể  bơ nếu như đó là những bức thư mà bạn không quan tâm hay chẳng thể  hiểu được.</p>
 
-<p>Erlang's actor model can be imagined as a world where everyone is sitting alone in their own room and can perform a few distinct tasks. Everyone communicates strictly by writing letters and that's it. While it sounds like a boring life (and a new age for the postal service), it means you can ask many people to perform very specific tasks for you, and none of them will ever do something wrong or make mistakes which will have repercussions on the work of others; they may not even know the existence of people other than you (and that's great).</p>
-<p>To escape this analogy, Erlang forces you to write actors (processes) that will share no information with other bits of code unless they pass messages to each other. Every communication is explicit, traceable and safe.</p>
+<p>thông qua actor model của Erlang bạn có thể  được hình dung như một thể giới nơi mà mỗi người đang ngồi một mình trong căn phòng của riêng họ và thực hiện một vài công việc khác nhau
+	. Mỗi người họ giao tiếp hạn chế  với nhau qua những bức thư. Nghe có vẻ một cuộc sống tẻ nhạt( một kỷ nguyên mới cho dịch vụ bưu chính ), 
+	điều đó có nghĩa là bạn có thể  hỏi rất nhiều người làm các công việc cụ thể  danh cho bạn, và không một ai trong số  họ có thể  sè làm ảnh hưởng tới công việc của người khách nếu họ làm sai điều gì hay mắc sai nhầm ; bởi vì họ chỉ có thể  làm công việc của họ với bạn ( 1 - 1 )  và họ không biết sự tồn tại của những người khác ngoài bạn ra ( thật tuyệt ) và nó là cách bạn tránh dược việc xung đột công việc giữa các người khác ( race condìtion ).</p>
+<p>To escape this analogy, Erlang buộc bạn phải viết các actors ( tiến trình ) không chia sẻ bất kỳ thông tin nào cùng với các mã bit khác nhau trừ khi chúng chuyển tin nhắn cho nhau. Mọi sự giao tiếp phải minh bạch, có thể  truy xuất nguồn gốc và an toàn.</p>
 
-<p>When we defined Erlang, we did so at a language level, but in a broader sense, this is not all there is to it: Erlang is also a development environment as a whole. The code is compiled to bytecode and runs inside a virtual machine. So Erlang, much like Java and kids with ADD, can run anywhere. The standard distribution includes (among others) development tools (compiler, debugger, profiler, test framework), the Open Telecom Platform (OTP) Framework, a web server, a parser generator, and the mnesia database, a key-value storage system able to replicate itself on many servers, supporting nested transactions and letting you store any kind of Erlang data.</p>
-<p>The VM and the libraries also allow you to update the code of a running system without interrupting any program, distribute your code with ease on many computers and manage errors and faults in a simple but powerful manner.</p>
+<p>khi chúng ta nói về  Erlang, là nói tới ở cấp độ ngôn ngôn ngữ, nhưng theo nghĩa rộng hơn, 
+	Erlang không chỉ có vậy: bản thân Erlang cũng là một môi trường phát triển. Mã code thì được biện dich với bytecode và chạy trong một máy ảo ( beam virtual machine ). vì vậy Erlang khá giống so với Java và những đứa trẻ mắc bệnh rối loạn thiếu khả năng chú ý ( ADD ), chúng có thể  chạy ở mọi môi trường. 
+	The standard distribution bao gồm công cụ phát triển ( trình biên dịch (compiler) , công cụ gỡ lỗi (debugger), coong cụ giàm sát (profiler), )(compiler, debugger, profiler, thư viện kiểm tra ( test framework) ), 
+	
+	the Open Telecom Platform (OTP) Framework, web server,  phân tích cú pháp ( parser generator ), and cơ sở dữ liệu mnesia, một hê thống lưu trữ theo cấu trúc cặp khóa - giá trị ( key-value )
+	và có thể lưu trữ các bản sao của nó trên nhiều server khác nhau, hỗ  trợ các giao dịch lồng nhau và lưu trữ nhiều loại kiểu dữ liệu khác nhau của Erlang, chúng ta sẽ có hẳn một chương dành riêng cho Mnesia.</p>
+<p>Máy ảo và thư viên của Erlang cho phép bạn cập nhật đoạn mã mới cho chương trình ngay trên hệ thống đang chạy mà không phải dừng lại hay gián đoạn ( nếu bạn tiếp cận vvới phương pháp triển khai blue-green rồi bạn sẽ thấy có nét khá gióng) 
+	,hay dễ dàng phân phối các đoạn mã chương trình  dễ  dàng trên nhiều máy tính cũng như quản lí lỗi. 
 
 <img class="right" src="static/img/letitcrash.png" width="206" height="320" alt="A crashed plane" title="Don't do this" />
 
-<p>We'll see how to use most of these tools and achieve safety later on, but for now, I'll tell you about a related general policy in Erlang: Let it crash. Not like a plane with dozens of passengers dying, but more like a tightrope walker with a safety net under him. While you should avoid making mistakes, you won't need to check for every type or error condition in most cases.</p>
+<p>Các phần sau của sách chúng ta sẽ nhìn nhận về  cách sử  dung các công cụ và độ ổn đinh, nhưng giờ ,tôi sẽ nói về  một quy tắc chung trong Erlang: Let it crash. Để  minh họa, có thể  hình dung bạn giống như một diễn viên xiếc đi dây thằng bằng , phía dưới là một tấm lứoi bảo vệ thay vì là những hành khách sắp trên nạn trên môt chiếc máy bay gặp tai nạn. Thông thương để  kiểm soát lỗi trong chương trình bạn sẽ thường phải kiểm tra kỹ và có thể  sẽ bắt các exception với với nhiều trường hợp để tránh lỗi làm hỏng toàn bộ chương trình, nhưng trong Erlang bằng việc áp dụng `let it crash` bạn sẽ không cần quan tâm tới việc kiểm tra từng kiểu dữ liệu hay điều kiện gây ra lỗi trong hầu hết các trường hợp.</p>
 
-<p>Erlang's ability to recover from errors, organize code with actors and making it scale with distribution and concurrency all sound awesome, which brings us to the next section...</p>
+<p>actor Erlang hay máy ảo Erlang có khả năng phục hồi lại trạng thái ban đầu nếu xảy ra lỗi, cùng với actor cũng , và chúng ra sẽ đi sâu hơn trong các phần sau...</p>
 
-<h3><a class="section" name="kool-aid">Don't drink too much Kool-Aid</a></h3>
+<h3><a class="section" name="kool-aid">Đừng uống quá nhiều Kool-Aid</a></h3>
 
-<p>There may be many little yellowish-orange sections named like this one around the book (you'll recognize them when you see them). Erlang is currently gaining lots of popularity due to zealous talks which may lead people to believe it's more than what it really is. These reminders will be there to help you keep your feet on the ground if you're one of these overenthusiastic learners.</p>
+<p>Drinking the Kool-Aid là một cụm từ mỉa mai được sử dụng phổ  biến ở Mỹ, Xuyên suốt cuốn sách bạn sẽ thấy có rất nhiều mục được bôi màu vàng-cam cùng dòng chữ giống vậy,
+	Trích dẫn `No Silver Bullet` từ tác gỉa Turing Award, mặc dù Erlang hiện nhận được nhiều sự quan tâm nhờ những bài thuyết trình, thảo luận tại các hội thảo và khiến nhiều người tin tưởng, tâng bốc nhiều hơn những gì mà Erlang thực sự làm được. chúng sẽ là những lời nhắc nhở về  nhược điẻm của Erlang để  tránh người học quá mức thần thánh hóa ngôn ngữ này.</p>
 
-<p>The first case of this is related to Erlang's massive scaling abilities due to its lightweight processes. It is true that Erlang processes are very light:  you can have hundreds of thousands of them existing at the same time, but this doesn't mean you have to use it that way just because you can. For example, creating a shooter game where everything including bullets is its own actor is madness. The only thing you'll shoot with a game like this is your own foot.  There is still a small cost in sending a message from actor to actor, and if you divide tasks too much, <em>you will make things slower</em>!</p>
+<p>Đ u tiên chúng ta sẽ đề  cập đến khả năng mở rộng quy mô lớn của Erlang nhờ vào actor hay tiểu trình. Như bạn biết các tiến trình của Erlang được lập lịch dựa trên máy ảo Erlang ( Beam virtual machine ), một tiến trình rất nhẹ ( nhẹ hơn gấp nhièu lần so với thread ): bạn có đồng thời tạo ra hàng trăm nghìn tiến trình và cùng tồn tại ở cùng một thời điểm, nhưng điều này không có nghĩa là bạn có thể  sử  dụng đồng thời chúng để  xử  lí như cách bạn tạo ra. ví dụ, trong một trò chơi shoot-em up hay nói cách khác với trò chơi bắn máy by bắn tàu 
+	bạn có thể  tạo ra rất nhiều thứ để hiện thị lên màn hình , bao gồm những viên đạn, tàu địch, mỗi chúng bạn hãy coi là một actor. Và để  thay đổi trạng thái của những viên đạn và những tàu địch bạn phải gửi những thông điệp giữa các actor, việc làm này sẽ tốn một lượng tài nguyên nhỏ, tuy nhiên khi nhân lên với hàng trăm nghìn actor sẽ là một lượng tài nguyên tương đối và sẽ <em>khiến chương trình chậm</em>!</p>
 
 <p>I'll cover this with more depth when we're far enough into the learning to actually worry about it, but just keep in mind that randomly throwing parallelism at a problem is not enough to make it go fast. Don't be sad; there are times when using hundreds of processes will both be possible and useful! It's just not happening all the time.</p>
 

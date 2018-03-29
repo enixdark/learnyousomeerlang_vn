@@ -26,6 +26,7 @@
 			<div id="menu">
 				<ul>
 					<li><a href="content.html" title="Home">Home</a></li>
+					<li><a href="blogs/index.html" title="blog">Blog</a></li>
 					<li><a href="faq.html" title="Frequently Asked Questions">FAQ</a></li>
 					<li><a href="rss" title="Latest News">RSS</a></li>
 					<li><a href="static/erlang/learn-you-some-erlang.zip" title="Source Code">Code</a></li>
@@ -33,34 +34,45 @@
 			</div><!-- menu -->
 			<div id="content">
             <div class="noscript"><noscript>Hey there, it appears your Javascript is disabled. That's fine, the site works without it. However, you might prefer reading it with syntax highlighting, which requires Javascript!</noscript></div>
-<h2>Starting Out</h2>
+<h2>Khởi đầu</h2>
 
-<h3><a class="local" name="the-shell">The Shell</a></h3>
+<h3><a class="local" name="the-shell">Shell</a></h3>
 
-<p>In Erlang, you can test most of your stuff in an emulator; it will run your scripts when compiled and deployed, but it will also let you edit stuff live. To start the shell in Linux, open a terminal and then type in <code>$ erl</code>. If you've set up everything fine, you should see text like this:</p>
+<p>Erlang hỗ  trợ SHELL/REPL như một số  ngôn ngũ khác như Haskell, Scala,... . Bằng cách sử  dụng Shell trong Erlang bạn có thể  
+	kiểm tra nội dung của chương trình trong môi trường máy ảo; Erlang sẽ tiến hành biên dịch để  chạy các tệp kịch bản của bạn và 
+	triển khai chúng, đồng thời cũng cho phép bạn chỉnh sửa trực tiếp bà biện dịch ngay trong SHELL. 
+	để  truy cập vào shell trong Linux, bạn mở terminal lên và gõ lệnh <code>$ erl</code>. 
+	Nếu terminal hiển thị lỗi không tìm tháy thì có thể  do bạn chưa cài đặt hoặc trỏ tới không chính xác đường dẫn của thu mục, 
+	còn nếu như nó hoạt đồng thì bạn sẽ nhìn thấy dòng chữ này:</p>
 <pre class="brush:eshell">
 Erlang R13B01 (erts-5.7.2) [source] [smp:2:2] [rq:2] [async-threads:0] [hipe] [kernel-poll:false]
 
 Eshell V5.7.2  (abort with ^G)
 </pre>
-<p>Congratulations, you're running the Erlang shell!</p>
+<p>Xin chúc mừng bạn, bạn đã bắt đầu gia nhập thế giới của Erlang!</p>
 
-<p>For Windows users, you can still run the <code>erl.exe</code> shell, but it's recommended you instead use <code>werl.exe</code>, which can be found in your start menu (<code>programs &gt; Erlang</code>). Werl is a windows-only implementation of the Erlang shell, having its own window with scrollbars and supporting command-line editing (like copy-pasting, which got to be a pain with the standard <code>cmd.exe</code> shell in Windows). The erl shell is still required if you want to redirect standard input or output, or use pipelines.</p>
+<p>Đối với người dùng hệ điều hành Windows, bạn có thể  tìm và chạy file thực thi <code>erl.exe</code>, tuy nhiên tôi đề  xuất lên sử  dụng <code>werl.exe</code>,
+	 bạn có thể  được tìm thấy trong thư mục (<code>programs &gt; Erlang</code>). 
+	 Werl là một giao diện dòng lệnh Erlang được làm cho window, nó sẽ cung cấp cho người dùng giao diện cùng với thanh cuộn và những cậu lệnh chỉnh sửa phổ biến như 
+	 copy-pasing command-line editing (like copy-pasting, which got to be a pain with the standard <code>cmd.exe</code> shell in Windows). The erl shell is still required if you want to redirect standard input or output, or use pipelines.</p>
 
-<p>We'll be able to enter and run code in the emulator, but first, let's see how we can get around in it.</p>
+<p>Giờ chúng ra đã có hể  chạy mã trong môi trường shell, nhưng trước tiên We'll be able to enter and run code in the emulator, but first, let's see how we can get around in it.</p>
 
 
-<h3><a class="local" name="shell-commands">Shell Commands</a></h3>
+<h3><a class="local" name="shell-commands">Các câu lệnh Shell</a></h3>
 <p>The Erlang shell has a built-in line editor based on a subset of Emacs, a popular text editor that's been in use since the 70s. If you know Emacs, you should be fine. For the others, you'll do fine anyway.</p>
 
 <img class="right" src="static/img/shell.png" width="312" height="143" alt="super turtle" title="In your face, Hare!" />
 
-<p>First of all, if you type some text and then go <code>^A</code> (Ctrl+A), you should see your cursor moving to the beginning of the line. <code>^E</code> (Ctrl+E) gets you to the end. You can use arrow keys to go forward, backwards, show previous or next lines so you can repeat code.</p>
-<p>If you type something like <code>li</code> and then press "tab", the shell will have completed the terms for you to <code>lists:</code>. Press tab again, and the shell will suggest you many functions to use after. This is Erlang completing the module <code>lists</code> and then suggesting functions from it. You may find the notation weird, but don't worry, you'll get familiar with it soon enough.</p>
+<p>Đầu tiên, nếu bạn gõ một đoạn văn bản ( hay một số  ký tự ) và nhấn <code>^A</code> (Ctrl+A), bạn sẽ thấy con trỏ của bạn được di chuyển tới đầu dòng. ngược lại nếu bạn nhấn <code>^E</code> (Ctrl+E) nó sẽ di chuyển tới cuối dòng. 
+	bạn có thể  sử  dụng các phím mũi tên đi di chuyển con trỏ giữa các ký tự hoặc để hiện thị lịch sử  những dòng lệnh trước đó bạn gõ để không phải lặp lại đoạn mã đã viết.</p>
+<p>Nếu bạn gõ một vài ký tự vd như từ <code>li</code> và giữ phím tab, shell sẽ tự dộng hoàn thành từ cho bạn tới <code>lists:</code>. Tiếp tục nhấn phím tab, shell sẽ gợi ý cho bạn rất nhiều hàm sử  dụng cho module <code>lists:</code>. bạn có thể  sẽ nhìn thấy một danh sách các ký hiệu lạ, nhưng đừng bận tâm vội, bạn sẽ sớm quen thuộc với chúng thôi.</p>
 
-<p>I think we've seen enough of shell functionality to be alright, except for one thing: we don't know how to leave! There's a fast way to find how. Just type in <code>help().</code> and you should get information on a bunch of commands you can use in the shell (do not forget the full stop (<code>.</code>) as it is necessary for the command to run). We'll use some of them at a later point, but the only line of concern to us in order to get out is<br />
+<p>Tôi nghĩa rằng chúng ta đã nhìn thấy một số  tính năng của shell nhưng có một điều là làm thế  nào để  thoát khỏi shell! Có một cách nhanh nhất để  biết đó là gõ từ <code>help().</code> để nhận được một danh sách các câu lệnh mà sử dụng trong shell ( và đừng quên ký tự kết thúc dòng lệnh <code>.</code> để  chương trình có thể  phân biệt kết thúc dòng lệnh và thực thi ) 
+	. chúng ta sẽ sử dụng các câu lệnh khác trong danh sách ở các phần sau nhưng trước tiên chúng ta cần quan tâm tới câu lệnh thoát khỏi shell<br />
 <code>q()        -- quit - shorthand for init:stop()</code><br />
-So this is one way to do it (in fact, two ways). But this won't help us if the shell freezes! If you were paying attention, when you started the shell, there was a comment about 'aborting with <code>^G</code>'. Let's do that, and then press <code>h</code> to get help!</p>
+Đây là một trong số  cách dể  thoát khỏi chương trình , thực tế trong shell của Erlang có hai cách để  thoát. Nhưng cả hai đều không thực sự hữu ích nếu shell bị treo! 
+Và nếu bạn chú ý khi bắt đầu shell, bên cạnh dòng chữ hiển thị thông tin vè  phiên bản Shell của Erlang còn một dòng chú ý 'aborting with <code>^G</code>'. Giờ hãy nhấn <code>Ctrl+G</code>, sau đó nhấn phím <code>h</code>!</p>
 <pre class="brush:eshell">
 User switch command
  --&gt; h
@@ -75,7 +87,10 @@ User switch command
  --&gt;
 </pre>
 
-<p>If you type in <code>i</code> then <code>c</code>, Erlang should stop the currently running code and bring you back to a responsive shell. <code>j</code> will give you a list of processes running (a star after a number indicates this is the job you are currently running), which you can then interrupt with <code>i</code> followed by the number. If you use <code>k</code>, you will kill the shell as it is instead of just interrupting it. Press <code>s</code> to start a new one.</p>
+<p>Nếu bạn gõ ký tự <code>i</code> sau đó tới ký tự <code>c</code>, Erlang sẽ dừng đoạn mã đoạn chạy lại và ngay lập tức đưa bạn trở lại shell. Với ký tự <code>j</code>, 
+	nó sẽ hiẻn thị cho bạn nhìn thấy một danh sách các tiến trình đang chạy ( đi kèm với chữ sô và ký tự * sau nó cho bạn biết về  công việc (job) mà bạn đạng sử  dụng ), nhấn <code>i</code> 
+	kèm sau nó một chữ số  ( chú ý sử dụng cách và chữ số đó phải nằm trong danh sách các job đang chạy thông qua <code>j</code>) để  ngắt job đó . 
+	Dùng <code>k</code> để  chấm dứt job đó. Dùng <code>s</code> để bắt đầu một job mới.</p>
 
 <pre class="brush:eshell">
  Eshell V5.7.2  (abort with ^G)
@@ -91,7 +106,7 @@ Unknown job
 Eshell V5.7.2  (abort with ^G)
 1&gt; "YESS!"
 </pre>
-<p>If you read back the help text, you'll notice we can start remote shells. I won't get into details right now, but this should give you an idea of what the Erlang VM can do apart from running code. For now, let's get things started (for real).</p>
+<p>Nếu bạn đọc thông tin hướng dẫn, bạn sẽ thấy rằng chúng ra có truy cập shell từ các máy khác. Bây giờ chưa phải là lúc để  đi sâu vào vấn đề này. Nào giờ chúng ta sẽ bắt đầu sủ dụng shell.</p>
 				<ul class="navigation">
 											<li><a href="introduction.html" title="Previous chapter">&lt; Previous</a></li>
 										

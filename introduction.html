@@ -48,7 +48,7 @@
 
 
 <h3><a class="section" name="what-is-erlang">Erlang là gì?</a></h3>
-<p>Trước tiên, Erlang là một ngôn ngữ lập trình hàm, một ngữ ngữ lập trình dựa trên toán học. nếu bạn đã từng làm việc với các ngôn ngữ lập trình mệnh lệnh trước đó, bạn sẽ khá thân thuộc với các câu lệnh <code>i++</code> nhưng trong ngôn ngữ lập trình hàm thì chúng không đuợc phép. và thực tế thay đổi giá trị của biến bất kỳ nào đều bị nghiêm cấm. Nghe có vẻ kỳ lạ nếu bạn đến từ các ngôn ngữ lập trình mệnh lệnh hay hướng đối tượng thì thay đổi giá trị một biến hoàn toàn bình thường nhưng nếu bạn nhớ lại toán học bạn đã tưng học ở trường, bạn đã đựoc dạy:</p>
+<p>Trước tiên, Erlang là một ngôn ngữ lập trình hàm, một ngữ ngữ lập trình dựa trên toán học. nếu bạn đã từng làm việc với các ngôn ngữ lập trình mệnh lệnh trước đó, bạn sẽ khá thân thuộc với các câu lệnh <code>i++</code> nhưng trong ngôn ngữ lập trình hàm thì chúng không đuợc phép. và thực tế  thay đổi giá trị của biến bất kỳ nào đều bị nghiêm cấm. Nghe có vẻ kỳ lạ nếu bạn đến từ các ngôn ngữ lập trình mệnh lệnh hay hướng đối tượng thì thay đổi giá trị một biến hoàn toàn bình thường nhưng nếu bạn nhớ lại toán học bạn đã tưng học ở trường, bạn đã đựoc dạy:</p>
 <pre class="brush:eshell">
 y = 2
 x = y + 3
@@ -90,7 +90,7 @@ x = x
 	Erlang không chỉ có vậy: bản thân Erlang cũng là một môi trường phát triển. Mã code thì được biện dich với bytecode và chạy trong một máy ảo ( beam virtual machine ). vì vậy Erlang khá giống so với Java và những đứa trẻ mắc bệnh rối loạn thiếu khả năng chú ý ( ADD ), chúng có thể  chạy ở mọi môi trường. 
 	The standard distribution bao gồm công cụ phát triển ( trình biên dịch (compiler) , công cụ gỡ lỗi (debugger), coong cụ giàm sát (profiler), )(compiler, debugger, profiler, thư viện kiểm tra ( test framework) ), 
 	
-	the Open Telecom Platform (OTP) Framework, web server,  phân tích cú pháp ( parser generator ), and cơ sở dữ liệu mnesia, một hê thống lưu trữ theo cấu trúc cặp khóa - giá trị ( key-value )
+	the Open Telecom Platform (OTP) Framework, web server,  phân tích cú pháp ( parser generator ), cơ sở dữ liệu mnesia, một hê thống lưu trữ theo cấu trúc cặp khóa - giá trị ( key-value )
 	và có thể lưu trữ các bản sao của nó trên nhiều server khác nhau, hỗ  trợ các giao dịch lồng nhau và lưu trữ nhiều loại kiểu dữ liệu khác nhau của Erlang, chúng ta sẽ có hẳn một chương dành riêng cho Mnesia.</p>
 <p>Máy ảo và thư viên của Erlang cho phép bạn cập nhật đoạn mã mới cho chương trình ngay trên hệ thống đang chạy mà không phải dừng lại hay gián đoạn ( nếu bạn tiếp cận vvới phương pháp triển khai blue-green rồi bạn sẽ thấy có nét khá gióng) 
 	,hay dễ dàng phân phối các đoạn mã chương trình  dễ  dàng trên nhiều máy tính cũng như quản lí lỗi. 
@@ -99,44 +99,50 @@ x = x
 
 <p>Các phần sau của sách chúng ta sẽ nhìn nhận về  cách sử  dung các công cụ và độ ổn đinh, nhưng giờ ,tôi sẽ nói về  một quy tắc chung trong Erlang: Let it crash. Để  minh họa, có thể  hình dung bạn giống như một diễn viên xiếc đi dây thằng bằng , phía dưới là một tấm lứoi bảo vệ thay vì là những hành khách sắp trên nạn trên môt chiếc máy bay gặp tai nạn. Thông thương để  kiểm soát lỗi trong chương trình bạn sẽ thường phải kiểm tra kỹ và có thể  sẽ bắt các exception với với nhiều trường hợp để tránh lỗi làm hỏng toàn bộ chương trình, nhưng trong Erlang bằng việc áp dụng `let it crash` bạn sẽ không cần quan tâm tới việc kiểm tra từng kiểu dữ liệu hay điều kiện gây ra lỗi trong hầu hết các trường hợp.</p>
 
-<p>actor Erlang hay máy ảo Erlang có khả năng phục hồi lại trạng thái ban đầu nếu xảy ra lỗi, cùng với actor cũng , và chúng ra sẽ đi sâu hơn trong các phần sau...</p>
+<p>Actor Erlang hay máy ảo Erlang có khả năng phục hồi lại trạng thái ban đầu nếu xảy ra lỗi, cùng với actor cũng , và chúng ra sẽ đi sâu hơn trong các phần sau...</p>
 
 <h3><a class="section" name="kool-aid">Đừng uống quá nhiều Kool-Aid</a></h3>
 
 <p>Drinking the Kool-Aid là một cụm từ mỉa mai được sử dụng phổ  biến ở Mỹ, Xuyên suốt cuốn sách bạn sẽ thấy có rất nhiều mục được bôi màu vàng-cam cùng dòng chữ giống vậy,
 	Trích dẫn `No Silver Bullet` từ tác gỉa Turing Award, mặc dù Erlang hiện nhận được nhiều sự quan tâm nhờ những bài thuyết trình, thảo luận tại các hội thảo và khiến nhiều người tin tưởng, tâng bốc nhiều hơn những gì mà Erlang thực sự làm được. chúng sẽ là những lời nhắc nhở về  nhược điẻm của Erlang để  tránh người học quá mức thần thánh hóa ngôn ngữ này.</p>
 
-<p>Đ u tiên chúng ta sẽ đề  cập đến khả năng mở rộng quy mô lớn của Erlang nhờ vào actor hay tiểu trình. Như bạn biết các tiến trình của Erlang được lập lịch dựa trên máy ảo Erlang ( Beam virtual machine ), một tiến trình rất nhẹ ( nhẹ hơn gấp nhièu lần so với thread ): bạn có đồng thời tạo ra hàng trăm nghìn tiến trình và cùng tồn tại ở cùng một thời điểm, nhưng điều này không có nghĩa là bạn có thể  sử  dụng đồng thời chúng để  xử  lí như cách bạn tạo ra. ví dụ, trong một trò chơi shoot-em up hay nói cách khác với trò chơi bắn máy by bắn tàu 
-	bạn có thể  tạo ra rất nhiều thứ để hiện thị lên màn hình , bao gồm những viên đạn, tàu địch, mỗi chúng bạn hãy coi là một actor. Và để  thay đổi trạng thái của những viên đạn và những tàu địch bạn phải gửi những thông điệp giữa các actor, việc làm này sẽ tốn một lượng tài nguyên nhỏ, tuy nhiên khi nhân lên với hàng trăm nghìn actor sẽ là một lượng tài nguyên tương đối và sẽ <em>khiến chương trình chậm</em>!</p>
+<p>Ví dụ đầu tiên chúng ta sẽ đề  cập đến khả năng mở rộng quy mô lớn của Erlang nhờ vào actor hay tiểu trình. Như bạn biết các tiến trình của Erlang được lập lịch dựa trên máy ảo Erlang ( Beam virtual machine ), một tiến trình rất nhẹ ( nhẹ hơn gấp nhièu lần so với thread ): bạn có thể  đồng thời tạo ra hàng trăm nghìn tiến trình và cùng tồn tại ở cùng một thời điểm, nhưng điều này không có nghĩa là bạn có thể  sử  dụng đồng thời chúng để  xử  lí như cách bạn tạo ra. ví dụ, trong việc tạo ra một trò chơi shoot-em up hay nói cách khác với trò chơi bắn tàu 
+	trong đó mỗi viên đạn, tàu địch có thể  được coi là một actor. sẽ có một lượng tài nguyên nhỏ không đáng kể  cho việc giao tiếp giữa actor với nhau, tuy nhiên khi nhân lên với hàng trăm nghìn actor sẽ là một lượng tài nguyên tương đối và sẽ <em>khiến chương trình chậm</em>!</p>
 
-<p>I'll cover this with more depth when we're far enough into the learning to actually worry about it, but just keep in mind that randomly throwing parallelism at a problem is not enough to make it go fast. Don't be sad; there are times when using hundreds of processes will both be possible and useful! It's just not happening all the time.</p>
+<p>tôi sẽ đề cập tới vấn đề này sâu sắc hơn khi chúng ta đủ kiến thức để thực sự lo lắng về  việc này, và hãy nhớ rằng việc sử  dụng xử  lí song song để  một cách ngẫu nhiên để giải quyết một vấn đề  không có nghĩa là làm cho chương trình chạy nhanh hơn. đừng thất vọng, chúng ta sẽ có những lúc sử  dụng hàng trăm tiến trình thật sự hữu ích! Nhưng không phải lúc nào cũng cần thiết.</p>
 
-<p>Erlang is also said to be able to scale in a directly proportional manner to how many cores your computer has, but this is usually not true: <img class="left" src="static/img/scaling.png" width="220" height="185" alt="Bad Graph: Speed vs Cores: It just scales!" />
-it is possible, but most problems do not behave in a way that lets you just run everything at the same time.</p>
+<p>khả năng mở rộng của Erlang được cho là tỷ lệ thuận với số  lỗi của máy tính, nhung điều này thường không thực sự chính xác: <img class="left" src="static/img/scaling.png" width="220" height="185" alt="Bad Graph: Speed vs Cores: It just scales!" />
+trong thực tế  hầu hết bài toán không phải lúc nào cũng có thể  chuyển thành xử lí song song được.</p>
 
-<p>There's something else to keep in mind: while Erlang does some things very well, it's technically still possible to get the same results from other languages. The opposite is also true; evaluate each problem as it needs to be, and choose the right tool according to the problem being addressed. Erlang is no silver bullet and will be particularly bad at things like image and signal processing, operating system device drivers, etc. and will shine at things like large software for server use (i.e.: queues, map-reduce), doing some lifting coupled with other languages, higher-level protocol implementation, etc. Areas in the middle will depend on you. You should not necessarily wall yourself in server software with Erlang: there have been cases of people doing unexpected and surprising things. One example is IANO, a robot created by the UNICT team, which uses Erlang for its artificial intelligence and won the silver medal at the 2009 <a class="external" href="http://eurobot.dmi.unict.it/">eurobot competition</a>. Another example is Wings 3D, an open source 3D modeler (but not a renderer) written in Erlang and thus cross-platform.</p>
+<p>Một số lưu ý: kể  cả khi Erlang làm đièu đó rất tốt không có nghĩa là chỉ Erlang làm được, dươi góc nhìn kỹ thuật có rất nhiều ngôn ngữ khác cũng có thể  làm tương tự Erlang hay thậm chí tốt hơn  
+	. Điều ngược lại cũng đúng, chúng ta cần đánh giá cẩn thận những vấn đề  mà chúng ta phải đối mặt và lựa chọn đúng công cụ dựa để  giải quyết các vấn đề . Erlang không phải là viên đạn bạc, đối với việc xử  lí ành, lập trình các thiết bị driver cho hệ điều hành, Erlang thực sự làm không tốt 
+	The opposite is also true; evaluate each problem as it needs to be, and choose the right tool according to the problem being addressed. Erlang is no silver bullet and will be particularly bad at things like image and signal processing, operating system device drivers, etc. and will shine at things like large software for server use (i.e.: queues, map-reduce), doing some lifting coupled with other languages, higher-level protocol implementation, etc. Areas in the middle will depend on you. You should not necessarily wall yourself in server software with Erlang: there have been cases of people doing unexpected and surprising things. One example is IANO, a robot created by the UNICT team, which uses Erlang for its artificial intelligence and won the silver medal at the 2009 <a class="external" href="http://eurobot.dmi.unict.it/">eurobot competition</a>. Another example is Wings 3D, an open source 3D modeler (but not a renderer) written in Erlang and thus cross-platform.</p>
 
 
-<h3><a class="section" name="what-you-need">What you need to dive in</a></h3>
-<p>All you need to get started is a text editor and the Erlang environment. You can get the source code and the Windows binaries from <a class="external" href="http://erlang.org/download.html" title="official Erlang download page">the official Erlang website</a>. I won't go into much installation details, but for Windows, just download and run the binary files. Don't forget to add your Erlang directory to your <var>PATH</var> system variable to be able to access it from the command line.</p>
+<h3><a class="section" name="what-you-need">Làm thế  nào để  bắt đầu</a></h3>
+<p>Tất cả những gì bạn cần để bắt đầu là một trình soạn thảo and môi trường để  chạy Erlang. Nếu bạn sử  dụng hệ điều hành Windown, bạn có thể  tải về  và căì đặt từ <a class="external" href="http://erlang.org/download.html" title="official Erlang download page">Erlang website</a>. Đừng quên cập nhật để  thêm đường dẫn tới thư mục chưa nơi cài đặt Erlang vào biến hệ thống <var>PATH</var> trong máy của bạn sau khi cài đặt để có thể  dụng Erlang từ console.</p>
 
-<p>On Debian-based Linux distributions, you should be able to install the package by doing <code>$ apt-get install erlang</code>. On Fedora (if you have 'yum' installed), you can achieve the same by typing <code># yum install erlang</code>. However, these repositories often hold outdated versions of the Erlang packages; Using an outdated version could give you some differences with what you'll get from this tutorial and a hit in performance with certain applications. I thus encourage you to compile from source. Consult the README file within the package and Google to get all the installing details you'll need, they'll do a far better job than I ever will.</p>
+<p>Đối với hệ điều hành Linux, với phiene bản dựa trên nhân của Debina ( Ubuntu, Linux mint ) mở terminal lên và gõ lệnh <code>$ apt-get install erlang</code>. Với nhận dựa trên Redhat ( Centos, Fedora ) sử  dụng lệnh  <code># yum install erlang</code>, vói phiên bản Fedora sử dụng `dnf` thì gõ lệnh <code># dnf install erlang</code>. 
+	Tuy nhiên, để  có thể  hoạt động tốt với các mẫu ví dụ trong cuốn sách này bạn lên sử  dụng từ R18 trở lên, vì trên repositories thường chỉ lưu trữ các phiên bản trước đó, do so tôi khuyến khích bạn lên tải về  trực tiếp mã nguòn và biên dịch để  cài đặt.
+chú ý xem hướng dẫn biên dịch mã nguồn trong README và google để biết thêm thông tin cài đặt vì tôi chắc rằng chúng sẽ làm tốt hơn.</p>
 
-<p>On FreeBSD, many options are available to you. If you're using portmaster, you can do <code>portmaster lang/erlang</code>. For standard ports, it should be <code>cd /usr/ports/lang/erlang; make install clean</code>. Finally, if you want to use packages, run <code>pkg_add -rv erlang</code>.</p>
+<p>Trên hệ điều hành FreeBSD, có rất nhiều lựa chọn để  cài đặt. Nếu bạn sử  dụng portmaster, bạn có thể  gõ <code>portmaster lang/erlang</code>. nếu sử  dụng ports, nó lên là <code>cd /usr/ports/lang/erlang; make install clean</code>. 
+	cuối cùng nếu bạn sử  dụng pkg hãy gõ <code>pkg_add -rv erlang</code>.</p>
 
-<p>If you're on OSX, you can install Erlang with <code>$ brew install erlang</code> (with <a class="external" href="https://github.com/Homebrew/homebrew">Homebrew</a>) or by doing <code>$ port install erlang</code> (if you prefer <a class="external" href="http://macports.org">MacPorts</a>.)</p>
+<p>Tren OSX, bạn gõ lệnh <code>$ brew install erlang</code> (cùng với <a class="external" href="https://github.com/Homebrew/homebrew">Homebrew</a>) hoặc nếu dùng với port <code>$ port install erlang</code> (<a class="external" href="http://macports.org">MacPorts</a>.)</p>
 
-<p>Alternatively, Erlang Solutions Ltd. offers <a class="external" href="https://www.erlang-solutions.com/resources/download.html">packages for all major OSes</a>, which generally work pretty well (pick a 'Standard' distribution).</p>
+<p>Một lựa chọn khác, là lên website của <a class="external" href="https://www.erlang-solutions.com/resources/download.html">Erlang Solutions Ltd. offers</a> và lựa chọn phiên bản để  tải về .</p>
 
 <div class="note">
-	<p><strong>Note:</strong> at the time of this writing, I'm using Erlang version R13B+, but for best results, you should use newer ones.</p>
+	<p><strong>Chú ý:</strong> tại thời điểm viết bài hướng dẫn này, Tôi đang sử  phiên bản R13B+ ( một số  bài hướng dẫn update sẽ sử  dụng R18+), nhưng để   chắc chắn hoạt động tốt, 
+		bạn lên sử  dụng các phiên bản mới hơn.</p>
 </div>
 
 
 <h3><a class="section" name="get-help">Where to get Help</a></h3>
-<p>There are a few places where you can get help. If you're using linux, you can access the man pages for good technical documentation. Erlang has a lists module (which we'll soon see): to get the documentation on lists, just type in <code>$ erl -man lists</code>.</p>
+<p>Có rất nhiều nơi bạn có thể tìm, nhận được sự trợ giúp. Nếu bạn sử  dụng hệ điều hành Linux, bạn có thể  dùng<code>man</code> để  xem tài liệu    If you're using linux, you can access the man pages for good technical documentation. Erlang has a lists module (which we'll soon see): to get the documentation on lists, just type in <code>$ erl -man lists</code>.</p>
 
-<p>On Windows, the installation should include HTML documentation. You can download it at any time from the <a class="external" href="http://erlang.org/doc/" title="Official Erlang HTML documentation">official erlang site</a>, or consult one of the <a class="external" href="http://erldocs.com/" title="Unofficial Erlang HTML documentation">cleaner alternative sites</a>.</p>
+<p>Trên Window, trong quá trình cài đặt bạn lên lựa chọn đính kèm tài liệu HTML. Nếu bạn quên , bạn có thể  tải vê từ<a class="external" href="http://erlang.org/doc/" title="Official Erlang HTML documentation">official erlang site</a>, or consult one of the <a class="external" href="http://erldocs.com/" title="Unofficial Erlang HTML documentation">cleaner alternative sites</a>.</p>
 
 <p>Good coding practices can be found <a class="external" href="http://www.erlang.se/doc/programming_rules.shtml">here</a> once you feel you need to get everything clean. The code in this book will attempt to follow these guidelines, too.</p>
 

@@ -36,14 +36,23 @@
 <h2>Starting Out (for real)</h2>
 
 <div class="note" style="margin-top:2.5em">
-	<p>Erlang is a relatively small and simple language (in the way C is simpler than C++). There are a few basic data types built in the language, and as such, this chapter will cover most of them. Reading it is strongly advised as it explains the building blocks for all the programs you'll write with Erlang later on.</p>
+	<p>Erlang là một ngôn ngữ tương đối nhẹ và không phức tạp ( theo cách mà chúng ra hình dung so sánh C với C++, C ít phức tạp hơn so với C++ ). 
+		Trong chương này chúng ta sẽ tìm hiều về  các kiểu dữ liêu cơ bản của Erlang. tôi khuyến khích bạn lên đọc Reading it is strongly advised as it explains the building blocks for all the programs you'll write with Erlang later on.</p>
 </div>
 
-<h3><a class="section" name="numbers">Numbers</a></h3>
+<h3><a class="section" name="terms">Term</a></h3>
 
-<p>In the Erlang shell, <strong>expressions have to be terminated with a period followed by whitespace</strong> (line break, a space etc.), otherwise they won't be executed. You can separate expressions with commas, but only the result of the last one will be shown (the others are still executed). This is certainly unusual syntax for most people and it comes from the days Erlang was implemented directly in Prolog, a logic programming language.</p>
+<p>Trong Erlang, chúng ta quy ước dữ liệu của bất kỳ kiểu dữ liệu nào được gọi là <code>term</code></p>
 
-<p>Open the Erlang shell as described in the previous chapters and let's type them things!</p>
+<h3><a class="section" name="numbers">Dữ liệu kiểu số  ( Numbers )</a></h3>
+
+<p>Trong Shell, <strong>biểu thức phải kết thúc bằng dấu chấm tiếp nối là một khoảng trắng</strong> (ngắt dòng, dấu cách etc.), 
+	nếu không shell sẽ không ghi nhận và thực thi biểu thức đó. Đới với trường hợp bạn muón sử  dụng  nhiều biểu thức trong shell, bạn có thể  dùng dấu 
+	<code>,</code> để phân cách, nhưng kết quả hiển thị cuối cùng trong shell sẽ là biểu thức cuối cùng ( những biểu thức trước đó vẫn được thực hiện nhưng sẽ không hiển thị kết quả). 
+	cú pháp này có thể  không thông dụng đối với nhiều người bởi nó đến từ Prolog, một ngôn ngữ lập trình logic 
+	( phiên bản khởi tạo đầu tiên của Erlang được thực hiện trong Prolog ).</p>
+
+<p>Nào hãy truy cập vào chế  độ shell và gõ những dòng lệnh sau ( cách truy cập shell của Erlang được mô tả trong chương trước )</p>
 
 <pre class="brush:eshell">
 1&gt; 2 + 15.
@@ -60,9 +69,12 @@
 1
 </pre>
 
-<p>You should have noticed Erlang doesn't care if you enter floating point numbers or integers: both types are supported when dealing with arithmetic. <img class="right" src="static/img/calculator.png" width="97" height="128" alt="A calculator with the number '80085' typed in" title="tee hee" /> Integers and floating values are pretty much the only types of data Erlang's mathematical operators will handle transparently for you. However, if you want to have the integer-to-integer division, use <code>div</code>, and to have the modulo operator, use <code>rem</code> (remainder).</p>
+<p>Chú ý: Không như một số ngôn ngũ khác bạn phải tường mình kiểu dữ liệu số , Erlang không quan tâm nếu bận nhập là kiểu số  thực hay là kiểu số  nguyên: cả hai kiểu dữ liệu này đềù hỗ  trợ khi bạn thực hiện các phép tính số  học.
+	<img class="right" src="static/img/calculator.png" width="97" height="128" alt="A calculator with the number '80085' typed in" title="tee hee" /> 
+	Trong quá trình xử  lí các phép toán ( phần lớn là số  nguyên và số  thực ), Erlang sẽ tự động chuyển đổi kiểu dữ liệu cho bạn. 
+	Tuy nhiên, nếu bạn muốn thực hiện phép chia lấy phần nguyên, bạn có thể  sử  dụng <code>div</code>, và đối với phép chia lấy phần dư hãy sử  dụng <code>rem</code>.</p>
 
-<p>Note that we can use several operators in a single expression, and mathematical operations obey the normal precedence rules.</p>
+<p>Chý ý là chúng ta có thể  sử  dụng nhiều toán tử  trong cùng một biểu thức và các phép tính vẫn tuân theo quy tắc toán học.</p>
 
 <pre class="brush:eshell">
 7&gt; (50 * 100) - 4999.
@@ -73,7 +85,7 @@
 244950
 </pre>
 
-<p>If you want to express integers in other bases than base 10, just enter the number as <code>Base#Value</code> (given Base is in the range 2..36):</p>
+<p>Trường hợp bạn muốn biểu diễn kiểu số  nguyên ko phải là dạng thập phân, hãy điền theo quy tắc sau<code>Base#Value</code> (trong đó Base là số  mà muốn hiển thị dưới dạng khác thập phân vd từ 2 tới 36, Value là giá trị mà cần chuyển đổi):</p>
 
 <pre class="brush:eshell">
 10&gt; 2#101010.
@@ -84,12 +96,14 @@
 174
 </pre>
 
-<p>Awesome! Erlang has the power of the calculator you have on the corner of your desk with a weird syntax on top of it! Absolutely exciting!</p>
+<p>Thật Tuyện vời! Erlang has the power of the calculator you have on the corner of your desk with a weird syntax on top of it! Hoàn toàn thú vị!</p>
 
 
-<h3><a class="section" name="invariable-variables">Invariable Variables</a></h3>
+<h3><a class="section" name="invariable-variables">Giá trị bất biến</a></h3>
 
-<p>Doing arithmetic is alright, but you won't go far without being able to store results somewhere. For that, we'll use variables. If you have read the intro to this book, you'll know that variables can't be variable in functional programming. The basic behavior of variables can be demonstrated with these 7 expressions (note that variables begin with an uppercase letter):</p>
+<p> Thực hiện các phép tính số  học thì đơn giản không có gì phức tạp, nhưng để  thực hiện nhiều phép tính cùng những biểu thức phức tạp chúng ta cần phải lưu trữ các kết quả lại. Do đó chung ra cần sử  dụng tới các biến. 
+	néu như bạn đọc phần giới thiệu của cuốn sách này, bạn cũng biết là trong lập trình hàm , giá trị của biến là không được phép thay đổi.  
+	các hành vi cơ bản của một biến có thể  được xác định bằng ̃7 biểu thức dưới đây ( lưu ý: trong Erlang tên biến luôn bắt đầu bắt chũ viết hoa ở đầu từ):</p>
 
 <pre class="brush:eshell">
 1&gt; One.
@@ -108,7 +122,10 @@
 ** exception error: no match of right hand side value 2
 </pre>
 
-<p>The first thing these commands tell us is that you can assign a value to a variable exactly once; then you can 'pretend' to assign a value to a variable if it's the same value it already has. If it's different, Erlang will complain. It's a correct observation, but the explanation is a bit more complex and depends on the <code>=</code> operator. The <code>=</code> operator (not the variables) has the role of comparing values and complaining if they're different. If they're the same, it returns the value:</p>
+<p>Đầu tiên, các dòng lệnh trên nói cho chúng ra biết rằng có thể  gán một giá trị tới một biến; sau khi biến đã được gán giá trị, bạn có thể  'vờ' đi nếu như bạn gán lại gán giá trị cho biến đó 
+	với giá trị mới bằng với giá trị đã gán trước đó . Nhưng nếu đó là một giá trị khác, Erlang sẽ ngay lập tức thông báo lỗi. đấy là một nhận xét chính xác, 
+	sẽ có một chút phúc tạp để giải thích cho điều này và phụ thuộc vào cách sử  dụng toán tử  <code>=</code>
+	.Trong Erlang khác với các ngôn ngữ khác, toán tử <code>=</code> được sử  dụng để  so sánh hai giá trị với nhau và sẽ thông báo lỗi nếu giá trị của chúng là khác nhau. Còn nếu chúng cùng giá trị, nó sẽ trả về  kết quả của giá trị đó:</p>
 
 <pre class="brush:eshell">
 8&gt; 47 = 45 + 2.
@@ -117,13 +134,15 @@
 ** exception error: no match of right hand side value 48
 </pre>
 
-<p>What this operator does when mixed with variables is that if the left-hand side term is a variable and it is unbound (has no value associated to it), Erlang will automatically bind the right-hand side value to the variable on the left-hand side. The comparison will consequently succeed and the variable will keep the value in memory.</p>
+<p>Trong phép so sánh <code>=</code>, điều gì sẽ xảy ra nếu một biến nhánh bên trái chưa được gán bất kỳ một giá trị nào so sánh với một biến hay một giá trị ở nhánh bên phải  
+	, Erlang sẽ tự động gán giá trị ở nhánh bên phải tới biến ở nhánh bên trái. Kêt quả là phép so sánh này hoạt động mà không có bất kỳ lỗi nào đồng thời biến sẽ lưu trữ giá trị trong bộ nhớ.</p>
 
-<p>This behavior of the <code>=</code> operator is the basis of something called 'Pattern matching', which many functional programming languages have, although Erlang's way of doing things is usually regarded as more flexible and complete than alternatives. We'll see pattern matching with more detail when we visit the tuple and list types in this very chapter, and also with functions in the following chapters.</p>
+<p>Trong Erlang và nhiều ngỗn ngữ lập trình hàm khác, hoạt động của toán tử  <code>=</code> cơ bản được gọi dưới tên là 'khớp mẫu (Pattern matching)', mặc dù vậy trong Erlang, cách thức hoạt đông của khớp mẫu thường linh hoạt và hoàn chỉnh hơn một số  ngôn ngũ khác. Trong các chương sau, chúng ta sẽ đi sâu và tìm hiểu chi tiết hơn cách thức hoạt động của khớp mẫu với kiểu dữ liệu bộ ( tuple ), danh sách ( list ) và hàm ( function ).</p>
 
-<p>The other thing the commands 1-7 told us is that variable names must begin with a capital letter. Command 7 failed because the word <var>two</var> had a lowercase letter to begin with. Technically, variables can start with an underscore ('_') too, but by convention their use is restricted to values you do not care about, yet you felt it was necessary to document what it contains.</p>
+<p>Quay lại với 7 biểu thức thức phía trên, ở lệnh cuối cùng ( lệnh thứ ̃7 ) nếu bạn chú ý tên biến, bạn sẽ thấy trong Erlang tên biến phải được đặt tên bắt đầu bằng một chữ in hoa.
+	. Câu lệnh cuối cùng sai và Erlang báo lỗi bởi vì tên bién <var>two</var> bắt đầu bởi chũ in thường. Dưới góc nhìn kỹ thuật, các biến có thể  bắt đầu bởi một dấu gạch dưới ('_'), nhưng theo quy ước việc sử  dụng chúng sẽ giới hạn ở các giá trị mà bạn không quan tâm tới tuy nhiên bạn cảm thấy nó cần phải ghi lại những gì nó chứa.</p>
 
-<p>You can also have variables that are only an underscore:</p>
+<p>Bạn cũng có thể  có các biến chỉ có duy nhất chứa một ký tự gạch dưới:</p>
 
 <pre class="brush:eshell">
 10&gt; _ = 14+3.
@@ -132,21 +151,26 @@
 * 1: variable '_' is unbound
 </pre>
 
-<p>Unlike any other kind of variable, it won't ever store any value. Totally useless for now, but you'll know it exists when we need it.</p>
+<p>Tuy nhiên không giông với bất kỳ các loại biến thông thường, nó sẽ không lưu trữ bất kỳ giá trị nào. Bạn sẽ cảm thấy lạ là nếu không sử  dụng để  gán biến thì cần gì phải dùng và nhin chung chả có ích gì, tuy nhiên trong các chương sau bạn sẽ thấy nó rất hữu ích khi kết hợp cùng khớp mẫu.</p>
 
 <div class="note">
-	<p><strong>Note:</strong> If you're testing in the shell and save the wrong value to a variable, it is possible to 'erase' that variable by using the function <code>f(Variable).</code>. If you wish to clear all variable names, do <code>f().</code>.</p>
+	<p><strong>Chú ý:</strong> Vì trong Erlang hay thao tác trong Shell chỉ cho phép một biến được lưu trữ giá trị một lần duy nhất tuy nhiên bạn có thể  'xóa' giá trị của biến đã lưu trữ đó
+		bằng cách sử  dụng hàm <code>f(Variable).</code> ( Varialbe là tên của biến đó ). Còn nếu bạn muốn xóa giá trị của tất cả các biến , hãy dùng hàm <code>f().</code>.</p>
 	
-	<p>These functions are there only to help you when testing and only work in the shell. When writing real programs, we won't be able to destroy values that way. Being able to do it only in the shell makes sense if you acknowledge Erlang being usable in industrial scenarios: it is wholly possible to have a shell being active for years without interruption... Let's bet that the variable <var>X</var> would be used more than once in that time period.</p>
+	<p>Các hàm này sẽ chỉ hoạt động trong Shell. Cón đối với một chương trình thực tiễn, chúng ta sẽ không thể  hủy các giá trị bằng các hàm theo cách mà chúng ta sử  trong Shell.
+	   Bạn có biết rằng việc áp dụng Erlang trong thực tiễn: Shell có thể hoạt động xuyên suốt nhiều năm mà không hề bị ngừng hay gián đoạn... Và cá rằng một biến <var>X</var> có thể  sủ dụng nhiều hơn một lần trong thời gian dó.</p>
 </div>
 
 
 <h3><a class="section" name="atoms">Atoms</a></h3>
 
 
-<p>There is a reason why variables names can't begin with a lowercase character: atoms. Atoms are literals, constants with their own name for value. What you see is what you get and don't expect more. The atom <var>cat</var> means "cat" and that's it. You can't play with it, you can't change it, you can't smash it to pieces; it's <var>cat</var>. Deal with it.</p>
+<p>Trong phần này chúng ta sẽ biết lí do vì sao tên của một biến trong Erlang không thể  bắt đầu bằng một chữ in thường, Trong Erlang chúng được sử  dụng cho một kiểu dữ liệu gõị là 'atoms'. 
+	Atoms là một kiểu dữ liệu thuộc literals, constants ( một kiểu dữ liệu mà giá trih cố  định không đổi ) và tên của nó cũng hiển thị chính giá trị của nó. 
+	những gì bạn nhìn thấy sẽ là nhưng gì bạn nhận được, thạt vậy nếu một atom có tên là <var>cat</var> thì giá trị của nó chỉ là "cat". 
+	Bạn không thể làm gì khác như việc thay đổi giá trị của atom hay làm một điều gì đó ảnh hưởng tới atom đó cả.</p>
 
-<p>While single words starting with a lowercase letter is a way to write an atom, there's more than one manner to do it:</p>
+<p>Ngoài việc sử  dụng một chữ cái đơn in thường để  bắt đầu tên của một atom, cũng có một số  cách viết khác:</p>
 
 <pre class="brush:eshell">
 1&gt; atom.
@@ -161,32 +185,45 @@ atoms_rule@erlang
 atom
 </pre>
 
-<p>An atom should be enclosed in single quotes (') if it does not begin with a lower-case letter or if it contains other characters than alphanumeric characters, underscore (_), or @.<br />
-Expression 5 also shows that an atom with single quotes is exactly the same as a similar atom without them.</p>
+<p>một atom lên được để  trong dấu nháy đơn (') nếu nó không bắt đầu bởi một ký tự in thường hay nó chưa một số  ký tự dạng số  hoặc ký tự đặc biêt như 
+	ký tự gạch dưới (_), ký tự @.<br />
+đặc biệt như bạn nhìn thấy ở biêủ thức số  5 sẽ thấy một atom được đặt trong cặp dấy nháy đơn so với atom không có dấu nháy đơn là như nhau.</p>
 
-<p>I compared atoms to constants having their name as their values. You may have worked with code that used constants before: as an example, let's say I have values for eye colors: <img class="left" src="static/img/atom.png" width="193" height="198" alt="An Atom, as imagined by Rutherford" /> <code>BLUE -&gt; 1, BROWN -&gt; 2, GREEN -&gt; 3, OTHER -&gt; 4</code>. You need to match the name of the constant to some underlying value. Atoms let you forget about the underlying values: my eye colors can simply be 'blue', 'brown', 'green' and 'other'. These colors can be used anywhere in any piece of code: the underlying values will never clash and it is impossible for such a constant to be undefined! If you really want constants with values associated to them, there's a way to do it that we'll see in <a class="chapter local" href="modules.html" title="Modules">chapter 4</a> (Modules).</p>
+<p>I compared atoms to constants having their name as their values. Bạn có thể đã từng làm việc với các đoạn mã sử  dụng hắng số  ( constants ) ví dụ như: tôi có các giá trị cho màu của mắt: 
+	<img class="left" src="static/img/atom.png" width="193" height="198" alt="An Atom, as imagined by Rutherford" /> 
+	<code>BLUE -&gt; 1, BROWN -&gt; 2, GREEN -&gt; 3, OTHER -&gt; 4</code>. Như ví dụ bạn sẽ cần phải khớp các tên của các mỗi hằng ứng với mỗi giá trị. tuy nhiên với atoms cho phép bạn quên các giá trị cần khớp đó đi: đơn giản mỗi atom là ứng với một màu măt như 
+	'blue', 'brown', 'green' and 'other'. các màu này ( atoms ) có thể được sử dụng ở bất cứ đoạn mã nào: và chúng sẽ không bị xung đột 
+	và không thể  được coi như một hằng số  hay biến không xác đinh! Còn nếu bạn vẫn muốn sử  dùng các hằng số  này với một biến liên kết với mỗi hằng số 
+	chúng ta có thể sử  dụng module tuy nhiên bây giờ chưa phải lúc, chúng ta sẽ đi sâu hơn vấn đề  này trong <a class="chapter local" href="modules.html" title="Modules">chapter 4</a> (Modules).</p>
 
-<p>An atom is therefore mainly useful to express or qualify data coupled with it. Used alone, it's a bit harder to find a good use to it. This is why we won't spend more time toying with them; their best use will come when coupled with other types of data.</p>
+<p>Một atom chủ yếu được sử  dụng để  diễn đạt hay bổ  trợ cho cặp dữ liệu liên kết với nó. các atom rất khó để  sử  dụng độc lập. Đó là lí do vì sao 
+	dùng ta sẽ không danh nhiều thời gian dể thảo luận về  nó; và sẽ tốt nhất là sử  dụng để kết hợp cùng các kiểu dữ liệu khác, ở các phần sau bạn sẽ thấy lợi ích của việc dùng atom.</p>
 
 <div class="note koolaid">
 	<p><strong>Don't drink too much Kool-Aid:</strong><br />
-		Atoms are really nice and a great way to send messages or represent constants. However there are pitfalls to using atoms for too many things: an atom is referred to in an "atom table" which consumes memory (4 bytes/atom in a 32-bit system, 8 bytes/atom in a 64-bit system). The atom table is not garbage collected, and so atoms will accumulate until the system tips over, either from memory usage or because 1048577 atoms were declared.</p>
+		Atoms thực sự hữu ích trong việc truyền thông điệp ( message ) hay dùng như một hằng số. Tuy nhiên có một số  rủi ro khi lạm dụng atom vd như:
+		ta sử dụng atom ứng một một giá trị "atom table", nó sẽ chiếm 4 bytes/atom trong một hệ thống 32-bit và 8 bytes/atom trong đối với hệ thống ̉64-bit, đặc biệt khi một atom được tạo ra
+		nó sẽ tồn tại trong suốt chương trình và bộ dọc rác (  garbage collected ) sẽ không xử  lí 
+		an atom is referred to in an "atom table" which consumes memory (4 bytes/atom in a 32-bit system, 8 bytes/atom in a 64-bit system). 
+		Do đó các atom sẽ tồn tại cho tới khi vượt quá giới hạn tài nguyên của hệ thống hay vượt 1048577 só lượng atom được khai báo đối với mỗi ứng dụng, chương trình.</p>
 
-	<p>This means atoms should not be generated dynamically for whatever reason; if your system has to be reliable and user input lets someone crash it at will by telling it to create atoms, you're in serious trouble. Atoms should be seen as tools for the developer because honestly, it's what they are.</p>
+	<p>Do đó chúng ta không lên lạm dụng việc sinh tự động atom với bất kỳ lí do; Nếu hệ thống của bạn ổn định an toàn, và cho phép người dùng nhập để  tạo ra nhiều atom,
+		bạn sẽ gặp rắc rối lớn. Do đó thành thật mà nói, atom chỉ lên dược sử  dụng như một công cụ cho lập trình viên.</p>
 </div>
 
 <div class="note">
-	<p><strong>Note:</strong> some atoms are reserved words and can not be used except for what the language designers wanted them to be: function names, operators, expressions, etc. These are:
+	<p><strong>Chú ý:</strong> Có một số  từ riêng không thể sử  dụng như một atom, đó là ý định của nhà thiết kế ngôn ngữ vd: tên hàm (function names ), toán tử ( operators ), biểu thức ( expressions ), etc. đó là:
 		<code>after and andalso band begin bnot bor bsl bsr bxor case catch cond div end fun if let not of or orelse query receive rem try when xor</code></p>
 </div>
 
 <img class="right" src="static/img/boole.png" width="198" height="224" alt="George Boole" title='"Sup baby, would you like to go Booling?"' />
 
-<h3><a class="section" name="bool-and-compare">Boolean Algebra &amp; Comparison operators</a></h3>
+<h3><a class="section" name="bool-and-compare">Đại số Boolean và toán tử  so sánh</a></h3>
 
-<p>One would be in pretty deep trouble if one couldn't tell the difference between what's small and big, what's true and false. As any other language, Erlang has ways to let you use boolean operations and to compare items.</p>
+<p>mọi thứ sẽ trửo lên rắc rối nếu một người không thể  diễn tả được sư khác nhau giữa cái gì là nhỏ, cái gì là lớn, cái gì đúng và sai.
+	Như bất kỳ ngôn ngữ nào, Erlang cũng cho phép bạn sử  dụng các phép toán boolean và các phép toán so sánh.</p>
 
-<p>Boolean algebra is dirt simple:</p>
+<p>Đại số boolean rất đơn giản:</p>
 
 <pre class="brush:eshell">
 1&gt; true and false.
@@ -202,10 +239,11 @@ false
 </pre>
 
 <div class="note">
-	<p><strong>Note:</strong> the boolean operators <code>and</code> and <code>or</code> will always evaluate arguments on both sides of the operator. If you want to have the short-circuit operators (which will only evaluate the right-side argument if it needs to), use <code>andalso</code> and <code>orelse</code>.</p>
+	<p><strong>Chú ý:</strong> các toán tử  boolean như <code>and</code> và <code>or</code> sẽ luôn xét cả hai nhánh trái và phải của toán tử ( biểu thức ) 
+		. Nếu bạn muốn rút gọn (chỉ cần xét giá trị đối số  ở nhánh phải nếu cần ), hãy dùng <code>andalso</code> hay <code>orelse</code>.</p>
 </div>
 
-<p>Testing for equality or inequality is also dirt simple, but has slightly different symbols from those you see in many other languages:</p>
+<p>phép so sánh bằng hay không bằng trong Erlang có khác biệt về ký hiệu hơn so với các ngôn ngữ khác:</p>
 
 <pre class="brush:eshell">
 6&gt; 5 =:= 5.
@@ -222,9 +260,14 @@ true
 false
 </pre>
 
-<p>First of all, if your usual language uses <code>==</code> and <code>!=</code> to test for and against equality, Erlang uses <code>=:=</code> and <code>=/=</code>.  The three last expressions (lines 9 to 11) also introduce us to a pitfall: Erlang won't care about floats and integers in arithmetic, but will do so when comparing them. No worry though, because the <code>==</code> and <code>/=</code> operators are there to help you in these cases. This is important to remember whether you want exact equality or not.</p>
+<p>Trước tiên, nếu trong một số ngôn ngữ thông dụng thường sử  dụng toán tử  <code>==</code> và <code>!=</code> để  kiểm tra tính bình đẳng trong một phép so sanh , thì trong Erlang chúng ta se sử  
+	dụng  <code>=:=</code> và <code>=/=</code>. Ba biểu thưc cuối (từ dòng 9 tới 11) cũng giới thiệu cho chúng một lưu ý: 
+	như chương trước đề  cập, Trong số  học Erlang không quan tâm tới sự khác biệt giữa kiểu số thực và kiểu số nguyên, 
+	Do đó bạn cũng không phải bận tâm khi thực hiện trong phép so sánh nhưng, cả toán tử <code>==</code> và <code>/=</code> đều có thể  giúp bạn xử  lí.
+	Và hãy ghi nhớ nó bất kể  bạn muốn so sánh chính xác bằng hay không bằng nhiên.</p>
 
-<p>Other operators for comparisons are <code>&lt;</code> (less than), <code>&gt;</code> (greater than), <code>&gt;=</code> (greater than or equal to) and <code>=&lt;</code> (less than or equal to). That last one is backwards (in my opinion) and is the source of many syntax errors in my code. Keep an eye on that <code>=&lt;</code>.</p>
+<p>Tương tự Erlang cũng hỗ  trợ các toán tử  sánh khác như <code>&lt;</code> (nhỏ hơn), <code>&gt;</code> (lớn hơn ), <code>&gt;=</code> (lớn hơn hoặc bằng) and <code>=&lt;</code> ( nhỏ hơn hoặc bằng). 
+	tuy vậy có một điều tụt hậu ( theo quan điểm cá nhân ) và là nguyên nhân của rất nhiều lỗi cũ pháp trong đoạn mã  của tôi. Hãy chú tới toán tử  <code>=&lt;</code>.</p>
 
 <pre class="brush:eshell">
 12&gt; 1 &lt; 2.
@@ -237,7 +280,8 @@ true
 true
 </pre>
 
-<p>What happens when doing <code>5 + llama</code> or <code>5 == true</code>? There's no better way to know than trying it and subsequently getting scared by error messages!</p>
+<p>Điều gì sẽ xảy ra khi ta gõ <code>5 + llama</code> hay <code>5 == true</code>? 
+	Không có gì tốt hơn là việc thử  nó, hãy thử gõ vào trong Shell, ngay sau đó bạn sẽ nhận được những dòng thông báo lỗi!</p>
 
 <pre class="brush:eshell">
 12&gt; 5 + llama.
@@ -246,18 +290,24 @@ true
         called as 5 + llama
 </pre>
 
-<p>Welp! Erlang doesn't really like you misusing some of its fundamental types! The emulator returns a nice error message here. It tells us it doesn't like one of the two arguments used around the <code>+</code> operator!</p>
+<p>Welp! Erlang không thực sự muôn bạn dùng sai một kiểu dữ liệu cơ bản! 
+	Trình mô phỏng của nó sẽ trả về một dòng thông báo lỗi. nó cho chúng ta biết một trong hai đối số  sử  dụng vói toán tử 
+	<code>+</code> có vấn đề </p>
 
-<p>Erlang getting mad at you for wrong types is not always true though:</p>
+<p>tuy nhiên không phải lúc nào Erlang cũng sẽ nhận diện để  nhắc bạn về  việc sử  dụng sai kiẻu dữ liệu, trong trường hợp này:</p>
 
 <pre class="brush:eshell">
 13&gt; 5 =:= true.
 false
 </pre>
 
-<p>Why does it refuse different types in some operations but not others? While Erlang doesn't let you <em>add</em> anything with everything, it will let you <em>compare</em> them. This is because the creators of Erlang thought pragmaticism beats theory and decided it would be great to be able to simply write things like general sorting algorithms that could order any term. It's there to make your life simpler and can do so the vast majority of the time.</p>
+<p>Vì sao trông một số  phép toán Erlang từ chối việc sử dụng kiểu dữ liệu khác nhau nhưng một số  thì không? 
+	mặc dù Erlang không cho phép bạn <em>cộng</em> hai kiểu dữ liệu khác nhau lại, nhưng nó lại cho phép bạn <em>so sánh</em> giữa chúng. 
+	Đây là bởi vì những người tạo ra Erlang nghĩ rằng tính thực tiễn sẽ tốt hơn là lý thuyết 
+	và quyết định điều 
+	This is because the creators of Erlang thought pragmaticism beats theory and decided it would be great to be able to simply write things like general sorting algorithms that could order any term. It's there to make your life simpler and can do so the vast majority of the time.</p>
 
-<p>There is one last thing to keep in mind when doing boolean algebra and comparisons:</p>
+<p>Một điều cuối cùng cần ghi nhớ khi làm việc với đại số  boolean và phép so sánh là:</p>
 
 <pre class="brush:eshell">
 14&gt; 0 == false.
@@ -266,20 +316,32 @@ false
 true
 </pre>
 
-<p>Chances are you're pulling your hair if you come from procedural languages or most object-oriented languages. Line 14 should evaluate to <var>true</var> and line 15 to <var>false</var>! After all, false means 0 and true is anything else! Except in Erlang. Because I lied to you. Yes, I did that. Shame on me.</p>
+	<p>Có lễ  bạn đang vò đầu bứt tóc nếu bạn tới từ một ngôn ngữ hướng thủ tục hay hướng đối tượng. Dòng 14 đáng lẽ lên trả về kết quả là <var>true</var> và dòng 15 là <var>false</var>! 
+		Bởi vì, chứng ta thường quy ước false có nghĩa là 0 và true là mọi thứ còn lại! ngoài trừ Erlang. 
+		Bởi vi tôi đã lừa bạn, Thật vậy, tôi đã làm thế  và tôi cảm thấy thật xấu hổi.</p>
 
-<p>Erlang has no such things as boolean <var>true</var> and <var>false</var>. The terms true and false are atoms, but they are integrated well enough into the language you shouldn't have a problem with that as long as you don't expect false and true to mean anything but false and true.</p>
+<p>Trong Erlang không hề  có hề  có giá trị boolean như <var>true</var> hay <var>false</var>. 
+	chúng đơn giản chỉ atom true và atom false, nhưng chúng được tích để đủ dùng với ngôn ngữ do đó bạn sẽ không có bất kỳ vấn đề  nào miễn là bạn không nghĩ rằng false và true có nghĩa là mọi thứ trừ false và true
+	.</p>
 
 <div class="note">
-	<p><strong>Note:</strong> The correct ordering of each element in a comparison is the following:<br />
+	<p><strong>Chú ý:</strong>thứ tự ưu tiên của mỗi phần tử  trong phép so sánh được sắp sau như sau The:<br />
 	<code>number &lt; atom &lt; reference &lt; fun &lt; port &lt; pid &lt; tuple &lt; list &lt; bit string</code></p>
-	<p>You don't know all these types of things yet, but you will get to know them through the book. Just remember that this is why you can compare anything with anything! To quote Joe Armstrong, one of the creators of Erlang: "The actual order is not important - but that a total ordering is well defined is important."</p>
+	<p>tại thời này này có thể bạn không biết hết tất cả các kiểu dũ liệu liệt kê ở trên nhưng đừng lo lắng, chúng ta sẽ 
+		được biết chúng trong các phần tiếp theo của cuốn sách. Nhưng hãy nhớ rằng đó là lí do vì sao bạn có thể soi sánh mọi thứ với nhau 
+		You don't know all these types of things yet, but you will get to know them through the book. Just remember that this is why you can compare anything with anything! 
+		trích dẫn câu nói của To quote Joe Armstrong, một trong nhưng người tạo lên ngôn ngữ Erlang: "
+		thứ tự thực sự không quan trọng - nhưng điều quan trong là phải xác định được thứ tự toàn phần"</p>
 </div>
 
 
-<h3><a class="section" name="tuples">Tuples</a></h3>
+<h3><a class="section" name="tuples">Bộ ( Tuples )</a></h3>
 
-<p>A tuple is a way to organize data. It's a way to group together many terms when you know how many there are. In Erlang, a tuple is written in the form <code>{Element1, Element2, ..., ElementN}</code>. As an example, you'd give me the coordinates (x,y) if you wanted to tell me the position of a point in a Cartesian graph. We can represent this point as a tuple of two terms:</p>
+<p>Bộ là một cấu trúc dữ liệu thuộc kiểu dữ liệu phức hợp 
+   mà trong đó nó được tổ chức dưới dạng một số lượng nhất định các kiểu dữ liệu khác nhau ( term ).
+   Trong Erlang, bộ được viết theo công thức <code>{Element1, Element2, ..., ElementN}</code>. 
+   như ví dụ, giả sử  bạn đưa tôi một tọa độ (x,y) thể  hiện cho một điểm trên đồ  thị Cartesian. 
+   Chúng ta có thể biểu diễn điểm đó dưới dạng bộ như sau:</p>
 
 <pre class="brush:eshell">
 1&gt; X = 10, Y = 4.
@@ -288,7 +350,8 @@ true
 {10,4}
 </pre>
 
-<p>In this case, a point will always be two terms. Instead of carrying the variables <var>X</var> and <var>Y</var> around the place, you only have to carry one instead. However, what can I do if I receive a point and only want the <var>X</var> coordinate? It's not hard to extract that information. Remember that when we assigned values, Erlang would never complain if they were the same. Let's exploit that! You may need to clean the variables we had set with <code>f()</code>.</p>
+<p>Trong trường hopwj này, một điểm sẽ luôn luôn được biểu diễn dưới dạng hay term. Thay vì dùng hai biến <var>X</var> và <var>Y</var>, 
+	bạn chỉ cần you only have to carry one instead. However, what can I do if I receive a point and only want the <var>X</var> coordinate? It's not hard to extract that information. Remember that when we assigned values, Erlang would never complain if they were the same. Let's exploit that! You may need to clean the variables we had set with <code>f()</code>.</p>
 
 <pre class="brush:eshell">
 3&gt; Point = {4,5}.

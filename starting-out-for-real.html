@@ -26,6 +26,7 @@
 			<div id="menu">
 				<ul>
 					<li><a href="content.html" title="Home">Home</a></li>
+					<li><a href="blogs/index.html" title="blog">Blog</a></li>
 					<li><a href="faq.html" title="Frequently Asked Questions">FAQ</a></li>
 					<li><a href="rss" title="Latest News">RSS</a></li>
 					<li><a href="static/erlang/learn-you-some-erlang.zip" title="Source Code">Code</a></li>
@@ -165,9 +166,9 @@
 <h3><a class="section" name="atoms">Atoms</a></h3>
 
 
-<p>Trong phần này chúng ta sẽ biết lí do vì sao tên của một biến trong Erlang không thể  bắt đầu bằng một chữ in thường, Trong Erlang chúng được sử  dụng cho một kiểu dữ liệu gõị là 'atoms'. 
-	Atoms là một kiểu dữ liệu thuộc literals, constants ( một kiểu dữ liệu mà giá trih cố  định không đổi ) và tên của nó cũng hiển thị chính giá trị của nó. 
-	những gì bạn nhìn thấy sẽ là nhưng gì bạn nhận được, thạt vậy nếu một atom có tên là <var>cat</var> thì giá trị của nó chỉ là "cat". 
+<p>Trong phần này chúng ta sẽ biết lí do vì sao tên của một biến trong Erlang không thể  bắt đầu bằng một chữ in thường, trong Erlang chúng được sử  dụng cho một kiểu dữ liệu gọi là 'atoms'. 
+	Atoms là một kiểu dữ liệu thuộc literals, constants ( một kiểu dữ liệu mà giá trị cố  định không đổi ) và tên của nó cũng hiển thị chính giá trị của nó. 
+	những gì bạn nhìn thấy sẽ là nhưng gì bạn nhận được, thật vậy nếu một atom có tên là <var>cat</var> thì giá trị của nó chỉ là "cat". 
 	Bạn không thể làm gì khác như việc thay đổi giá trị của atom hay làm một điều gì đó ảnh hưởng tới atom đó cả.</p>
 
 <p>Ngoài việc sử  dụng một chữ cái đơn in thường để  bắt đầu tên của một atom, cũng có một số  cách viết khác:</p>
@@ -187,7 +188,7 @@ atom
 
 <p>một atom lên được để  trong dấu nháy đơn (') nếu nó không bắt đầu bởi một ký tự in thường hay nó chưa một số  ký tự dạng số  hoặc ký tự đặc biêt như 
 	ký tự gạch dưới (_), ký tự @.<br />
-đặc biệt như bạn nhìn thấy ở biêủ thức số  5 sẽ thấy một atom được đặt trong cặp dấy nháy đơn so với atom không có dấu nháy đơn là như nhau.</p>
+đặc biệt như bạn nhìn thấy ở biêủ thức số  5 sẽ thấy một atom được đặt trong cặp dấu nháy đơn so với atom không có dấu nháy đơn là như nhau.</p>
 
 <p>I compared atoms to constants having their name as their values. Bạn có thể đã từng làm việc với các đoạn mã sử  dụng hắng số  ( constants ) ví dụ như: tôi có các giá trị cho màu của mắt: 
 	<img class="left" src="static/img/atom.png" width="193" height="198" alt="An Atom, as imagined by Rutherford" /> 
@@ -350,8 +351,10 @@ true
 {10,4}
 </pre>
 
-<p>Trong trường hopwj này, một điểm sẽ luôn luôn được biểu diễn dưới dạng hay term. Thay vì dùng hai biến <var>X</var> và <var>Y</var>, 
-	bạn chỉ cần you only have to carry one instead. However, what can I do if I receive a point and only want the <var>X</var> coordinate? It's not hard to extract that information. Remember that when we assigned values, Erlang would never complain if they were the same. Let's exploit that! You may need to clean the variables we had set with <code>f()</code>.</p>
+<p>Trong trường hợp này, một điểm sẽ luôn luôn được biểu diễn dưới dạng hai term. Thay vì dùng hai biến <var>X</var> và <var>Y</var>, 
+	và bạn chỉ phải lưu trữ trong một bộ. tuy vậy, giả sử  nếu tôi có một điểm nhưng chỉ muốn lấy tọa độ <var>X</var> của điểm đỏ ? 
+	điều đó khá đơn giản, hãy nhớ lại lúc trước khi ta gán biến với các giá trị, Erlang sẽ không thông báo lõi nếu chúng có cùng giá trị cũng như gán giá trị đó cho một biến nhiều lần. 
+	Nào hãy thử  trên Shell và tận dụng điều đó, có thể  bạn sẽ cần sử  dụng <code>f()</code> để  xóa các biến đã được gán trước đó trong Shell.</p>
 
 <pre class="brush:eshell">
 3&gt; Point = {4,5}.
@@ -364,9 +367,21 @@ true
 {4,5}
 </pre>
 
-<p>From then on we can use <var>X</var> to get the first value of the tuple! How did that happen?  <img class="left" src="static/img/mr-brackets.png" width="178" height="178" alt="{Mr.Brackets}" />First, <var>X</var> and <var>Y</var> had no value and were thus considered unbound variables. When we set them in the tuple <var>{X,Y}</var> on the left-hand side of the <code>=</code> operator, the <code>=</code> operator compares both values: <var>{X,Y}</var> vs. <var>{4,5}</var>. Erlang is smart enough to unpack the values from the tuple and distribute them to the unbound variables on the left-hand side. Then the comparison is only <code>{4,5} = {4,5}</code>, which obviously succeeds! That's one of the many forms of pattern matching.</p>
+<p>Từ giờ trở đi, chúng ta có thể  sử  dụng biến <var>X</var> để  truy xuất thông tin phần tử  đầu tiên của một bộ! 
+	Điều đó xử  lí như thế  nào?  
+	<img class="left" src="static/img/mr-brackets.png" width="178" height="178" alt="{Mr.Brackets}" />
+	Đầu tiên, biến <var>X</var> và <var>Y</var> phải là các biến không ràng buộc tức chúng không chứa hay nói cách khác là chưa được gán tói bất kỳ giá trị nào. 
+	Sau đó ta sẽ đặt chúng vào trong một bộ <var>{X,Y}</var> và đật chúng ở nhánh bên trái của toán tử  <code>=</code>,
+	tiếp đó toán tử <code>=</code> sẽ so sánh hay cả hai giá trị ở hay nhánh: <var>{X,Y}</var> so với <var>{4,5}</var>. 
+	Erlang đủ thông minh để  unpack các giá trị từ bộ tới các biến chưa được rang buộc ở nhánh bên trái. 
+	Cuối cùng kết quả của phép so sánh này chỉ đơn gian là việc so sánh <code>{4,5} = {4,5}</code>, nhin vào kết quả ra thấy chúng khớp nhau, như phép so sánh 
+	này đúng, không có bất kỳ lỗi nào , theo như phần trước đề  cập , giá trị sẽ được hiển thị trên Shell! 
+    Đó là một trong nhiều dạng sử  dụng của khớp mẫu.</p>
 
-<p>Note that on expression 6, I used the anonymous <var>_</var> variable. This is exactly how it's meant to be used: to drop the value that would usually be placed there since we won't use it. The <var>_</var> variable is always seen as unbound and acts as a wildcard for pattern matching. Pattern matching to unpack tuples will only work if the number of elements (the tuple's length) is the same.</p>
+<p>chú ý ở biểu thức 6, tôi đã sử  dụng một biến ẩn danh tức <var>_</var>. 
+	Ý nghĩa của việc sư dụng này là chúng ra sẽ không sử  dụng và bỏ qua giá trị đó khi so sánh. 
+	biến <var>_</var> luôn được coi như một biến không ràng buộc và hoạt động như một wildcard trong khớp mẫu. 
+	Khớp mẫu sẽ chỉ unpack bộ khi số lượng phần tử  ở hai nhánh là như nhau ( tức độ dài của 2 nhánh ).</p>
 
 <pre class="brush:eshell">
 7&gt; {_,_} = {4,5}.
@@ -375,14 +390,14 @@ true
 ** exception error: no match of right hand side value {4,5,6}
 </pre>
 
-<p>Tuples can also be useful when working with single values. How so? The simplest example is temperature:</p>
+<p>bộ cũng có thể  sử  dụng để  làm việc cùng với một giá trị đơn. Nó hoạt động như thế  nào ? Chúng ta có thể  nhin cách hoạt động qua vd về  nhiệt độ:</p>
 
 <pre class="brush:eshell">
 9&gt; Temperature = 23.213.
 23.213
 </pre>
 
-<p>Well, it sounds like a good day to go to the beach... Wait, is this temperature in Kelvin, Celsius or Fahrenheit?</p>
+<p>Tuyệt, thời tiết thật là mát mẻ, nhiệt độ này rất thích hợp để  đi tắm biển... Nhưng đợi chút, đây là nhiệt độ theo đơn vị Kelvin, vậy còn đơn vi Celsius hay đơn vị Fahrenheit?</p>
 
 <pre class="brush:eshell">
 10&gt; PreciseTemperature = {celsius, 23.213}.
@@ -391,33 +406,39 @@ true
 ** exception error: no match of right hand side value {celsius,23.213}
 </pre>
 
-<p>This throws an error, but it's exactly what we want! This is, again, pattern matching at work. The <code>=</code> operator ends up comparing <var>{kelvin, T}</var> and <var>{celsius, 23.213}</var>: even if the variable <var>T</var> is unbound, Erlang won't see the <var>celsius</var> atom as identical to the <var>kelvin</var> atom when comparing them. An exception is thrown which stops the execution of code. By doing so, the part of our program that expects a temperature in Kelvin won't be able to process temperatures sent in Celsius. This makes it easier for the programmer to know what is being sent around and also works as a debugging aid. A tuple which contains an atom with one element following it is called a 'tagged tuple'. Any element of a tuple can be of any type, even another tuple:</p>
+<p>Oh có lỗi xảy ra, nhưng nó chính xác là những gì chúng ta cần! 
+   hãy xem xét khớp mẫy hoạt động ở vd trên, toán tử  <code>=</code> sẽ so sánh <var>{kelvin, T}</var> với <var>{celsius, 23.213}</var>: 
+   thậm chí nếu biến <var>T</var> chưa được ràng buộc, nhưng trong vd này có sự khác nhau giữa hai atom và Erlang sẽ ko ghi nhận <var>celsius</var> atom  <var>kelvin</var> 
+   atom when comparing them. một ngoại lệ sẽ được ném ra và dừng đoạn mã thực thi lại , bằng cách làm này 
+   một phần của chương trình sẽ mà chúng ta dự kiến trong nhiêt kế  Kelvin sẽ không thẻ tiếp tục xử  lí trong nhiệt kế  Celsiou.
+   Việc đưa ra lỗi như vậy sẽ làm cho lập trình viên dễ  dàng biết được những gì đang xử lí, gửi đi và có lợi hơn cho việc gỡ lỗi.
+   Một bộ chưa một atom và một phân tử  tiếp sau nó được gọi là 'tagged tuple'. trong đó phần tử có thẻ thuộc bất kỳ kiểu dữ liệu nào hay thậm chú là một bộ khác.</p>
 
 <pre class="brush:eshell">
 12&gt; {point, {X,Y}}.
 {point,{4,5}}
 </pre>
 
-<p>What if we want to carry around more than one Point though?</p>
+<p>Tuy nhiên trong trường hợp chúng ta có nhiều hơn một điểm chúng ta sẽ phải làm thê nào ?</p>
 
 
-<h3><a class="section" name="lists">Lists!</a></h3>
+<h3><a class="section" name="lists">Kiểu Danh sách ( Lists ) !</a></h3>
 
-<p>Lists are the bread and butter of many functional languages. They're used to solve all kinds of problems and are undoubtedly the most used data structure in Erlang. Lists can contain anything! Numbers, atoms, tuples, other lists; your wildest dreams in a single structure. The basic notation of a list is <code>[Element1, Element2, ..., ElementN]</code> and you can mix more than one type of data in it:</p>
+<p>Dánh sách được coi thánh phần cơ bản nhất ( bread and butter ) trong rất nhiều ngôn ngữ lập trình hàm. Chúng thường xuyên được sử dụng để giải quyết tất cả các vấn đề  và không càn phải nghi nghờ gì vì nó là cấu trúc dữ liệu được sử  dụng nhiều nhất trong Erlang. Danh sách có thể chứa các kiểu dữ liệu sau. Lists can contain anything! Numbers, atoms, tuples, other lists; your wildest dreams in a single structure. The basic notation of a list is <code>[Element1, Element2, ..., ElementN]</code> and you can mix more than one type of data in it:</p>
 
 <pre class="brush:eshell">
 1&gt; [1, 2, 3, {numbers,[4,5,6]}, 5.34, atom].
 [1,2,3,{numbers,[4,5,6]},5.34,atom]
 </pre>
 
-<p>Simple enough, right?</p>
+<p>Vd rất dễ  hiểu, đúng ko ?</p>
 
 <pre class="brush:eshell">
 2&gt; [97, 98, 99].
 "abc"
 </pre>
 
-<p>Uh oh! This is one of the most disliked things in Erlang: strings! Strings are lists and the notation is absolutely the exact same! Why do people dislike it? Because of this:</p>
+<p>Uh oh! đấy là một trong những điều tôi không thích ở Erlang: chuỗi ( strings )! kiểu dữ liệu chuỗi bản chất cũng là một danh sách! Vì sao mà mọi người ghét nó ? bởi vì:</p>
 
 <pre class="brush:eshell">
 3&gt; [97,98,99,4,5,6].
@@ -426,15 +447,23 @@ true
 "é"
 </pre>
 
-<p>Erlang will print lists of numbers as numbers only when at least one of them could not also represent a letter! There is no such thing as a real string in Erlang! This will no doubt come to haunt you in the future and you'll hate the language for it. Don't despair, because there are other ways to write strings we'll see later in this chapter.</p>
+<p>như bạn thấy Erlang sẽ chỉ hiển thị ra danh sách các số  nếu nhưng có bất kỳ một số  nào không phải là nằm trong kiểu dữ liệu chuỗi hay nói cách khác 
+	số  đó không thuộc mã của một ký tự ( bạn có thể xem bảng mã ascii để biêt thêm chi tiêt ). Chính vì sự rắc rối này mà có thể khiến bạn ghet ngôn ngữ này trong tương lai,
+	Mặc dù vậy, sẽ có một một cách khác để  viêt chuỗi và chúng ta sẽ tìm hiểu nó trong các phần sau của chương này.</p>    
 
 <div class="note koolaid">
 	<p><strong>Don't drink too much Kool-Aid:</strong><br />
-		This is why you may have heard Erlang is said to suck at string manipulation: there is no built-in string type like in most other languages. This is because of Erlang's origins as a language created and used by telecom companies. They never (or rarely) used strings and as such, never felt like adding them officially. However, most of Erlang's lack of sense in string manipulations is getting fixed with time: The VM now natively supports Unicode strings, and overall gets faster on string manipulations all the time.</p>
-	<p>There is also a way to store strings as a binary data structure, making them really light and faster to work with. All in all, there are still some functions missing from the standard library and while string processing is definitely doable in Erlang, there are somewhat better languages for tasks that need lots of it, like Perl or Python.</p>
+		Đó là lí do vì sao bạn từng nghe nói rằng Erlang rất tồi trong việc xủ lí chuỗi: Nếu bạn biết các ngôn ngữ khác bạn sẽ thấy không có sẵn một thư viên h
+		ay module xử  lí chuỗi nào giống vậy cả. Một phần lí do là bởi vì ban đâu Erlang là ngôn ngữ được thiết bởi một công ty làm về  viễn thông và họ hầu như không bao giờ ( hiếm )
+		xử  dụng kiểu dữ liệu chuỗi, do đó họ cảm thấy không cần phải thêm nó vào thư chính chính cả.
+		tuy nhiên, hầu hết vấn đề  thiếu hụt trong việc xử  lí chuỗi này cũng được cật nhập theo thời gian: và giờ máy ảo cũng hỗ  trợ unicode,
+		và hơn nữa việc xử lí chuỗi cũng nhanh hơn tỉ lệ thuận theo thời gian cật nhập các phiên bản.</p>
+	<p>Có một cách khác là lưu trữ chuỗi dươi dạng cấu trúc nhị phân, việc làm này sẽ khiến chúng thực sự nhẹ và nhanh hơn.
+	   Nói chung, vẫn có thiếu sót một số  chức năng trong bộ thư viện chuẩn của Erlang nhưng vẫn có thể  xử  lí được trong Erlang, 
+	   và nếu có ý định ý xủ lí chuỗi với số lượng lớn thì một số ngôn ngữ khác như Perl hay Python sẽ làm tốt hơn.</p>
 </div>
 
-<p>To glue lists together, we use the <code>++</code> operator. The opposite of <code>++</code> is <code>--</code> and will remove elements from a list:</p>
+<p>Để  gộp các danh sách lại với nhau, chúng ta sử  dụng <code>++</code>. ngược lại của <code>++</code> là <code>--</code>, nó sẽ loại bỏ các phần tử  từ một danh sách:</p>
 
 <pre class="brush:eshell">
 5&gt; [1,2,3] ++ [4,5].
@@ -447,7 +476,7 @@ true
 []
 </pre>
 
-<p>Both <code>++</code> and <code>--</code> are right-associative. This means the elements of many <code>--</code> or <code>++</code> operations will be done from right to left, as in the following examples:</p>
+<p>Cả hay toán tử <code>++</code> và <code>--</code> đều là toán tử  right-associative. Tức là một số  thao tác với <code>--</code> hay <code>++</code> đều có thể  dùng  và sẽ được thực hiện theo thứ tự từ phải sang trái, như trong ví dụ sau:</p>
 
 <pre class="brush:eshell">
 9&gt; [1,2,3] -- [1,2] -- [3].
@@ -456,7 +485,8 @@ true
 [2,3]
 </pre>
 
-<p>Let's keep going. The first element of a list is named the Head, and the rest of the list is named the Tail. We will use two built-in functions (BIF) to get them.</p>
+<p>Tiếp tục nhìn vào vd tiếp theo. Coi phần tử  đầu tiên của danh sách là Head, phần những phần tử  còn lại trong sách sách là Tail. 
+	Chúng ra sẽ có các hàm xây dựng sẵn (built-in functions (BIF)) tương ứng để  lấy dữ liệu.</p>
 
 <pre class="brush:eshell">
 11&gt; hd([1,2,3,4]).
@@ -466,10 +496,16 @@ true
 </pre>
 
 <div class="note">
-	<p><strong>Note:</strong>  built-in functions (BIFs) are usually functions that could not be implemented in pure Erlang, and as such are defined in C, or whichever language Erlang happens to be implemented on (it was Prolog in the 80's). There are still some BIFs that could be done in Erlang but were still implemented in C in order to provide more speed to common operations. One example of this is the <code>length(List)</code> function, which will return the (you've guessed it) length of the list passed in as the argument.</p>
+	<p><strong>Chú ý:</strong>  các hàm xây dựng sẵn thướng là những hàm bạn không thể  định nghĩa trong Erlang, bởi vì chung 
+		là những hàm đã được định nghĩa trong C hay trong trong bất cứ ngôn ngữ nào mà đã xây dựng lên Erlang ( như Prolog trong thâp niên ́80).
+		Mặc dù vẫn có một số  hàm có thể  định nghĩa được nhưng nó vẫn lên sử dụng những hàm từ C đẻ đạt được tốc độ tốt nhất.
+		Một vd đó là hàm <code>length(List)</code>, nó nhận một đối số là một danh sách và sẽ trả về  độ dài của một danh sách đó.</p>
 </div>
 
-<p>Accessing or adding the head is fast and efficient: virtually all applications where you need to deal with lists will always operate on the head first. As it's used so frequently, there is a nicer way to separate the head from the tail of a list with the help of pattern matching: <code>[Head|Tail]</code>. Here's how you would add a new head to a list:</p>
+<p>Trong danh sách việc truy câp hay thêm vào đầu danh sách thì thường nhanh và hiệu quả: vì hầu hết trong các ứng dụng, khi thao tác với danh sách, 
+	bạn sẽ thường luôn thao tác với phần tử  đầu tiên ( phần đầu - head ) của danh sách. Vì phần đầu được xử dụng thương xuyên trong danh sách, 
+	do đó cùng với việc áp dụng khớp mẫu, có một cách đơn giản hơn để phân tách giữa 
+	phân đầu và những phần còn lại ( phần đuôi - tail ) của danh sách: code>[Head|Tail]</code>. Đây là vd về cách bạn sẽ thêm một phần tử mới vào đầu danh sách:</p>
 
 <pre class="brush:eshell">
 13&gt; List = [2,3,4].
@@ -478,7 +514,9 @@ true
 [1,2,3,4]
 </pre>
 
-<p>When processing lists, as you usually start with the head, you want a quick way to also store the tail to later operate on it. If you remember the way tuples work and how we used pattern matching to unpack the values of a point (<var>{X,Y}</var>), you'll know we can get the first element (the head) sliced off a list in a similar manner.</p>
+<p>Khi thao tác xử  lí với kiểu dữ liệu danh sách, bạn thường xuyên bát đầu từ phần đầu, và bạn muốn một cách nhanh nhất để 
+	lưu trữ phần đuôi lại cho các thao tác sau này. hãy nhớ cách mà chúng ta đã thao tác với bộ cùng với khớp mẫu trước đó để  unpack các giá trị của một điểm (<var>{X,Y}</var>
+	, vì thế  bạn biết là chúng ta có sẽ lấy đầu ( head ) và phần đuôi ( tail ) như sau.</p>
 
 <pre class="brush:eshell">
 15&gt; [Head|Tail] = NewList.
@@ -493,7 +531,7 @@ true
 2
 </pre>
 
-<p>The <code>|</code> we used is named the cons operator (constructor). In fact, any list can be built with only cons and values:</p>
+<p>toán tử <code>|</code> , nói cho chúng ta we used is named the cons operator (constructor). In fact, any list can be built with only cons and values:</p>
 
 <pre class="brush:eshell">
 20&gt; [1 | []].
@@ -504,11 +542,14 @@ true
 [3,2,1]
 </pre>
 
-<p>This is to say any list can be built with the following formula: <code>[Term1| [Term2 | [... | [TermN]]]]...</code>. Lists can thus be defined recursively as a head preceding a tail, which is itself a head followed by more heads. In this sense we could imagine a list being a bit like an earthworm: you can slice it in half and you'll then have two worms.</p>
+<p>từ ví dụ trên ta có thể  ta có thẻ xây dựng kiểu dữ liệu danh sách dựa theo công thức sau: <code>[Term1| [Term2 | [... | [TermN]]]]...</code>. 
+	Có thể sử  dụng đệ quy để định nghĩa danh sách như của một kết hợp của phần đầu đứng và phần duổi, tức là một phàn đầu và sau theo nó là nhiều phần đâu khác 
+	. Theo nghĩa này chúng ta có thể  hình dung một danh sách giống như một con giun đẩt: bạn có thể  cắt đôi nó , ta sẽ có hai con giun , tiếp đó cứ cắt đôi cho tới khi không còn gì để  cắt.</p>
 
 <img class="explanation" src="static/img/worm.png" width="288" height="331" alt="Two drawn worms, the first one normal with the text 'Head' and 'tail' as usual; the second has its head cut off, and under it a new 'head' is written." title="Worms, like lists can be defined recursively." />
 
-<p>The ways Erlang lists can be built are sometimes confusing to people who are not used to similar constructors. To help you get familiar with the concept, read all of these examples (hint: they're all equivalent):</p>
+<p>Cái cách mà danh sách được xây dựng có thể  khiến một số người có thể  nhầm lẫn khó hiểu, nhất là với những người thường không sủ dụng cấu trúc khởi tạo danh sách. Để giúp nắm vững khái niệm này
+    hãy chịu khó đọc và luyện tập tất cả các mẫu vd trong chương này:</p>
 
 <pre class="brush:eshell">
 [a, b, c, d]
@@ -519,36 +560,56 @@ true
 [a | [b | [c | [d | [] ]]]]
 </pre>
 
-<p>With this understood, you should be able to deal with list comprehensions.</p>
+<p>Với sự hiểu biết này, bạn có thể  giải quyết cùng với gộp danh sách ( list comprehensions ).</p>
 
 <div class="note">
-	<p><strong>Note:</strong> Using the form <code>[1 | 2]</code> gives what we call an 'improper list'. Improper lists will work when you pattern match in the <code>[Head|Tail]</code> manner, but will fail to be used with standard functions of Erlang (even <code>length()</code>). This is because Erlang expects proper lists. Proper lists end with an empty list as their last cell. When declaring an item like <code>[2]</code>, the list is automatically formed in a proper manner. As such, <code>[1|[2]]</code> would work! Improper lists, although syntactically valid, are of very limited use outside of user-defined data structures.</p>
+	<p><strong>Chú ý:</strong> sử  dụng biểu mẫu như <code>[1 | 2]</code> sẽ nhận được danh sách được gọi là danh sách không thích hợp ('improper list').
+		danh sách không thích hợp sẽ dùng khi bạn thao tác cùng với khớp mẫu như <code>[Head|Tail]</code>, 
+		và nó sẽ sau nếu sử  dụng cùng với các hàm thư viện chuẩn của Erlang (thậm chỉ kể  cả hàm <code>length()</code>). 
+		Đó là bởi vì Erlang coi một danh sách thích hợp phải là một danh sách kêt thúc bằng một danh sách rỗng. 
+		vd khi khai báo cùng với một danh sách như <code>[2]</code>, nó sẽ tự động định dạng đúng cách. Vd như <code>[1|[2]]</code>! 
+		đối với biểu mẫu của danh sách không thích hợp như ở trên, mặc dù vẻ mặt cú pháp không sai, nhưng nó rất giới hạn sử dụng bên ngoài cấu trúc dữ liệu do người dùng định nghĩa.</p>
 </div>
 
 
-<h3><a class="section" name="list-comprehensions">List Comprehensions</a></h3>
+<h3><a class="section" name="list-comprehensions">Gộp danh sách ( List Comprehensions )</a></h3>
 
-<p>List comprehensions are ways to build or modify lists. They also make programs short and easy to understand compared to other ways of manipulating lists. It's based off the idea of set notation; if you've ever taken mathematics classes with set theory or if you've ever looked at mathematical notation, you probably know how that works. Set notation basically tells you how to build a set by specifying properties its members must satisfy. List comprehensions may be hard to grasp at first, but they're worth the effort. They make code cleaner and shorter, so don't hesitate to try and type in the examples until you understand them!</p>
+<p>Gộp danh sách ( List comprehensions ) là một cách khác để  tạo hay chỉnh sửa một danh sách. 
+   Nó cũng khiến cho việc viết các đoạn mã trong chương trình trở lên ngắn ngọn và dễ  hiểu hơn khi so sánh với một số  các thao tác với danh sách khác. 
+   Nó dựa trên ý tưởng của một tập các ký hiệu trong toán học; nếu if you've ever taken mathematics classes with set theory or if you've ever looked at mathematical notation, you probably know how that works. Set notation basically tells you how to build a set by specifying properties its members must satisfy. List comprehensions may be hard to grasp at first, but they're worth the effort. They make code cleaner and shorter, so don't hesitate to try and type in the examples until you understand them!</p>
 
-<p>An example of set notation would be <img style="float:none; display:inline;" src="static/img/set-comprehension.png" alt="{x &isin; &real; x = x^2}" />.  That set notation tells you the results you want will be all real numbers who are equal to their own square. The result of that set would be <var>{0,1}</var>. Another set notation example, simpler and abbreviated would be <code>{x : x &gt; 0}</code>. Here, what we want is all numbers where <var>x</var> &gt; 0.</p>
+<p>Đây là một ví dụ liệt kê của một tập các ký hiểu toán học <img style="float:none; display:inline;" src="static/img/set-comprehension.png" alt="{x &isin; &real; x = x^2}" />.  
+	Tập các ký hiệu đó nó cho chúng ta biết kêt quả của một số  thuộc tập hợp số  thực và kết quả giá trị bằng bình phương của giá trị gôc.
+	Do Kết quả của tập đó sẽ là <var>{0,1}</var>. một ví dụ khác, ngắn gọn là đơn giản hơn: <code>{x : x &gt; 0}</code>. 
+	Kết quả cần tìm ở đây là danh sách những số  có giá trị dương với điều kiện là <var>x</var> &gt; 0.</p>
 
-<p>List comprehensions in Erlang are about building sets from other sets. Given the set <code>{2n : n in L}</code> where L is the list <var>[1,2,3,4]</var>, the Erlang implementation would be:</p>
+<p>Gộp danh sách là một cách để  xây dựng một tệp hay danh sách từ một tệp hay danh sách khác 
+   . ví dụ đưa vào một tập ký hiệu toán học như sau <code>{2n : n in L}</code> trong đó L là danh sách vd như <var>[1,2,3,4]</var>, trong Erlang sẽ thực hiện như vd dưới đây:</p>
 
 <pre class="brush:eshell">
 1&gt; [2*N || N &lt;- [1,2,3,4]].
 [2,4,6,8]
 </pre>
 
-<p>Compare the mathematical notation to the Erlang one and there's not a lot that changes: brackets ({}) become square brackets ([]), the colon (:) becomes two pipes (||) and the word 'in' becomes the arrow (&lt;-). We only change symbols and keep the same logic.  In the example above, each value of <var>[1,2,3,4]</var> is sequentially pattern matched to <var>N</var>. The arrow acts exactly like the <code>=</code> operator, with the exception that it doesn't throw exceptions.</p>
+<p>Dễ  nhận thấy các ký hiệu toán học khi chuyển sang Erlang không có nhiều thay đổi.
+	cặp ngoặc nhọn ({}) sẽ chuyển thành cặp ngoặc vuông ([]), dấu (:) chuyển thành hai ký tự đường ống (||) và từ 'in' sẽ chuyển thanh dấu mũi tên (&lt;-)
+	. Về mặt logic chúng ta không thay đổi bất kỳ điều gì thay vào đó chúng ta chỉ thay đổi biểu tượng, ký hiệu.  
+	trong vd trên thì mỗi một giá trị của danh sách <var>[1,2,3,4]</var> là một giá trị được tuần tự khớp với <var>N</var>. 
+	ký tự mũi tên có tác dụng giống như toán tử  <code>=</code> , ngoại trừ việc nó sẽ không ném ra ngoại lệ.</p>
 
-<p>You can also add constraints to a list comprehension by using operations that return boolean values. if we wanted all the even numbers from one to ten, we could write something like:</p>
+<p>bạn cũng có thể  thêm điều kiện giới hạn cho list comprehension bằng cách sử  dụng đại số  boolean đối với kêt quả trả về giá trị. 
+	vd nếu chúng ta muốn tìm tất cả các số chẵn trong một danh sách từ 1 tới 10 ta có thể viết như sau:</p>
 
 <pre class="brush:eshell">
 2&gt; [X || X &lt;- [1,2,3,4,5,6,7,8,9,10], X rem 2 =:= 0].
 [2,4,6,8,10]
 </pre>
 
-<p>Where <code>X rem 2 =:= 0</code> checks if a number is even. Practical applications come when we decide we want to apply a function to each element of a list, forcing it to respect constraints, etc. As an example, say we own a restaurant. A customer enters, sees our menu and asks if he could have the prices of all the items costing between $3 and $10 with taxes (say 7%) counted in afterwards.</p>
+<p>Trong đó <code>X rem 2 =:= 0</code> sẽ kiểm tra xem một số  có phải là số  chẵn hay không. 
+	Trong thực tế  khi áp dụng, chúng ta thường áp dụng một hàm đối với mỗi phần tử của danh sách, giới hạn nó,... . Ví dụ, giải sử  chúng ta có một nhà hàng, một người khác vào ăn, 
+	  anh ta sẽ hỏi bồi bàn thực đơn, nếu anh ta biết giá của tất các món ăn, giả sử  chúng có giá từ $3 tới $10 kèm thuế  7% 
+	  Practical applications come when we decide we want to apply a function to each element of a list, forcing it to respect constraints, etc. As an example, 
+	  say we own a restaurant. A customer enters, sees our menu and asks if he could have the prices of all the items costing between $3 and $10 with taxes (say 7%).</p>
 
 <pre class="brush:eshell">
 3&gt; RestaurantMenu = [{steak, 5.99}, {beer, 3.99}, {poutine, 3.50}, {kitten, 20.99}, {water, 0.00}].
@@ -561,14 +622,18 @@ true
 [{steak,6.409300000000001},{beer,4.2693},{poutine,3.745}]
 </pre>
 
-<p>Of course, the decimals aren't rounded in a readable manner, but you get the point. The recipe for list comprehensions in Erlang is therefore <code>NewList = [Expression || Pattern &lt;- List, Condition1, Condition2, ... ConditionN]</code>. The part <code>Pattern &lt;- List</code> is named a Generator expression. You can have more than one!</p>
+<p>Chắc bạn đã hiểu được vấn đề  ở đây, các phần thập phân của những giá trị trên không được làm tròn để  có thể  dễ  dàng đọc. 
+	vì thế công thức của list comprehensions thường được sử  dụng như sau <code>NewList = [Expression || Pattern &lt;- List, Condition1, Condition2, ... ConditionN]</code>. 
+	Trong đó <code>Pattern &lt;- List</code> là ký hiệu cho một biểu thức Generator. và bạn có thể có nhiều hơn một biểu thức trong list comprehensions!</p>
 
 <pre class="brush:eshell">
 5&gt; [X+Y || X &lt;- [1,2], Y &lt;- [2,3]].
 [3,4,4,5]
 </pre>
 
-<p>This runs the operations <code>1+2</code>, <code>1+3</code>, <code>2+2</code>, <code>2+3</code>. So if you want to make the list comprehension recipe more generic, you get: <code>NewList = [Expression || GeneratorExp1, GeneratorExp2, ..., GeneratorExpN, Condition1, Condition2, ... ConditionM]</code>. Note that the generator expressions coupled with pattern matching also act as a filter:</p>
+<p>biểu thức trên có nghĩa là <code>1+2</code>, <code>1+3</code>, <code>2+2</code>, <code>2+3</code>. 
+   vì thế  chúng ta sẽ có một công thức chung: <code>NewList = [Expression || GeneratorExp1, GeneratorExp2, ..., GeneratorExpN, Condition1, Condition2, ... ConditionM]</code>. 
+   chú ý là các biểu thức có thể kết hợp cùng với khớp mẫu để có tác dụng như một bộ lọc ( filter ):</p>
 
 <pre class="brush:eshell">
 6&gt; Weather = [{toronto, rain}, {montreal, storms}, {london, fog},   
@@ -583,18 +648,30 @@ true
 [london,boston]
 </pre>
 
-<p>If an element of the list 'Weather' doesn't match the {X, fog} pattern, it's simply ignored in the list comprehension whereas the <code>=</code> operator would have thrown an exception.</p>
+<p>Nếu một phần tử  trong danh sách mà không khớp với {X, fog}, nó sẽ bỏ qua bất kể  toán tử  <code>=</code> có đưa ra một ngoại lê.</p>
 
-<p>There is one more basic data type left for us to see for now. It is a surprising feature that makes interpreting binary data easy as pie.</p>
+<p>Trong mục cuối này chúng ta sẽ đi tìm hiểu kiểu dư liệu cơ bản còn lại. Đó là một tính năng đáng ngạc nhiên cho việc giải thích dữ liệu nhị phân trở nên dễ dàng hơn.</p>
 
 
 <img class="right" src="static/img/binometer.png" width="211" height="132" alt="Speedometer with values in binary" />
 
 <h3><a class="section" name="bit-syntax">Bit Syntax!</a></h3>
 
-<p>Most languages have support for manipulating data such as numbers, atoms, tuples, lists, records and/or structs, etc. Most of them also only have very raw facilities to manipulate binary data. Erlang goes out of its way to provide useful abstractions when dealing with binary values with pattern matching taken to the next level. It makes dealing with raw binary data fun and easy (no, really), which was necessary for the telecom applications it was created to help with. Bit manipulation has a unique syntax and idioms that may look kind of weird at first, but if you know how bits and bytes generally work, this should make sense to you. <strong>You may want to skip the rest of this chapter otherwise</strong>.</p>
+<p>Hầu hết các ngôn ngữ lập trình đều hỗ  trợ thao tác với các kiểu dữ như numbers, atoms, tuples, lists, records hay structs, etc. 
+   Và phần lớn chúng đều cung cấp rất sơ xài các công cụ để  xử lí với dữ liệu nhi phân ( binary data ). 
+   Erlang thi không như vậy, 
+   Erlang goes out of its way to provide useful abstractions when dealing with binary values with pattern matching taken to the next level. 
+   It makes dealing with raw binary data fun and easy (no, really), 
+   which was necessary for the telecom applications it was created to help with. 
+   Bit manipulation has a unique syntax and idioms that may look kind of weird at first, 
+   but if you know how bits and bytes generally work, this should make sense to you. <strong>You may want to skip the rest of this chapter otherwise</strong>.</p>
 
-<p>Bit syntax encloses binary data between &lt;&lt; and &gt;&gt;, splits it in readable segments, and each segment is separated by a comma. A segment is a sequence of bits of a binary (not necessarily on a byte boundary, although this is the default behaviour). Say we want to store an orange pixel of true color (24 bits). If you've ever checked colors in Photoshop or in a CSS style sheet for the web, you know the hexadecimal notation has the format #RRGGBB.  A tint of orange is <var>#F09A29</var> in that notation, which could be expanded in Erlang to:</p>
+<p>Cú pháp của kiểu dư liệu Bit đặt các dư liệu nhị phân trong &lt;&lt; và &gt;&gt;, 
+	và chia thành nhiều đoạn , mỗi đoạn phân tách nhau bởi dấu phẩu <code>,</code>. 
+	một đoạn là một chuỗi cái các bit trong dũ liệu nhị phân ( không cần thiết phải là byte, mặc dù điều này là mặc định),
+	ví dụ khi chúng ta cần lưu trữ một điểm pixel màu cam (24 bits). 
+	Nếu bạn đã từng làm việc với Photoshop hay CSS và sủ dụng công cụ để  kiểm tra thuộc tính của một màu bạn sẽ thấy nó được ký hiệu dứoi dạng thập lục phân 
+	như #RRGGBB. Khi đó màu cam sẽ có dạng <var>#F09A29</var>, Trong Erlang nó sẽ viết như sau:</p>
 
 <pre class="brush:eshell">
 1&gt; Color = 16#F09A29.
@@ -603,9 +680,12 @@ true
 &lt;&lt;240,154,41&gt;&gt;
 </pre>
 
-<p>This basically says "Put the binary values of <var>#F09A29</var> on 24 bits of space (Red on 8 bits, Green on 8 bits and Blue also on 8 bits) in the variable Pixel." The value can later be taken to be written to a file. This doesn't look like much, but once written to a file, what you'd get by opening it in a text editor would be a bunch of unreadable characters. When you read back from the file, Erlang would interpret the binary into the nice <var>&lt;&lt;240,151,41&gt;&gt;</var> format again!</p>
+<p>Vd trên cho biết "dữ liệu nhin phân 24 bits với giá trị là <var>#F09A29</var> (Red on 8 bits, Green on 8 bits and Blue also on 8 bits) 
+   được gán cho Pixel." Giá trị này có thể  được sử  dụng để ghi vào một file.
+   nhưng một khi bạn ghi dữ liệu nhị phân này vào một file sau đó sử dụng một trình soạn thảo văn bản để  mở file đó lên bạn sẽ nhìn thấy một đống các ký tự không thể đọc được.
+   Nhưng khi bạn sử  dụng Erlang để đọc file này, Erlang sẽ phân tích và chuyển các ký tự nhị phân này vào định dạng của kiểu dữ liệu nhị phân <var>&lt;&lt;240,151,41&gt;&gt;</var>!</p>
 
-<p>What's more interesting is the ability to pattern match with binaries to unpack content:</p>
+<p>Chúng ta cũng có thể sử  dụng khớp mẫu để  unpack nội dung:</p>
 
 <pre class="brush:eshell">
 3&gt; Pixels = &lt;&lt;213,45,132,64,76,32,76,0,0,234,32,15&gt;&gt;.
@@ -617,8 +697,11 @@ true
 &lt;&lt;213,45,132,64,76,32,76,0,0,234,32,15&gt;&gt;
 </pre>
 
-<p>What we did on command 3 is declare what would be precisely 4 pixels of RGB colors in binary.<br />
-	On expression 4, we tried to unpack 4 values from the binary content. It throws an exception, because we have more than 4 segments, we in fact have 12! So what we do is tell Erlang that each variable on the left side will hold 24 bits of data. That's what <code>Var:24</code> means. We can then take the first pixel and unpack it further into single color values:</p>
+<p>Ở câu lệnh số  3 , chùng ta gán biến Pixels với 4 pixels trong hệ nhin phân.<br />
+   Ở biểu thức 4, sủ dụng 4 biến để unpack từ nội dung nhị phân. 
+   Tuy nhiên nó sẽ đưa ra một ngoại lệ bởi ở giá trị trên không khớp giữa 2 nhánh vì có nhiều hơn 4 đoạn, 
+   thực tế  giá trị mà ta định nghĩa trước đó là 12 đoạn ́bit ( 1 byte ), tuy nhiên để  chuyển đổi đoạn dữ liệu này sang nhánh bên trái sao cho mỗi biến ở nhánh bên trái giữ 24 bits dữ liệu   
+   Chúng ta chỉ cần chuyển thành <code>Var:24</code>. Sau đó như vd, chúng ta có thể  unpack pixel đàu tiên như một giá trị màu:</p>
 
 <pre class="brush:eshell">
 6&gt; &lt;&lt;R:8, G:8, B:8&gt;&gt; = &lt;&lt;Pix1:24&gt;&gt;.
@@ -627,7 +710,9 @@ true
 213
 </pre>
 
-<p>"Yeah that's dandy. What if I only wanted the first color from the start though? will I have to unpack all these values all the time?" Hah! Doubt not! Erlang introduces more syntactic sugar and pattern matching to help you around:</p>
+<p>"Tuyệt, Nhưng giả sử  nếu tôi không quan tâm tới các màu còn lại mà tôi chỉ muốn lấy mài đầu tiên thôi thì làm thế  nào ?
+	? vậy có cách nào ko hay tôi vẫn cần phải unpack tất cả các giá trị?" Hah! đưng lo lắng! 
+	Erlang cũng đưa ra một cú pháp gọn gàng hơn với sự hỗ trợ của khớp mâũ:</p>
 
 <pre class="brush:eshell">
 8&gt; &lt;&lt;R:8, Rest/binary&gt;&gt; = Pixels.
@@ -636,7 +721,7 @@ true
 213
 </pre>
 
-<p>Nice, huh? That's because Erlang accepts more than one way to describe a binary segment. Those are all valid:</p>
+<p>Tuyệt với, hub? Đó là bởi vì Erlang cho phép mô tả một đoạn nhị phân bằng nhiều cách. Các cách sau đây là hợp lệ:</p>
 <pre class="expand">
 	Value
 	Value:Size
@@ -644,26 +729,41 @@ true
 	Value:Size/TypeSpecifierList
 </pre>
 
-<p>where <var>Size</var> is going to represent bits or bytes (depending on <var>Type</var> and <var>Unit</var> below), and <var>TypeSpecifierList</var> represents one or more of the following:</p>
+<p>Trong đó <var>Size</var> giá trị có biểu diễn bằng bits hay bytes (phụ thuộc vào <var>Type</var> và <var>Unit</var>), 
+   <var>TypeSpecifierList</var> giá trị có thể là một trong các cách sau:</p>
 
 <dl>
 	<dt>Type</dt>
-	<dd>Possible values: <code>integer | float | binary | bytes | bitstring | bits | utf8 | utf16 | utf32</code></dd>
-	<dd>This represents the kind of binary data used. Note that 'bytes' is shorthand for 'binary' and 'bits' is shorthand for 'bitstring'. When no type is specified, Erlang assumes an 'integer' type.</dd>
+	<dd>Giá tri: <code>integer | float | binary | bytes | bitstring | bits | utf8 | utf16 | utf32</code></dd>
+	<dd>Dùng để  biểu diễn các kiểu dữ liệu nhin phân. chú ý là 'bytes' là cách viết tắt của 'binary' và 'bits' là cách viết tăt của 'bitstring'. 
+		Nêu không có kiẻu xác định , Erlag se tự động coi đó là kiểu 'integer'.</dd>
 	<dt>Signedness</dt>
-	<dd>Possible values: <code>signed | unsigned</code></dd>
-	<dd>Only matters for matching when the type is integer. The default is 'unsigned'.</dd>
+	<dd>Giá trị: <code>signed | unsigned</code></dd>
+	<dd>chỉ có ý nghĩa nếu kiểủ dữ liều cần khớp là integer. Giá trị mặc định 'unsigned'.</dd>
 	<dt>Endianness</dt>
-	<dd>Possible values: <code>big | little | native</code></dd>
-	<dd>Endianness only matters when the Type is either integer, utf16, utf32, or float. This has to do with how the system reads binary data. As an example, the BMP image header format holds the size of its file as an integer stored on 4 bytes. For a file that has a size of 72 bytes, a little-endian system would represent this as <code>&lt;&lt;72,0,0,0&gt;&gt;</code> and a big-endian one as <code>&lt;&lt;0,0,0,72&gt;&gt;</code>. One will be read as '72' while the other will be read as '1207959552', so make sure you use the right endianness. There is also the option to use 'native', which will choose at run-time if the CPU uses little-endianness or big-endianness natively. By default, endianness is set to 'big'.</dd>
+	<dd>Giá trị: <code>big | little | native</code></dd>
+	<dd>Endianness chỉ có nghĩa khi thuộc trong các kiểu sau integer, utf16, utf32, or float. 
+		This has to do with how the system reads binary data. 
+		Vd, định dạng header của ành BMP image trong file sử  dụng 4 bytes.
+		nếu một file có kích thước là ̃72 bytes, trong hệ thống little-endian nó sẽ lưu trữ dứoi dạng <code>&lt;&lt;72,0,0,0&gt;&gt;</code> 
+		và đối với hệ thống big-endian là <code>&lt;&lt;0,0,0,72&gt;&gt;</code> .
+		một trong số chúng sẽ đọc là với giá trị là '̃72' và còn lại sẽ đọc là '1207959552'.
+		vi vậy phải đảm bảo sao bạn sử dụng chính xác kiểu endianness. 
+		cùng có một lựa chọn khác là sử dụng 'native', nó sẽ tự chọn dựa trên run-time của CPU 
+		format holds the size of its file as an integer stored on 4 bytes. For a file that has a size of 72 bytes, 
+		giá trị mặc định nếu không tường minh là 'big'</dd>
+
 	<dt>Unit</dt>
-	<dd>written <code>unit:Integer</code></dd>
-	<dd>This is the size of each segment, in bits. The allowed range is 1..256 and is set by default to 1 for integers, floats and bit strings and to 8 for binary. The utf8, utf16 and utf32 types require no unit to be defined. The multiplication of Size by Unit is equal to the number of bits the segment will take and must be evenly divisible by 8. The unit size is usually used to ensure byte-alignment.</dd>
+	<dd>viết là <code>unit:Integer</code></dd>
+	<dd>Đây là kích thước của mỗi đoạn, trong bits. phạm vi cho phép sử  dụng giá trị là từ 1 đến 256 và giá trị mặc đinh là 1 đới với kiểu integer, floats và bit strings, là 8 đối với binary. 
+		các kiểu utf8, utf16 và utf32 types thì không yếu cậu phải khai báo unit. 
+		kích thước của Size nhân với Unit bằng số  đoạn bit mà nó sẽ chiếm và phải chia hết cho 8.
+		Kích thước của unit size thường hiển thị dứoi dạng byte.</dd>
 </dl>
 
-<p>The TypeSpecifierList is built by separating attributes by a '-'.</p>
+<p>TypeSpecifierList thì được xậy dựng bởi phân tách các thuộc tính được liên kết với nhau bởi ký tự '-'.</p>
 
-<p>Some examples may help digest the definitions:</p>
+<p>Dưới đây là một số  ví dụ cụ thể :</p>
 
 <pre class="brush:eshell">
 10&gt; &lt;&lt;X1/unsigned&gt;&gt; =  &lt;&lt;-44&gt;&gt;.
@@ -690,9 +790,13 @@ true
 72
 </pre>
 
-<p>You can see there are more than one way to read, store and interpret binary data. This is a bit confusing, but still much simpler than using the usual tools given by most languages.</p>
+<p>Như bạn thấy có rất nhiều cách để  đọc và lưu trữ hay dịch dữ liệu nhị phân.
+   Mặc dù nó có thể  gây nhầm lẫn khó hiểu nhưng so với hẫu hết các ngôn ngữ khác hay một số 
+   công cụ nó vẫn đơn giản hơn rất nhiều.</p>
 
-<p>The standard binary operations (shifting bits to left and right, binary 'and', 'or', 'xor', or 'not') also exist in Erlang. Just use the functions <code>bsl</code> (Bit Shift Left), <code>bsr</code> (Bit Shift Right), <code>band</code>, <code>bor</code>, <code>bxor</code>, and <code>bnot</code>.</p>
+<p>The standard binary operations (phép dịch bits từ trái sang phải, binary 'and', 'or', 'xor', or 'not') cũng tồn tại trong Erlang. 
+   tuy nhiên khác với ngôn ngữ khác, hãy sủ dụng hàm <code>bsl</code> (dịch bit trái ), <code>bsr</code> (dịch bit phải), 
+   <code>band</code>, <code>bor</code>, <code>bxor</code>, and <code>bnot</code>.</p>
 
 <pre class="brush:eshell">
 2#00100 = 2#00010 bsl 1.
@@ -700,7 +804,7 @@ true
 2#10101 = 2#10001 bor 2#00101.
 </pre>
 
-<p>With that kind of notation and the bit syntax in general, parsing and pattern matching binary data is a piece of cake. One could parse TCP segments with code like this:</p>
+<p>cùng với các loại ký hiệu With that kind of notation and the bit syntax in general, parsing and pattern matching binary data is a piece of cake. One could parse TCP segments with code like this:</p>
 
 <pre class="brush:erl">
 &lt;&lt;SourcePort:16, DestinationPort:16,

@@ -26,6 +26,7 @@
 			<div id="menu">
 				<ul>
 					<li><a href="content.html" title="Home">Home</a></li>
+					<li><a href="blogs/index.html" title="blog">Blog</a></li>
 					<li><a href="faq.html" title="Frequently Asked Questions">FAQ</a></li>
 					<li><a href="rss" title="Latest News">RSS</a></li>
 					<li><a href="static/erlang/learn-you-some-erlang.zip" title="Source Code">Code</a></li>
@@ -34,13 +35,23 @@
 			<div id="content">
             <div class="noscript"><noscript>Hey there, it appears your Javascript is disabled. That's fine, the site works without it. However, you might prefer reading it with syntax highlighting, which requires Javascript!</noscript></div>
 <h2>Modules</h2>
-<h3><a class="section" name="what-are-modules">What are modules</a></h3>
+<h3><a class="section" name="what-are-modules">modules là gì ?MACRO</a></h3>
 
 <img class="left" src="static/img/modules.png" width="168" height="148" alt="A box with functions written on it" title="And yes, I do believe functions are squiggly little colorfoul lines stuffed in a cardboard box." />
 
-<p>Working with the interactive shell is often considered a vital part of using dynamic programming languages. It is useful to test all kinds of code and programs. Most of the basic data types of Erlang were used without even needing to open a text editor or saving files. You could drop your keyboard, go play ball outside and call it a day, but you would be a terrible Erlang programmer if you stopped right there. Code needs to be saved somewhere to be used!</p>
+<p>Làm việc với shell được coi là một trong những thành phân quan trong nhất của ngôn ngữ lập trình động (dynamic programming language). 
+   Nó rất hưu ích trong việc kiểm thử  các đoạn mã trong chương trình 
+   . Hầu hết các kiểu dữ liệu cơ bản trong Erlang đều có thể  sử  dụng trực tiếp mà không cần phải một trình soạn thảo văn bản hay lưu trữ dưới file
+   . Bạn có thể  để bàn phím sang một bên, đứng dây ra ngoài chơi bóng và quay trờ lại sau một ngày và gõ lại nó, 
+   Nhưng nếu bạn dừng ở bước này bạn thực sự là một lập trình viên tồi. Đoạn mã lên được lưu ở đâu đó để  có thể  tái sử  dụng!</p>
 
-<p>This is what modules are for. Modules are a bunch of functions regrouped in a single file, under a single name. Additionally, all functions in Erlang must be defined in modules. You have already used modules, perhaps without realizing it. The BIFs mentioned in the previous chapter, like <code>hd</code> or <code>tl</code>, actually belong to the <code>erlang</code> module, as well as all of the arithmetic, logic and Boolean operators. BIFs from the <code>erlang</code> module differ from other functions as they are automatically imported when you use Erlang. Every other function defined in a module you will ever use needs to be called with the form <code>Module:Function(Arguments)</code>.</p>
+<p>Đó là những gì mà modude hướng tới. Modules là một sự kết hợp của một tập các hàm trong cùng một file, được đặt dưới một cái tên. Ngoài ra, 
+	tất cả các hàm trong Erlang phải được định nghĩa trong các module.
+	Có thể  bạn không nhận ra rằng, bạn đã từng sử dụng module trước đó.Vd như các hàm xây dựng sẵn ( BIFs ) mà ta đề  cập qua các mẫu vd ở chương trước chính là module
+	vd như hàm <code>hd</code> hay <code>tl</code>, 
+	thuộc về  module trong <code>erlang</code> module, cưng như các toán tử  số  học, logic hay đại số  Boolean cũng vậy. 
+	các hàm xây dựng sẵn ( BIFs ) từ module <code>erlang</code> khác với các hám mà được nạp tự động khi sử  dụng với Erlang 
+	. Để  gọi một hàm khác trong một module bạn sẽ cần sử dụng theo mẫu: <code>Module:Function(Arguments)</code>.</p>
 
 <p>You can see for yourself:</p>
 
@@ -57,57 +68,89 @@ b
 </pre>
 
 
-<p>Here, the <code>seq</code> function from the list module was not automatically imported, while <code>element</code> was. The error 'undefined shell command' comes from the shell looking for a shell command like <code>f()</code> and not being able to find it. There are some functions from the <code>erlang</code> module which are not automatically imported, but they're not used too frequently.</p>
+<p>Ở đây hàm <code>seq</code> được đinh nghĩa trong module list sẽ không được tự động nạp, trong khi hàm <code>element</code> thì khác. 
+   một thông báo lỗi 'undefined shell command' được hiển thị trong shell vì nó đang cố  tìm kiếm một lệnh giống <code>f()</code> 
+   nhưng không tìm thấy. tuy vậy không phải tất cả các hàm đề được nạp ,cũng có một số  hàm trong module <code>erlang</code> 
+   không được tự động nạp và chúng cũng không được sử dụng thường xuyên.</p>
 
-<p>Logically, you should put functions about similar things inside a single module. Common operations on lists are kept in the <code>lists</code> module, while functions to do input and output (such as writing to the terminal or in a file) are regrouped in the <code>io</code> module. One of the only modules you will encounter which doesn't respect that pattern is the aforementioned <code>erlang</code> module that has functions which do math, conversions, deal with multiprocessing, fiddle with the virtual machine's settings, etc. They have no point in common except being built-in functions. You should avoid creating modules like <code>erlang</code> and instead focus on clean logical separations.</p>
+<p>Nói một cách logic, bạn lên định nghĩa các hàm trong cùng một file hay module mà có cùng chức năng   
+   Vd một số  các thao tác trong lists thì lên đặt chúng trong module <code>lists</code>, 
+   trong khi một số  các thao tác nhập xuất ( ví dụ như ghi trên terminal hay ghi vào file) thì lên được gộp lại và đặt trong module <code>io</code>. 
+   chỉ có một vài module như module One of the only modules you will encounter which doesn't respect that pattern is the aforementioned <code>erlang</code> 
+   module that has functions which do math, 
+   conversions, 
+   deal with multiprocessing, fiddle with the virtual machine's settings, etc. 
+   They have no point in common except being built-in functions. You should avoid creating modules like <code>erlang</code> and instead focus on clean logical separations.</p>
 
-<h3><a class="section" name="module-declaration">Module Declaration</a></h3>
+<h3><a class="section" name="module-declaration">Khai báo Module</a></h3>
 
 <img class="right" src="static/img/declaration.png" width="95" height="139" alt="A scroll with small text on it" title="I HEREBY DECLARE THIS MODULE AS INDEPENDENT FROM THE OTHERS"/>
 
-<p>When writing a module, you can declare two kinds of things: <em>functions</em> and <em>attributes</em>. Attributes are metadata describing the module itself such as its name, the functions that should be visible to the outside world, the author of the code, and so on. This kind of metadata is useful because it gives hints to the compiler on how it should do its job, and also because it lets people retrieve useful information from compiled code without having to consult the source.</p>
+<p>Khi bắt đầu viết một module, bạn cần khai báo 2 thứ sau đây: <em>hàm (functions)</em> và <em>thuộc tính ( attributes )</em>. thuộc tính 
+	là metadata được sử  dụng để mô tả các thành phần trong module vd như tên, các hàm sẽ hiển thị và sử  dụng bên ngoài module, thông tin về  tác giả 
+	,... . metadata rất hữu ích vì nó cho phép người dùng có được thông tin từ compiled code mà không cần phải truy xuất tới mã nguồn.</p>
 
-<p>There is a large variety of module attributes currently used in Erlang code across the world; as a matter of fact, you can even declare your own attributes for whatever you please. There are some pre-defined attributes that will appear more frequently than others in your code. All module attributes follow the form <code>-Name(Attribute).</code>. Only one of them is necessary for your module to be compilable:</p>
+<p>Trên thực tế, có rất nhiều các thuộc tính There is a large variety of module attributes currently used in Erlang code across the world; as a matter of fact, 
+
+	you can even declare your own attributes for whatever you please. 
+	There are some pre-defined attributes that will appear more frequently than others in your code. 
+	Tất cả các thuộc tính ( attributes ) phải tuân theo mẫu <code>-Name(Attribute).</code>. Và nó là cần thiết để module của bạn có thê biện dịch được:</p>
 
 <dl>
 	<dt>-module(Name).</dt>
-	<dd>This is always the first attribute (and statement) of a file, and for good reason: it's the name of the current module, where <var>Name</var> is an <a class="chapter" href="starting-out-for-real.html#atoms" title="atom definition">atom</a>. This is the name you'll use to call functions from other modules. The calls are made with the <code>M:F(A)</code> form, where <var>M</var> is the module name, <var>F</var> the function, and <var>A</var> the arguments.</dd>
+	<dd>Đây luôn là thuộc tính ( biểu thức ) xuất hiện ở đầu file, Có một lí do hợp lí cho điều này: 
+		thể  hiện cho tên của module đó , trong đó <var>Name</var> là một <a class="chapter" href="starting-out-for-real.html#atoms" title="atom definition">atom</a>.
+		Và nó sẽ được sử dụng để  gọi các hàm từ các module khác. 
+		Chúng ta sẽ gọi theo mẫu <code>M:F(A)</code>, trong đó <var>M</var> là tên của module, <var>F</var> là tên của hàm cần gọi và <var>A</var> là đối số cần truyền vào của hàm được gọi đó.</dd>
 </dl>
 
-<p>It's time to code already! Our first module will be very simple and useless. Open your text editor and type in the following, then save it under <code>useless.erl</code>:</p>
+<p>Nào hãy đa đến lúc code rồi! trước tiên chúng ta se viết một module đơn giản với tên gọi là useless. Hay mở trình soạn thảo của bạn lên và gõ đoạn mã dưới đây, 
+   sau đó lưu nó lại và đặt tên là <code>useless.erl</code>:</p>
 
 <pre class="brush:erl">
 -module(useless).
 </pre>
 
-<p>This line of text is a valid module. Really! Of course it's useless without functions. Let's first decide what functions will be exported from our 'useless' module. To do this, we will use another attribute:</p>
+<p>dòng này là một module hợp lệ sao. Chính xác nó là một module mà không kèm với việc định nghĩa các hàm. 
+   tiếp đó hãy xét xem nhưng hàm nào sẽ được cho phép gọi từ bên ngoài module 'useless'. Để làm điều này chúng ta sẽ thực hiện như sau:</p>
 
 <dl>
 	<dt>-export([Function1/Arity, Function2/Arity, ..., FunctionN/Arity]).</dt>
-	<dd>This is used to define what functions of a module can be called by the outside world. It takes a list of functions with their respective arity. The arity of a function is an integer representing how many arguments can be passed to the function. This is critical information, because different functions defined within a module can share the same name if and only if they have a different arity. The functions <code>add(X,Y)</code> and <code>add(X,Y,Z)</code> would thus be considered different and written in the form <code>add/2</code> and <code>add/3</code> respectively.</dd>
+	<dd>Dòng này sẽ nói cho ta biết những hàm mà đã được định nghĩa trong module đó có thể  gọi bên ngoài. Như bạn thấy nó yêu cầu một danh các hàm mà chúng muốn sử dụng bên ngoài 
+		. 'arity' của một hàm được biểu diễn bằng kiểu  dữ liệu integer, đây sẽ là số  lượng của đối số mà bạn muốn truyên vào hàm đó 
+		. Điều này vô cùng quan trọng vì sẽ có các hàm cùng tên nhưng khác đối số  nhau (giống với cách mà ta đinh nghĩa overmethod trong lập trình hướng đối tượng )
+		. vd hàm <code>add(X,Y)</code> và hàm <code>add(X,Y,Z)</code> cùng tên nhưng đối số  khác nhau và sẽ được viết là <code>add/2</code> và <code>add/3</code>.</dd>
 </dl>
 
 <div class="note">
-	<p><strong>Note:</strong> Exported functions represent a module's interface. It is important to define an interface revealing strictly what is necessary for it to be used and nothing more. Doing so lets you fiddle with all the other [hidden] details of your implementation without breaking code that might depend on your module.</p>
+	<p><strong>Chú ý:</strong> Ta có thể  coi các Exported functions như một interface của module. 
+		việc định nghĩa các interface rất quan trọng, nó sẽ xác đinh  It is important to define an interface revealing strictly what is necessary for it to be used and nothing more.
+		Việc làm này sẽ giúp bạn thao tác cùng với các thông tin khác ( thường là thông tin ẩn ) 
+		về  những gì thực hiện trong đoạn mã của bạn mà không vi phạm đoạn mã có thể phụ thuộc vào mô đun của bạn.</p>
 </div>
 
-<p>Our useless module will first export a useful function named 'add', which will take two arguments. The following <code>-export</code> attribute can be added after the module declaration:</p>
+<p>Tiếp theo chúng ta sẽ export một hàm được đạt lên là 'add', hàm này sẽ nhận đầu vào gồm hai tham số. 
+   thuộc tính <code>-export</code> có thể them sau khi khai báo thuộc tính module (-module):</p>
 
 <pre class="brush:erl">
 -export([add/2]).
 </pre>
 
-<p>And now write the function:</p>
+<p>Tiếp đó chúng ta đinh nghĩa hàm 'add':</p>
 
 <pre class="brush:erl">
 add(A,B) -&gt;
     A + B.
 </pre>
 
-<p>The syntax of a function follows the form <code>Name(Args) -&gt; Body.</code>, where <var>Name</var> has to be an atom and <var>Body</var> can be one or more Erlang expressions separated by commas. The function is ended with a period. Note that Erlang doesn't use the 'return' keyword. 'Return' is useless! Instead, the last logical expression of a function to be executed will have its value returned to the caller automatically without you having to mention it.</p>
+<p>cú pháp của một hàm có dạng <code>Name(Args) -&gt; Body.</code>, trong đó <var>Name</var> 
+   là tên của hàm va phải là một atom,
+   <var>Body</var> có thể  là một hay nhiều biểu thức và phân cách nhau bởi dấu <code>,</code>, và luôn kết thúc hàm bằng một đấu <code>.</code> 
+   . chú ý rằng Erlang không sử  dụng từ khóa return để  trả về  kết quả của một hàm như trong các ngôn ngữ khác mà thay vào đó 
+   biểu thức logic cuối cùng của một hàm sẽ thực hiện và sẽ tự động trả về  giá trị kết quả nếu bạn không tường mình giá trị cần trả về.</p>
 
-<p>Add the following function (why yes, every tutorial needs a 'Hello world' example! Even at the fourth chapter!), without forgetting to add it to the <code>-export</code> attribute.</p>
-
+<p>Hãy thêm hàm hello sau ( tại sao ? như bạn biết mỗi 'hello world' là một vị dụ điển hinh đối với người bắt đầu học lập trình và dĩ nhiên chúng ta không sử  dụng làm vd, thậm chí ngay cả trong chương 4 này ) 
+   và đừng quên thêm hàm này vào thuộc tính <code>-export</code>.</p>
 <pre class="brush:erl">
 %% Shows greetings.
 %% io:format/1 is the standard function used to output text.
@@ -115,9 +158,13 @@ hello() -&gt;
     io:format("Hello, world!~n").
 </pre>
 
-<p>What we see from this function is that comments are single-line only and begin with a <code>%</code> sign (using <code>%%</code> is purely a question of style.) The <code>hello/0</code> function also demonstrates how to call functions from foreign modules inside yours. In this case, <code>io:format/1</code> is the standard function to output text, as written in the comments.</p>
+<p>Vd dự trên ta thấy một comment trong Erlang bắt đầu bởi ký tự <code>%</code> (dùng <code>%%</code> chỉ đơn thuàn là một kiểu cách thuần tùy.) 
+   .hàm <code>hello/0</code> để chỉ ra cách để  gọi hàm từ ngoài module dựa trên module của bạn. 
+   Trong trường hợp này, dòng '<code>io:format/1</code> is the standard function used to output text', ở đây nó được viết trong comment để  chú thích cho người đọc về  hàm 
+   <code>io:format/1</code>, đây là hàm trong một thư viên chuẩn io để sử dụng cho việc hiển thị text.</p>
 
-<p>A last function will be added to the module, using both functions <code>add/2</code> and <code>hello/0</code>:</p>
+<p>hàm cuối cùng chúng ta sẽ thêm vào trong module useless là hàm 'greet_and_add_two', 
+	trong thân hàm này chúng ta sẽ gọi cả hai hàm <code>add/2</code> và <code>hello/0</code> mà chúng ta vừa đinh nghĩa:</p>
 
 <pre class="brush:erl">
 greet_and_add_two(X) -&gt;
@@ -127,17 +174,26 @@ greet_and_add_two(X) -&gt;
 
 <img class="left" src="static/img/imports.png" width="145" height="134" alt="A box being put in another one" title="Yes, I'm reusing drawings on that one" />
 
-<p>Do not forget to add <code>greet_and_add_two/1</code> to the exported function list. The calls to <code>hello/0</code> and <code>add/2</code> don't need to have the module name prepended to them because they were declared in the module itself.</p>
+<p>Đùng quên thêm <code>greet_and_add_two/1</code> vào trong danh sách cần export. 
+   Bởi chúng ta khai báo trong cùng một module do khi gọi hàm <code>hello/0</code> và <code>add/2</code>, chúng ta không cần phải 
+   tường mình để  thêm tên module phía trước mỗi hàm.</p>
 
-<p>Had you wanted to be able to call <code>io:format/1</code> in the same manner as <code>add/2</code> or any other function defined within the module, you could have added the following module attribute at the beginning of the file: <code>-import(io, [format/1]).</code>. Then you could have called <code>format("Hello, World!~n").</code> directly. More generally, the <code>-import</code> attribute follows this recipe:</p>
+<p>Tuy nhiên nếu bạn muốn gọi hàm <code>io:format/1</code> mà không cần xác định module trước nó giống như hàm <code>add/2</code> hay bất kỳ hàm nào khác đinh nghĩa 
+   trong module useless này bạn có thể  thêm cú pháp sau vào phía sau của thuộc tính module khi bắt đâu mỗi file: <code>-import(io, [format/1]).</code>. 
+   sau đó bạn có thể  gọi trực tiếp hàm <code>format("Hello, World!~n").</code>. 
+   ta có công thức tổng quát của thuộc tính <code>-import</code> như sau:</p>
 
 <pre class="brush:erl">
 -import(Module, [Function1/Arity, ..., FunctionN/Arity]).
 </pre>
 
-<p>Importing a function is not much more than a shortcut for programmers when writing their code. Erlang programmers are often discouraged from using the <code>-import</code> attribute as some people find it reduces the readability of code. In the case of <code>io:format/2</code>, the function <code>io_lib:format/2</code> also exists. Finding which one is used means going to the top of the file to see from which module it was imported. Consequently, leaving the module name in is considered good practice. Usually, the only functions you'll see imported come from the lists module: its functions are used with a higher frequency than those from most other modules.</p>
+<p>nạp ( import ) hàm thì không thực sự rút gọn cú pháp đối với lập trình viên khi viết code.
+   Do đó các lập trình viên Erlang thường không khuyến khích việc sử dung thuộc tính <code>-import</code> vì một số  người nghĩ rằng điều này sẽ làm giảm khả năng đọc hiểu code.
+   trong trường hợp của hàm <code>io:format/2</code>, một module khác cũng có một hàm tương tư <code>io_lib:format/2</code>. 
+   Do đó để  biết được module nào được import bạn sẽ phải truy xuất tới đầu dòng của file. Vì vậy, việc giữ nguyên tên của module kèm với hàm được xem là cách thực hành tốt.
+   Thường thí, chỉ có những hàm tới từ module lists mới sử dụng thuộc tính import bởi vì các hàm này được sử  dụng với tần xuất nhiều.</p>
 
-<p>Your <code><a class="source" href="static/erlang/useless.erl.html" title="final implementation">useless</a></code> module should now look like the following file:</p>
+<p>giừo hãy nhìn lại module <code><a class="source" href="static/erlang/useless.erl.html" title="final implementation">useless</a></code>:</p>
 
 <pre class="brush:erl">
 -module(useless).
@@ -156,16 +212,29 @@ greet_and_add_two(X) -&gt;
     add(X,2).
 </pre>
 
-<p>We are done with the "useless" module. You can save the file under the name <code>useless.erl</code>. The file name should be the module name as defined in the <code>-module</code> attribute, followed by '.erl', which is the standard Erlang source extension.</p>
+<p>Chúng ra đã hoàn thành module "useless". bạn có thể  lưu trữ file và đặt tên là <code>useless.erl</code>. 
+   như đã nói ở trên tên của file phải trùng với tên của module <code>-module</code>, theo sau nó là '.erl', đây là đuỏi mở rộng hợp lệ của Erlang.</p>
 
-<p>Before showing how to compile the module and finally try all its exciting functions, we will see how to define and use macros. Erlang macros are really similar to C's '#define' statements, mainly used to define short functions and constants. They are simple expressions represented by text that will be replaced before the code is compiled for the VM. Such macros are mainly useful to avoid having magic values floating around your modules. A macro is defined as a module attribute of the form: <code>-define(MACRO, some_value).</code> and is used as <code>?MACRO</code> inside any function defined in the module. A 'function' macro could be written as <code>-define(sub(X,Y), X-Y).</code> and used like <code>?sub(23,47)</code>, later replaced by <code>23-47</code> by the compiler. Some people will use more complex macros, but the basic syntax stays the same.</p>
+<p>Trước khi tới bước biên dịch module , 
+	Before showing how to compile the module and finally try all its exciting functions, 
+	chúng ta sẽ tháy cách định nghĩa macros . Trong Erlang , macros thực sự giống với biểu thức '#define' trong C, 
+	phần lớn chúng được sử dụng để  định danh một cách ngắn ngọn hàm hay contanst. 
+	Chúng là nhữn biểu thức đơn giản được biểu diễn bởi text và sẽ được thay thế  trước khi biên dich và trong máy ảo.
+	Các macros rất hữu ích 
+	Such macros are mainly useful to avoid having magic values floating around your modules. 
+	Một macro được biểu diễn như một thuộc tính của module và được viết theo mẫu sau: <code>-define(MACRO, some_value).</code>, để  gọi nó ta sử  dựng: <code>?MACRO</code> 
+	và có thể  gọi trong bất kỳ hàm nào được định nghĩa trong module. một 'function' macro có thể  viết dưới dạng 
+	<code>-define(sub(X,Y), X-Y).</code> và sử dụng như<code>?sub(23,47)</code>, sau đó khi biên dịch nó sẽ được thay thế  <code>23-47</code>. 
+	Trong thực tế  một số người sẽ định nghĩa các macros phức tạp hơn, nhưng vể  mặt cú pháp cơ bản không thay đổi.</p>
 
 
-<h3><a class="section" name="compiling-the-code">Compiling the code</a></h3>
+<h3><a class="section" name="compiling-the-code">Biên dịch code</a></h3>
 
-<p>Erlang code is compiled to bytecode in order to be used by the virtual machine. You can call the compiler from many places: <code>$ <a class="docs" href="http://erlang.org/doc/man/erlc.html" title="erlc manual">erlc</a> flags file.erl</code> when in the command line, <code>compile:file(FileName)</code> when in the shell or in a module, <code>c()</code> when in the shell, etc.</p>
+<p>mã của Erlang  thì được biên dịch sang bytecode để sử  dụng trong máy ảo beam. bạn có thể  gọi trình biên dịch ở nhiều nơi: 
+	<code>$ <a class="docs" href="http://erlang.org/doc/man/erlc.html" title="erlc manual">erlc</a> flags file.erl</code> trên termina, <code>compile:file(FileName)</code> 
+   khi trong Shell hoặc trong một module, gọi hàm <code>c()</code> để  biên dịch khi ở trong shell, etc.</p>
 
-<p>It's time to compile our useless module and try it. Open the Erlang shell, type in:</p>
+<p>Nào hãy thử biên dịch file module useless mà chúng ra đã biết trước đó. mở Shell lên và gõ:</p>
 
 <pre class="brush:eshell">
 1&gt; cd("/path/to/where/you/saved/the-module/").
@@ -173,14 +242,21 @@ greet_and_add_two(X) -&gt;
 ok
 </pre>
 
-<p>By default, the shell will only look for files in the same directory it was started in and the standard library: <code>cd/1</code> is a function defined exclusively for the Erlang shell, telling it to change the directory to a new one so it's less annoying to browse for our files. Windows users should remember to use forward slashes. When this is done, do the following:</p>
+<p>Mặc định, shell sẽ tìm kiếm những file trong cùng thư mục hiện hành và trong bộ thư viện chuẩn của Erlang: <code>cd/1</code> là một hàm 
+	được định nghĩa dánh riêng cho shell, nó có chức năng thay vị trí hiện tại ( thư mục hiện hành ) tới một thư mục khác.
+	đối với ngườu dùng windơw hãy nhớ rằng chúng ra không sử  dụng ký tự '/' đối với ngăn cách thư mục cha và còn mà thay vào đó ta sử dụng ký tự '\'.
+	telling it to change the directory to a new one so it's less annoying to browse for our files. Windows users should remember to use forward slashes. 
+	sau khi di chuyển thành công hay gõ:</p>
 
 <pre class="brush:eshell">
 2&gt; c(useless).
 {ok,useless}
 </pre>
 
-<p>If you have another message, make sure the file is named correctly, that you are in the right directory and that you've made no mistake in your <a class="source" href="static/erlang/useless.erl.html" title="check against THIS!">module</a>. Once you successfully compile code, you'll notice that a <code>useless.beam</code> file was added next to <code>useless.erl</code> in your directory. This is the compiled module. Let's try our first functions ever:</p>
+<p>nếu có một thông điệp nào khác trên, hãy kiểm tra lại và đảm bảo rằng tên file được đặt chính xác, 
+	và bạn đang ở đúng thưc mục và không có bất kỳ lỗi nào trong file  <a class="source" href="static/erlang/useless.erl.html" title="check against THIS!">module</a> của bạn. 
+	sau khi biên dịch thành công, bạn sẽ thấy một file <code>useless.beam</code> được tạo ra bên cạnh file <code>useless.erl</code> trong cùng thư mục. 
+	dó là file module đã được biên dịch. Tiếp đó hãy thử  chạy các hàm:</p>
 
 <pre class="brush:eshell">
 3&gt; useless:add(7,2).
@@ -195,28 +271,45 @@ Hello, world!
 ** exception error: undefined function useless:not_a_real_function/0
 </pre>
 
-<p>The functions work as expected: <code>add/2</code> adds numbers, <code>hello/0</code> outputs "Hello, world!", and <code>greet_and_add_two/1</code> does both! Of course, you might be asking why <code>hello/0</code> returns the atom 'ok' after outputting text. This is because Erlang functions and expressions must <strong>always</strong> return something, even if they would not need to in other languages. As such, <code>io:format/1</code> returns 'ok' to denote a normal condition, the absence of errors.</p>
+<p>các hàm họa động đúng như những gì đã dự kiến: <code>add/2</code> adds numbers, <code>hello/0</code> in ra thông điệp "Hello, world!", và <code>greet_and_add_two/1</code> 
+	sẽ gọi cả 2 hàm 'add' và 'hello'! Tất nhiên , bạn có thể hỏi vi sao hàm <code>hello/0</code> lại trả về  kêt quả là atom 'ok' sau khi in ra dòng chữ text. 
+	đó là bởi vì trong Erlang các hàm và biểu thức phải <strong>luôn</strong> có kết quả trả về , ngay cả khi nó không yêu càu trong một số  ngôn ngữ khác 
+	nhưng trong ngôn ngữ lập trình hàm thì điều đó là bắt buộc. Ví dụ, hàm <code>io:format/1</code> sẽ trả về  atom 'ok' và chỉ ra rằng hàm này diều kiện họat động bình thường và không có bất kỳ lỗi nào cả.</p>
 
-<p>Expression 6 shows an error being thrown because a function doesn't exist. If you have forgotten to export a function, this is the kind of error message you will have when trying it out.</p>
+<p>Biểu thức 6 đưa ra một lỗi bởi vì hàm này không tồn tại. nó có thể  do bạn quên export hàm đó hay hàm này chính xác không được định nghĩa trong module, đây là lỗi 
+	bạn sẽ gặp phải khi bạn cố  gắng thử  gọi một hàm như vậy giống biểu thức 6.</p>
 
 <div class="note">
-	<p><strong>Note:</strong> If you were ever wondering, '.beam' stands for <em>Bogdan/Björn's Erlang Abstract Machine</em>, which is the VM itself. Other virtual machines for Erlang exist, but they're not really used anymore and are history: JAM (Joe's Abstract Machine, inspired by Prolog's <a class="external" href="http://en.wikipedia.org/wiki/Warren_Abstract_Machine" title="Warren Abstract Machin">WAM</a> and old BEAM, which attempted to compile Erlang to C, then to native code. Benchmarks demonstrated little benefits in this practice and the concept was given up.</p>
+	<p><strong>Chú ý:</strong> nếu bạn đang thắc mắc, file với đuoi mở rộng '.beam' là gì thì đó là viết tắt của <em>Bogdan/Björn's Erlang Abstract Machine</em>, 
+		đó chính là máy ảo. Cũng có một số máy ảo khác cho Erlang, nhưng chúng không còn được sử  dụng và giờ chủ yếu được lưu trữ như một giá trị lịch sử 
+		vd như: JAM (Joe's Abstract Machine, lấy cảm hứng từ Prolog <a class="external" href="http://en.wikipedia.org/wiki/Warren_Abstract_Machine" title="Warren Abstract Machin"
+		>WAM</a> và các phiên bản trước đó của BEAM, dây là máy ảo cố  gắng thực hiện việc biện dịch từ Erlang sang C , sau đó chuyển sang mã máy ( native code ). 
+		Benchmarks demonstrated little benefits in this practice and the concept was given up.</p>
 </div>
 
-<p>There are a whole lot of compilation flags existing to get more control over how a module is compiled. You can get a list of all of them in the <a class="docs" href="http://erlang.org/doc/man/compile.html">Erlang documentation</a>. The most common flags are:</p>
+<p>Như mọi bộ biên dịch khác để  kiểm soát kỹ hơn việc biên dịch, Trong Erlang hỗ  trợ rất nhiều cờ biên địch để  kiểm soát cách một module được biên dịch như thế  nào. 
+	Bạn có thể  xem thông tin của tất cả các cờ này tại <a class="docs" href="http://erlang.org/doc/man/compile.html">Erlang documentation</a>. 
+	Dưới đây là một số  cờ phổ biến:</p>
 
 <dl>
 	<dt>-debug_info</dt>
-	<dd>Erlang tools such as debuggers, code coverage and static analysis tools will use the debug information of a module in order to do their work.</dd>
+	<dd>Các công cụ Erlang như gỡ rối ( debuggers ), code coverage and static analysis sẽ sử  dụng thông tin debug của module để  làm việc.</dd>
 	<dt>-{outdir,Dir}</dt>
-	<dd>By default, the Erlang compiler will create the 'beam' files in the current directory. This will let you choose where to put the compiled file.</dd>
+	<dd>Mặc định, khi biên dịch, bộ biên dịch của Erlang sẽ tạo ra các file beam tại thư mục hiện hành 
+		.tuy nhiên bằng cách sử dụng cờ này cho phép bạn xác định nơi mà bạn muốn tạo ,xuât ra file
+	.</dd>
 	<dt>-export_all</dt>
-	<dd>Will ignore the <code>-export</code> module attribute and will instead export all functions defined. This is mainly useful when testing and developing new code, but should not be used in production.</dd>
+	<dd>bằng cách sử  dụng cờ này nó sẽ bỏ qua hết tất các hàm trong thuộc tinh module <code>-export</code>, thay vào đó nó sẽ expỏrt tất cả các hàm có trong file module đó 
+		. cờ này chủ yếu được sử dụng chính môi trường kiểm thư ( testing ) và phát triẻn (development ) trong giai đoạn mã mới đạng được viết 
+		, và hãy nhớ không lên sử dụng chúng trong môi trường production.</dd>
 	<dt>-{d,Macro} or {d,Macro,Value}</dt>
-	<dd>Defines a macro to be used in the module, where <var>Macro</var> is an atom. This is more frequently used when dealing when unit-testing, ensuring that a module will only have its testing functions created and exported when they are explicitly wanted. By default, <var>Value</var> is 'true' if it's not defined as the third element of the tuple.</dd>
+	<dd>Cờ này sử  dụng đề  xác định các macro sẽ sử  dụng trong module , trong đó <var>Macro</var> là một atom. 
+		Nó sẽ được sử dụng thường xuyên khi kết hợp với unit-testing,
+		ensuring that a module will only have its testing functions created and exported when they are explicitly wanted. By default, 
+		<var>Value</var> is 'true' if it's not defined as the third element of the tuple.</dd>
 </dl>
 
-<p>To compile our <code>useless</code> module with some flags, we could do one of the following:</p>
+<p>Để biên dịch module <code>useless</code> cùng một số  cờ biên dịch , ta có thể  làm như sau:</p>
 
 <pre class="brush:eshell">
 7&gt; compile:file(useless, [debug_info, export_all]).
@@ -225,7 +318,8 @@ Hello, world!
 {ok,useless}
 </pre>
 
-<p>You can also be sneaky and define compile flags from within a module, with a module attribute. To get the same results as from expressions 7 and 8, the following line could be added to the module:</p>
+<p>Hay bạn cũng có thể  xác định các cờ biên dịch trong module cùng với thuộc tính ( attributes ) của module. 
+	để  nhận được kết quả tương tự với kết quả từ biểu thức thứ 7 và 8 , hãy thêm dòng sau vào module:</p>
 
 <pre class="brush:erl">
 -compile([debug_info, export_all]).
@@ -234,15 +328,24 @@ Hello, world!
 <p>Then just compile and you'll get the same results as if you manually passed flags. Now that we're able to write down functions, compile them and execute them, it's time to see how far we can take them!</p>
 
 <div class="note">
-	<p><strong>Note:</strong> another option is to compile your Erlang module to native code. Native code compiling is <strong>not</strong> available for every platform and OS, but on those that support it, it can make your programs go faster (about 20% faster, based on anecdotal evidence). To compile to native code, you need to use the <code>hipe</code> module and call it the following way: <code>hipe:c(Module,OptionsList).</code> You could also use <code>c(Module,[native]).</code> when in the shell to achieve similar results. Note that the .beam file generated will contain both native and non-native code, and the native part will not be portable across platforms.</p>
+	<p><strong>Chú ý:</strong> một tùy chọn khác để  biên dịch module Erlang của bạn tới mã máy ( native code ). 
+		Native code compiling is <strong>not</strong> hỗ trợ đối với tất cả các nền tảng (platform) và hệ điều hành, tuy nhiên nếu hệ thống đó hỗ  trỡ, 
+		nó có thể khiến cho chương trình chạy nhanh hơn ( nhanh hơn khoảng 20%, dưạ trên một số  bằng chúng ).
+		Để biện dịch tới mã máy, bạn cần sử dụng module <code>hipe</code> và gọi như sau: 
+		<code>hipe:c(Module,OptionsList).</code> hoặc <code>c(Module,[native]).</code> 
+		when in the shell to achieve similar results. Chú ý: file .beam sẽ được tạo ra sẽ chứa cả mã native và non-native, 
+		và phần mã máy trong tệp này sẽ không thể  sử  dụng được trên các hệ thống nền tảng không hỗ  trợ.</p>
 </div>
 
 
 <h3><a class="section" name="more-about-modules">More About Modules</a></h3>
 
-<p>Before moving on to learning more about writing functions and barely useful snippets of code, there are a few other miscellaneous bits of information that might be useful to you in the future that I'd like to discuss.</p>
+<p>trước khi đi vào việc tìm hiẻu cách viết các hàm và các đoạn mã, tôi muốn thảo luận vè một số  thông tin ngoài lề  có thể  giúp ích cho bạn sau này.</p>
 
-<p>The first one concerns metadata about modules. I mentioned in the beginning of this chapter that module attributes are metadata describing the module itself. Where can we find this metadata when we don't have an access to the source? Well the compiler plays nice with us: when compiling a module, it will pick up most module attributes and store them (along with other information) in a <code>module_info/0</code> function. You can see the metadata of the <code>useless</code> module the following way:</p>
+<p>Đầu tiên là về  metadata. như tôi đã nói tới ở phần đâu của chương I, thuộc tính trong module  module là metadata, dùng để  miêu tả các thông tin về  module đó 
+   . Vậy thì chúng ta có thể tìm metadata này ở đâu khi chúng ta không có mã nguồn để truy cập vào xem. ? 
+   Đừng lo, bộ biện dịch đã giúp chúng ta việc này: khi biên dịch một module, it sẽ tự động lưu hầu hết các thuôc tính ( bên cạnh một số thông tin khác nữa ) vào bên trong 
+   hàm <code>module_info/0</code>. Vd bạn có thể  truy xuất metadata của module <code>useless</code> bằng cách:</p>
 
 <pre class="brush:eshell">
 9&gt; useless:module_info().
@@ -262,10 +365,12 @@ Hello, world!
 </pre>
 
 
-<p>The snippet above also shows an additional function, <code>module_info/1</code> which will let you grab one specific piece of information. You can see exported functions, imported functions (none in this case!), attributes (this is where your custom metadata would go), and compile options and information. Had you decided to add <code>-author("An Erlang Champ").</code> to your module, it would have ended up in the same section as <code>vsn</code>. There are limited uses to module attributes when it comes to production stuff, but they can be nice when doing little tricks to help yourself out: I'm using them in my <a class="source" href="static/erlang/tester.erl.html" title="Automatic testing module. See warnings/0.">testing script</a> for this book to annotate functions for which unit tests could be better; the script looks up module attributes, finds the annotated functions and shows a warning about them.</p>
+<p>đoạn vd tren sẽ The snippet above also shows an additional function, <code>module_info/1</code> which will let you grab one specific piece of information. You can see exported functions, imported functions (none in this case!), attributes (this is where your custom metadata would go), and compile options and information. Had you decided to add <code>-author("An Erlang Champ").</code> to your module, it would have ended up in the same section as <code>vsn</code>. There are limited uses to module attributes when it comes to production stuff, but they can be nice when doing little tricks to help yourself out: I'm using them in my <a class="source" href="static/erlang/tester.erl.html" title="Automatic testing module. See warnings/0.">testing script</a> for this book to annotate functions for which unit tests could be better; the script looks up module attributes, finds the annotated functions and shows a warning about them.</p>
 
 <div class="note">
-    <p><strong>Note:</strong> <code>vsn</code> is an automatically generated unique value differentiating each version of your code, excluding comments. It is used in code hot-loading (upgrading an application while it runs, without stopping it) and by some tools related to release handling. You can also specify a <code>vsn</code> value yourself if you want: just add <code>-vsn(VersionNumber)</code> to your module.</p>
+	<p><strong>Chú ý:</strong> <code>vsn</code> được tự động sinh ra giá trị duy nhất cho mỗi phiên bản code của bạn ( ngoài trừ comments ).
+		nó sẽ dược sử  dụng cho chức năng hot-reloading trong code ( dùng để  nâng cấp ứng dụng trong quá trình chạy mà không cần phải dừng hay ngắt ứng dụng) và cho một số công cụ liên quan tới 
+		xử lí release của các phiên bản. bạn cũng có thể  xác đinh giá trih cho <code>vsn</code> bằng cách thêm <code>-vsn(VersionNumber)</code> vào trong module đó.</p>
 </div>
 
 <img class="right explanation" src="static/img/circular-dependencies.png" width="237" height="255" alt="A small graph with three nodes: Mom, Dad and You. Mom and Dad are parents of You, and You is brother of Dad. Text under: 'If circular dependencies are digusting in real life, maybe they should be disgusting in your programs too'" title="Seems clear enough."/>

@@ -25,7 +25,8 @@
 			</div> <!-- header -->
 			<div id="menu">
 				<ul>
-					<li><a href="content.html" title="Home">Home</a></li>
+                    <li><a href="content.html" title="Home">Home</a></li>
+                    <li><a href="blogs/index.html" title="blog">Blog</a></li>
 					<li><a href="faq.html" title="Frequently Asked Questions">FAQ</a></li>
 					<li><a href="rss" title="Latest News">RSS</a></li>
 					<li><a href="static/erlang/learn-you-some-erlang.zip" title="Source Code">Code</a></li>
@@ -35,11 +36,14 @@
             <div class="noscript"><noscript>Hey there, it appears your Javascript is disabled. That's fine, the site works without it. However, you might prefer reading it with syntax highlighting, which requires Javascript!</noscript></div>
 <h2>Syntax in functions</h2>
 
-<h3><a class="section" name="pattern-matching">Pattern Matching</a></h3>
+<h3><a class="section" name="pattern-matching">Khớp mẫu (Pattern Matching)</a></h3>
 
 <img class="right" src="static/img/snail.png" width="222" height="84" alt="A snail greeting you." title="The following code doesn't care about snails :(" />
 
-<p>Now that we have the ability to store and compile our code, we can begin to write more advanced functions. Those that we have written so far were extremely simple and a bit underwhelming. We'll get to more interesting stuff. The first function we'll write will need to greet someone differently according to gender. In most languages you would need to write something similar to this:</p>
+<p>Trong chuơng trước bạn đã tìm hiểu về  module và học cách lưu và biên dịch đoan mã của bạn cũng như viết một module đơn giản cùng định nghĩa một số  hàm cơ bản. 
+   Trong chương này chúng ta sẽ bắt đàu đi sâu hơn về hàm và học cách viết các hàm phức tạp hơn.
+   . Các hàm mà chúng ta đã viết trong chương trước khá đơn giả và có đôi chút thất vọng. do đó chúng ta sẽ bắt đầu những điều thú vị hơn về  chúng trong chương này.
+   đầu tiên chúng ta sẽ viết một hàm đưa ra một lời chào dựa trên giới tính của người đó. trong hầu hêt các ngôn ngữ chúng sẽ viết như sau:</p>
 
 <pre class="brush:erl">
 function greet(Gender,Name)
@@ -52,7 +56,9 @@ function greet(Gender,Name)
 end
 </pre>
 
-<p>With pattern-matching, Erlang saves you a whole lot of boilerplate code. A similar function in Erlang would look like this:</p>
+<p>đơn giản chúng ra sử  dụng mệnh lệnh điều kiện để kiểm tra giới tính và đưa ra thông báo dựa trên điều kiện đó, vậy trong Erlang làm thế  nào ?
+   Erlang cũng hỗ trợ kiểu điều kiện nhưng chúng ra sẽ không dùng , thay vào đó hãy nhớ lại , những chương trước đó chúng ta đã học về  khớp mẫu, 
+   vậy hãy sử dụng nó trong Erlang, nó sẽ giúp bạn tiết kiệm được kha khá đoạn mã đấy. hàm này sẽ được viết trong Erlang như sau:</p>
 
 <pre class="brush:erl">
 greet(male, Name) -&gt;
@@ -63,7 +69,10 @@ greet(_, Name) -&gt;
     io:format("Hello, ~s!", [Name]).
 </pre>
 
-<p>I'll admit that the printing function is a lot uglier in Erlang than in many other languages, but that is not the point. The main difference here is that we used pattern matching to define both what parts of a function should be used and bind the values we need at the same time. There was no need to first bind the values and then compare them! So instead of:</p>
+<p>Phải thừa nhận rằng hàm in ra màn hình của Erlang trông thật khó chịu, tồi khi so sánh với các ngôn ngữ khác, nhưng đó không phải là vấn đề ,
+   sự khác biệt chính ở đây chính là việc chúng ra sử dụng khớp mẫu đề  xác định thành phần của một hàm được sử  dụng và bind giá trị mà chúng ta cần ở cùng một thời điểm  
+    The main difference here is that we used pattern matching to define both what parts of a function should be used and bind the values we need at the same time
+    . Và chúng ta sẽ không cần phải gán giá trị đó với biến và so sánh chúng, vi thế thay vì :</p>
 
 <pre class="brush:erl">
 function(Args)
@@ -75,7 +84,7 @@ function(Args)
       Expression
 </pre>
 
-<p>We write:</p>
+<p>sẽ viết thánh:</p>
 
 <pre class="brush:erl">
 function(X) -&gt;
@@ -86,34 +95,46 @@ function(_) -&gt;
   Expression.
 </pre>
 
-<p>in order to get similar results, but in a much more declarative style. Each of these <code>function</code> declarations is called a <em>function clause</em>. Function clauses must be separated by semicolons (<code>;</code>) and together form a <em>function declaration</em>. A function declaration counts as one larger statement, and it's why the final function clause ends with a period.  It's a "funny" use of tokens to determine workflow, but you'll get used to it. At least you'd better hope so because there's no way out of it!</p>
+<p>kết quar đạt được sẹ tương tự , nhưng cách khai báo này tốt hơn nhiều. 
+    mỗi khai báo hàm <code>function</code> trên được gọi là một <em>function clause</em>. 
+    các 'function clauses' phải phân tách nhau bởi đấu chấm phẩy (<code>;</code>) 
+    và một môtk kiểu mẫu  <em>function declaration</em>. 
+    một A function declaration sẽ được coi như một biểu thức lớn ( một tập các biểu thức ), đó là lí do vì sao function clause cuối cùng kết thúc bằng dấu <code>.</code>.  
+    Điều này thật "lạ" khi sử dụng tokens để  xác định luồng công việc, nhưng bạn sẽ sớm cảm thấy quen thuộc thôi. 
+    hi vọng là bạn sẽ sớm cảm thấy quen bởi vì không có cách nào khác!</p>
 
 <div class="note">
-	<p><strong>Note:</strong> <code>io:format</code>'s formatting is done with the help of tokens being replaced in a string. The character used to denote a token is the tilde (<code>~</code>). Some tokens are built-in such as <code>~n</code>, which will be changed to a line-break. Most other tokens denote a way to format data. The function call <code>io:format("~s!~n",["Hello"]).</code> includes the token <code>~s</code>, which accepts strings and bitstrings as arguments, and <code>~n</code>. The final output message would thus be <code>"Hello!\n"</code>. Another widely used token is <code>~p</code>, which will print an Erlang term in a nice way (adding in indentation and everything).</p>
+	<p><strong>Chú ý:</strong> hàm <code>io:format</code>'s formatting is done with the help of tokens being replaced in a string. The character used to denote a token is the tilde (<code>~</code>). Some tokens are built-in such as <code>~n</code>, which will be changed to a line-break. Most other tokens denote a way to format data. The function call <code>io:format("~s!~n",["Hello"]).</code> includes the token <code>~s</code>, which accepts strings and bitstrings as arguments, and <code>~n</code>. The final output message would thus be <code>"Hello!\n"</code>. Another widely used token is <code>~p</code>, which will print an Erlang term in a nice way (adding in indentation and everything).</p>
 	<p>The <code>io:format</code> function will be seen in more details in later chapters dealing with input/output with more depth, but in the meantime you can try the following calls to see what they do:  <code>io:format("~s~n",[&lt;&lt;"Hello"&gt;&gt;])</code>, <code>io:format("~p~n",[&lt;&lt;"Hello"&gt;&gt;])</code>, <code>io:format("~~~n")</code>, <code>io:format("~f~n", [4.0])</code>, <code>io:format("~30f~n", [4.0])</code>. They're a small part of all that's possible and all in all they look a bit like <code>printf</code> in many other languages. If you can't wait until the chapter about I/O, you can read the <a class="docs" href="http://erlang.org/doc/man/io.html#format-3" title="straight from the horse's mouth">online documentation</a> to know more.</p>
 </div>
 
 
-<p>Pattern matching in functions can get more complex and powerful than that. As you may or may not remember from a few chapters ago, we can pattern match on lists to get the heads and tails. Let's do this! Start a new module called <code><a class="source" href="static/erlang/functions.erl.html" title="complete module!">functions</a></code> in which we'll write a bunch of functions to explore many pattern matching avenues available to us:</p>
+<p>sủ dung khớp mẫu trong hàm có nhiều hình thức phức tạp và mạnh hơn. có thể  bạn quên hoặc nhớ trong các chương trước 
+    , chúng ta có thẻ sử dung khớp mẫu cùng với cấu trúc dữ liệu danh sách để  lấy ra phần đàu ( head ) và phần đuôi ( tail )
+    của một danh sách. Giờ chúng ta tiếp tục làm vậy nhưng thay vì viết trong shell, chúng ta sẽ viết thành một module , nào hãy tạo và đặt tên module đó là 
+    <code><a class="source" href="static/erlang/functions.erl.html" title="complete module!">functions</a></code> 
+    , trong module này chúng ta sẽ đinh nghĩa một số hàm để  tìm hiểu sâu hơn về  cách sử dụng khóp mẫu:</p>
 
 <pre class="brush:erl">
 -module(functions).
 -compile(export_all). %% replace with -export() later, for God's sake!
 </pre>
 
-<p>The first function we'll write is <code>head/1</code>, acting exactly like <code>erlang:hd/1</code> which takes a list as an argument and returns its first element. It'll be done with the help of the cons operator (<code>|</code>):</p>
+<p>hàm đầu tiền mà chúng ra sẽ viết là hàm <code>head/1</code>, nó tương tự hàm <code>erlang:hd/1</code> , hàm này nhận một đối số  và yêu cầu đầu vào là một danh sách 
+  và giá trị trả về  là phần tư đầu tiên trong danh sách đó. chúng ta sẽ hoàn thành với sự giúp đỡ của toán tử  cons (<code>|</code>):</p>
 
 <pre class="brush:erl">
 head([H|_]) -&gt; H.
 </pre>
 
-<p>If you type <code>functions:head([1,2,3,4]).</code> in the shell (once the module is compiled), you can expect the value '1' to be given back to you. Consequently, to get the second element of a list you would create the function:</p>
+<p>Nào hãy biên dịch code và gọi hàm đó trong shell, hãy gõ <code>functions:head([1,2,3,4]).</code>, 
+   bạn sẽ nhận được giá trị là '1'. Tiếp tục , để  nhận được phần từ thứ hai trong danh sách bạn cần phải tạo một hàm:</p>
 
 <pre class="brush:erl">
 second([_,X|_]) -&gt; X.
 </pre>
 
-<p>The list will just be deconstructed by Erlang in order to be pattern matched. Try it in the shell!</p>
+<p>dánh sách sẽ được phân tích bởi Erlang để  sao cho nó khớp với mẫu. Nào hãy biên dịch module và gõ thử  trong shell!</p>
 
 <pre class="brush:eshell">
 1&gt; c(functions).
@@ -124,7 +145,13 @@ second([_,X|_]) -&gt; X.
 2
 </pre>
 
-<p>This could be repeated for lists as long as you want, although it would be impractical to do it up to thousands of values. This can be fixed by writing recursive functions, which we'll see how to do later on. For now, let's concentrate on more pattern matching. The concept of free and bound variables we discussed in <a class="chapter local" href="starting-out-for-real.html#invariable-variables" title="Invariable Variables">Starting Out (for real)</a> still holds true for functions: we can then compare and know if two parameters passed to a function are the same or not. For this, we'll create a function <code>same/2</code> that takes two arguments and tells if they're identical:</p>
+<p>Bạn có thể  lặp lại với các danh sách bao nhiêu bạn muốn, nhưng sẽ không thực tế  nếu làm vậy với hàng nghìn phần, 
+    . vì vậy bạn có thể  sửa lại bằng cách thay thế  bằng một hàm đệ quy, và chúng ta sẽ tìm hiểu cách viết này ở các chương sau 
+    . Còn giờ, hãy tập trung hơn vào khớp mẫu let's. 
+    Khái nhiệm về biến tự do và ràng buộc chúng ta đã thảo luận trong chương 
+    <a class="chapter local" href="starting-out-for-real.html#invariable-variables" title="Invariable Variables">Starting Out (for real)</a> 
+    vẫn đúng khi áp dụng với hàm: chúng ta có thể  so sánh nếu biết hai tham số đưa vào một hàm có khớp hay không 
+    . Đối với vd trên, ta có thể  tạo mới một hàm gọi là <code>same/2</code> , hàm này nhận hai tham só truyền vào và trả lại giá trị nếu chúng khớp với nhau:</p>
 
 <pre class="brush:erl">
 same(X,X) -&gt;
@@ -132,13 +159,35 @@ same(X,X) -&gt;
 same(_,_) -&gt;
     false.
 </pre>
-<p>And it's that simple. Before explaining how the function works, we'll go over the concept of bound and unbound variables again, just in case:</p>
+<p>thật đơn giản. trước khi đi sâu vào giải thích chi tiêý hàm <code>same</code> hoạt động như thế  
+   nào, chúng ta hay nhớ lại khái niệm về  biến ràng buộc và không ràng buộcsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss ( bound and unbound variable ), hãy xem ví sau:</p>
 
-<img class="explanation" src="static/img/musical-chair.png" width="357" height="281" alt="A game of musical chair with 3 chairs: two occupied by a cat and a snake, and one free. The cat and snake are labelled 'values', the chairs on which they sit are labelled 'bound', and the free chair is labelled 'unbound'" />
+<img class="explanation" src="static/img/musical-chair.png" width="357" height="281" alt="A game of musical chair with 3 chairs: 
+ two occupied by a cat and a snake, 
+ and one free. 
+ The cat and snake are labelled 'values', 
+ the chairs on which they sit are labelled 'bound', 
+ and the free chair is labelled 'unbound'" />
 
-<p>If this game of musical chairs was Erlang, you'd want to sit on the empty chair. Sitting on one already occupied wouldn't end well! Joking aside, unbound variables are variables without any values attached to them (like our empty chair). Binding a variable is simply attaching a value to an unbound variable. In the case of Erlang, when you want to assign a value to a variable that is already bound, an error occurs <em>unless the new value is the same as the old one</em>. Let's imagine our snake on the right: if another snake comes around, it won't really change much to the game. You'll just have more angry snakes. If a different animal comes to sit on the chair (a honey badger, for example), things will go bad. Same values for a bound variable are fine, different ones are a bad idea. You can go back to the subchapter about <a class="chapter" href="starting-out-for-real.html#invariable-variables" title="Starting Out (for real)">Invariable Variables</a> if this concept is not clear to you.</p>
+<p>Nếu ta coi trò chơi này Erlang, và bạn muốn ngồi vào chiếc ghế  trống còn lại. 
+    và nhưng chiếc ghế  đã được ngồi rồi thì không thể ngồi vào được nữa! Joking aside, 
+    biên ràng buộc ( unbound variables ) laf những biến không chưa giá trị hay chưa được liên kết với bất kỳ giá trị nào ( vd như chiếc ghế  còn trống kia) 
+    . binding một biến chỉ đơn giản là việc ta liên kêt một giá trị với một biến không ràng buộc ( unbound variable ). 
+    Trong trường hợp của, khi bạn muốn gán một giá trị với một biến đã được ràng buộc rồi, một thông báo lỗi sẽ xảy ra <em>unless the new value is the same as the old one</em>.
+    Tiếp đó hãy nhìn vào con rắn: giờ nếu có một con rắn mới xuất hiện, trò chơi sẽ không ảnh hưởng nhiều tới trò chơi, thay vào đó cùng lắm bạn chỉ có nhiều con rắn hơn.
+    nhưng nếu một con vật khác xuất hiên tới ngồi ( vd một con ong mật )   
+    mọi việc sẽ trở lên tồi tề . 
+    tương tự với một biên ràng buộc lên cùng một giá trị, nếu khác giá trị thật sự tồi tệ. bạn có thể  xem lại chương <a class="chapter" 
+    href="starting-out-for-real.html#invariable-variables" title="Starting Out (for real)">Invariable Variables</a> nếu vd trên chưa làm bạn hiểu rõ.</p>
 
-<p>Back to our code: what happens when you call <code>same(a,a)</code> is that the first <var>X</var> is seen as unbound: it automatically takes the value <code>a</code>. Then when Erlang goes over to the second argument, it sees <var>X</var> is already bound. It then compares it to the <code>a</code> passed as the second argument and looks to see if it matches. The pattern matching succeeds and the function returns <code>true</code>. If the two values aren't the same, this will fail and go to the second function clause, which doesn't care about its arguments (when you're the last to choose, you can't be picky!) and will instead return false. Note that this function can effectively take any kind of argument whatsoever! It works for any type of data, not just lists or single variables. As a rather advanced example, the following function prints a date, but only if it is formatted correctly:</p>
+<p>Quay trở lại vd code: điều gì sẽ xảy ra sau khi bạn gọi <code>same(a,a)</code>, đầu tiên chúng ta nhìn thấy biến <var>X</var> chưa được gán, liên kết bất kỳ giá tri nào 
+   : và nó sẽ tự động khớp với giá trị <code>a</code>. Sau đó Erlang sẽ tiếp tục tìm tới đối số thứ hai, lúc này <var>X</var> đã là một biến đã ràng buộc và được gán giá trị 
+   . nó sẽ so sánh vơi giá trị <code>a</code> ở tham số  thứ hai. Nếu nó khớp , phép khớp mẫu chính xác và hàm sẽ trả về  giá trị <code>true</code>.
+   Ngược lại nếu hai giá trị không khớp, nó sẽ di chuyển hàm thứ hai ( second function clause ), tại hàm này nó không quan tâm về 
+   tham số  truyền vào ( khi không còn lựa chọn nào nữa hay chỉ còn một lựa chọn cuối cùng!) 
+   và trả về  giá trị <code>false</code>. chú ý hàm này có hiệu quả đối với bất kỳ loại tham số nào! 
+   nó hoạt động với bất kỳ kiểu dữ liệu nào ( không chỉ với mỗi kiểu danh sách hay biên đơn). dưới đây là một vd nâng cao 
+   hàm sau sẽ hiển thị theo định dạng ngày:</p>
 
 <pre class="brush:erl">
 valid_time({Date = {Y,M,D}, Time = {H,Min,S}}) -&gt;
@@ -148,7 +197,8 @@ valid_time(_) -&gt;
     io:format("Stop feeding me wrong data!~n").
 </pre>
 
-<p>Note that it is possible to use the <code>=</code> operator in the function head, allowing us to match both the content inside a tuple (<code>{Y,M,D}</code>) and the tuple as a whole (<var>Date</var>). The function can be tested the following way:</p>
+<p>Một điều lưu ý là bạn cũng có thể  sử  dụng toán tử <code>=</code>, nó cho phép bạn khớp nội dùng tơi một bộ (<code>{Y,M,D}</code>) 
+    và biến (<var>Date</var>) gán tới bộ đó. Hãy mở shell và thử  kiểm tra cách hoạt động của hàm trên:</p>
 
 <pre class="brush:eshell">
 4&gt; c(functions).
@@ -162,14 +212,23 @@ Stop feeding me wrong data!
 ok
 </pre>
 
-<p>There is a problem though! This function could take anything for values, even text or atoms, as long as the tuples are of the form <code>{{A,B,C}, {D,E,F}}</code>. This denotes one of the limits of pattern matching: it can either specify really precise values such as a known number of atom, or abstract values such as the head|tail of a list, a tuple of <var>N</var> elements, or anything (<code>_</code> and unbound variables), etc. To solve this problem, we use guards.</p>
+<p>Hm có một vấn đề  ở đây! hàm trên chấp nhận bất kỳ giá trị, thậm chú là cả text hay atom nhưng chỉ có tham số  truyền vào là bộ theo cấu trúc <code>{{A,B,C}, {D,E,F}}</code>
+    là hợp lệ,
+    . Đấy là một trong những hạn chế  của khớp mẫu: 
+    Tuy nhiên để  có thể xác định chính xác các giá trị như atom, giá tri trừu tượng như head|tail trong danh sách, một bộ gồm <var>N</var> phần tử ,
+    hay bất cứ thứ gì với ( <code>_</code> và biến không ràng buộc ), etc. Chúng ta sẽ sử  dụng chốt canh ( guards ).</p>
 
 
 <h3><a class="section" name="guards-guards">Guards, Guards!</a></h3>
 
 <img class="right" src="static/img/driving-age.png" width="199" height="160" alt="A baby driving a car" title="Baby on board // How I've adored // That sign on my car's windowpane... (&copy; The Simpsons)" />
 
-<p>Guards are additional clauses that can go in a function's head to make pattern matching more expressive. As mentioned above, pattern matching is somewhat limited as it cannot express things like a range of value or certain types of data. A concept we couldn't represent is counting: is this 12 years old basketball player too short to play with the pros? Is this distance too long to walk on your hands? Are you too old or too young to drive a car? You couldn't answer these with simple pattern matching. I mean, you could represent the driving question such as:</p>
+<p>Chốt canh là các mệnh đề  được dùng để  bổ  sung đầu một hàm, nó kết hợp với khớp mẫu để  tăng khả năng diễn đạt. 
+   như đã đề cập phía trên , khớp mẫu có một hạn chế  là không thể  diễn đạt mọi thứ đc vd như đội rộng của một giá trị hay kiểu dữ liệu nhất định.
+   vd chúng ta không thể  nào diễn đat được: một cậu bé 12 tuổi là quá thấp khi chơi bóng rổ  với cầu thủ chuyên nghiệp hay ko ?
+   khoảng cách này liệu có thực sự quá dài để  đi trong lòng bàn tàu của bạn hay ko ?
+   bạn quá giá hay không đủ tuổi để  điều khiển xe ô tô hay không ?
+   tât cả những cậu hỏi trên bạn không thể  trả lời được nếu chỉ dùng với khớp mẫu hay nếu có thì nó cũng rất phức tạp. vd về độ tuổi lái xe bạn có thể  viết như sau:</p>
 
 <pre class="brush:erl">
 old_enough(0) -&gt; false;
@@ -181,14 +240,22 @@ old_enough(15) -&gt; false;
 old_enough(_) -&gt; true.
 </pre>
 
-<p>But it would be incredibly impractical. You can do it if you want, but you'll be alone to work on your code forever. If you want to eventually make friends, start a new <code><a class="source" href="static/erlang/guards.erl.html" title="guards module">guards</a></code> module so we can type in the "correct" solution to the driving question:</p>
+<p>vd trên, ta phải lặp lại một hàm quá nhiều và nó thực sự tồi tệ, tất nhiễn bạn vẫn có thể  làm nó,
+   nhưng bạn sẽ phải lặp đi lặp lại những dòng code đó một mình một cách tẻ nhạt.
+   Nếu bạn thực sự muốn kết bạn, hãy bắt đầu cùng với module chốt canh <code><a class="source" href="static/erlang/guards.erl.html" title="guards module">guards</a></code> 
+   và chúng ta có giải quyết một cách ngắn gọn cậu hỏi đó bằng:</p>
 
 <pre class="brush:erl">
 old_enough(X) when X &gt;= 16 -&gt; true;
 old_enough(_) -&gt; false.
 </pre>
 
-<p>And you're done! As you can see, this is much shorter and cleaner. Note that a basic rule for guard expression is they must return <code>true</code> to succeed. The guard will fail if it returns <code>false</code> or if it throws an exception. Suppose we now forbid people who are over 104 years old to drive. Our valid ages for drivers is now from 16 years old up to 104 years old. We need to take care of that, but how? Let's just add a second guard clause:</p>
+<p>Đó là những gì mà bạn phải làm! và như bạn thấy cách làm này gọn và ngắn hơn rất nhièu. 
+   chủ ý là khi sủ dụng biểu thức chôt canh giá bên cạnh hàm trị trả về của một hàm đó luôn quy ước trả về  <code>true</code>. 
+   nếu giá trị trả về  là <code>false</code> hoặc một ngoại lệ sẽ được ném ra thì chốt canh sẽ không hoạt động. 
+   Giả sử chúng ta ko cho phép người già quá 104 lái xe.
+   Khi đó giá trị hợp lệ là từ 16 tới 104 tuổi. Làm thế  nào để chúng ta có thể  kiểm tra điều kiên này ? 
+   Điều này khá đơn giản, chỉ cần thêm một biẻu thức chốt canh thứ hai vào:</p>
 
 <pre class="brush:erl">
 right_age(X) when X &gt;= 16, X =&lt; 104 -&gt;
@@ -197,7 +264,9 @@ right_age(_) -&gt;
     false.
 </pre>
 
-<p>The comma (<code>,</code>) acts in a similar manner to the operator <code>andalso</code> and the semicolon (<code>;</code>) acts a bit like <code>orelse</code> (described in "<a class="chapter local" href="starting-out-for-real.html#bool-and-compare">Starting Out (for real)</a>"). Both guard expressions need to succeed for the whole guard to pass. We could also represent the function the opposite way:</p>
+<p>đấy phẩy (<code>,</code>) ở đầy giống với toán tử  <code>andalso</code> và đấu hay chấm (<code>;</code>) giống với toán tử  <code>orelse</code> 
+    (bạn có thể  xem lại cách hoạt động của hay toán tử ở chương "<a class="chapter local" href="starting-out-for-real.html#bool-and-compare">Starting Out (for real)</a>"). 
+    biểu thức chốt canh sẽ thành khi thỏa mãn cả hai điều kiện chốt canh đó. hay chúng ta cũng có thể  biểu diễn tinh chất của hàm này theo hướng ngược lại:</p>
 
 <pre class="brush:erl">
 wrong_age(X) when X &lt; 16; X &gt; 104 -&gt;
@@ -208,9 +277,21 @@ wrong_age(_) -&gt;
 
 <img class="left" src="static/img/guard.png" width="135" height="230" alt="Guard" />
 
-<p>And we get correct results from that too. Test it if you want (you should always test stuff!). In guard expressions, the semi-colon (<code>;</code>) acts like the <code>orelse</code> operator: if the first guard fails, it then tries the second, and then the next one, until either one guard succeeds or they all fail.</p>
+<p>Kết quả nhận được sẽ tương tự hàm 'right_age'. Bạn có thể  kiểm tra nếu bạn muốn. 
+    Trong các biểu thức chôt canh, dấu (<code>;</code>) có tác dụng giống toán tử <code>orelse</code> : nếu điều kiện chốt canh đầu tiên sai  
+    , ngay sau đó nó sẽ chuyển qua kiểm tra điều kiện chốt canh thứ hai, và cứ thê tiếp tục cho tới khi có bất kỳ điều kiện nào đúng 
+    hay tất cả đều sai.</p>
 
-<p>You can use a few more functions than comparisons and boolean evaluation in functions, including math operations (<code>A*B/C &gt;= 0</code>) and functions about data types, such as <code>is_integer/1</code>, <code>is_atom/1</code>, etc. (We'll get back on them in the following chapter). One negative point about guards is that they will not accept user-defined functions because of side effects. Erlang is not a purely functional programming language (like <a class="external" href="http://learnyouahaskell.com/" title="PURE! PURE! OH GOD SO PURELY FUNCTIONAL!">Haskell</a> is) because it relies on side effects a lot: you can do I/O, send messages between actors or throw errors as you want and when you want. There is no trivial way to determine if a function you would use in a guard would or wouldn't print text or catch important errors every time it is tested over many function clauses. So instead, Erlang just doesn't trust you (and it may be right to do so!)</p>
+<p>Bên cạnh đó bạn cũng có thể  sử  dụng nhiều hơn một hàm để  so sách và kiểm tra boolean trong hàm, bao gồm các biểu thức toán học
+   (<code>A*B/C &gt;= 0</code>) , các hàm về  kiểm tra kiểu dư liệu như <code>is_integer/1</code>, <code>is_atom/1</code>, etc. 
+   (chúng ta sẽ đi sâu hơn trong các chương tiếp theo ). 
+   một điều One negative point about guards is that they will not accept user-defined functions because of side effects. 
+   Erlang không phải là ngôn ngũ lập trình hàm thuần tùy (so với <a class="external" href="http://learnyouahaskell.com/" title="PURE! PURE! OH GOD SO PURELY FUNCTIONAL!">Haskell</a> ) 
+   bởi vì nó có khá nhiều side side effects ( đây là điều không được phép trong hàm thuần túy): vd bạn có sử  dụng các thao tác nhập xuất ( I/O ), 
+   trao đổi các thông điệp qua lại giữa các actor và đưa ra lỗi như bạn muôn ở mọi lúc , mọi nơi. 
+   Rõ ràng không có cách nào để  đảm bảo xác định một hàm sử  dụng chốt canh 
+   sẽ hay không in ra text hay bắt các lỗi quan trọng mỗi khi nó được kiềm tra qua nhiều function clauses. 
+   do đó thay vì So instead, Erlang just doesn't trust you (and it may be right to do so!)</p>
 
 <p>That being said, you should be good enough to understand the basic syntax of guards to understand them when you encounter them.</p>
 

@@ -293,19 +293,24 @@ wrong_age(_) -&gt;
    sẽ hay không in ra text hay bắt các lỗi quan trọng mỗi khi nó được kiềm tra qua nhiều function clauses. 
    do đó thay vì So instead, Erlang just doesn't trust you (and it may be right to do so!)</p>
 
-<p>That being said, you should be good enough to understand the basic syntax of guards to understand them when you encounter them.</p>
+<p>Thành thực mà nói, bạn lên hiểu rõ cú pháp cơ bản của chốt canh để  sao không bị bối rối khi gặp chúng.</p>
 
 <div class="note">
-    <p><strong>Note:</strong> I've compared <code>,</code> and <code>;</code> in guards to the operators <code>andalso</code> and <code>orelse</code>. They're not exactly the same, though. The former pair will catch exceptions as they happen while the latter won't. What this means is that if there is an error thrown in the first part of the guard <code>X &gt;= N; N &gt;= 0</code>, the second part can still be evaluated and the guard might succeed; if an error was thrown in the first part of <code>X &gt;= N orelse N &gt;= 0</code>, the second part will also be skipped and the whole guard will fail.</p>
+    <p><strong>Chú ý:</strong> ở phàn trên tôi đã so sánh <code>,</code> và <code>;</code> trong chốt canh với các toán tử  in <code>andalso</code> và <code>orelse</code>. 
+        Mặc dù vậy chức nằng của chúng không chính xác giống nhau. The former pair will catch exceptions as they happen while the latter won't. What this means is that if there is an error thrown in the first part of the guard <code>X &gt;= N; N &gt;= 0</code>, the second part can still be evaluated and the guard might succeed; if an error was thrown in the first part of <code>X &gt;= N orelse N &gt;= 0</code>, the second part will also be skipped and the whole guard will fail.</p>
 
     <p>However (there is always a 'however'), only <code>andalso</code> and <code>orelse</code> can be nested inside guards. This means <code>(A orelse B) andalso C</code> is a valid guard, while <code>(A; B), C</code> is not. Given their different use, the best strategy is often to mix them as necessary.</p>
 </div>
 
 <h3><a class="section" name="what-the-if">What the If!?</a></h3>
 
-<p><code>If</code>s act like guards and share guards' syntax, but outside of a function clause's head. In fact, the <code>if</code> clauses are called <em>Guard Patterns</em>. Erlang's <code>if</code>s are different from the <code>if</code>s you'll ever encounter in most other languages; compared to them they're weird creatures that might have been more accepted had they had a different name. When entering Erlang's country, you should leave all you know about <code>if</code>s at the door. Take a seat because we're going for a ride.</p>
+<p><code>If</code> có chức nằng và cú pháp tươn tự như chôt canh, but outside of a function clause's head. 
+    thực tế , <code>if</code> còn được gọi tên là <em>Guard Patterns</em>. <code>if</code> trong Erlang thì khác so với biểu thức <code>if</code> mà bạn đã học trong 
+    các hầu hết ngôn ngữ khác; compared to them they're weird creatures that might have been more accepted had they had a different name. 
+    Khi bạn gia nhập Erlang bạn lên quên hết tất cả When entering Erlang's country, you should leave all you know about <code>if</code>s at the door. 
+    Take a seat because we're going for a ride.</p>
 
-<p>To see how similar to guards the if expression is, look at the following examples:</p>
+<p>Để nhin thấy sự tương đồng giữa chốt canh và biểu thức ìf , hãy nhìn vào ví dụ sau đây:</p>
 
 <pre class="brush:erl">
 -module(what_the_if).
@@ -324,7 +329,8 @@ heh_fine() -&gt;
     end.
 </pre>
 
-<p>Save this as <code><a class="source" href="static/erlang/what_the_if.erl.html" title="what_the_if module">what_the_if.erl</a></code> and let's try it:</p>
+<p>Hãy lưu đoạn code trên vào một file đặt tên là <code><a class="source" href="static/erlang/what_the_if.erl.html" title="what_the_if module">what_the_if.erl</a></code> 
+    và hay thử  chạy nó:</p>
 
 <pre class="brush:eshell">
 1&gt; c(what_the_if).
@@ -338,7 +344,11 @@ heh_fine() -&gt;
 
 <img class="right" src="static/img/labyrinth.png" width="163" height="143" alt="Labyrinth with no exit" title="no exit branch possible! oh no!" />
 
-<p>Uh oh! the compiler is warning us that no clause from the if on line 12 (<code>1 =:= 2, 1 =:= 1</code>) will ever match because its only guard evaluates to <code>false</code>. Remember, in Erlang, everything has to return something, and <code>if</code> expressions are no exception to the rule. As such, when Erlang can't find a way to have a guard succeed, it will crash: it cannot <em>not</em> return something. As such, we need to add a catch-all branch that will always succeed no matter what. In most languages, this would be called an 'else'. In Erlang, we use 'true' (this explains why the VM has thrown "no true branch found" when it got mad):</p>
+<p>Uh oh! bộ biện dịch ngay lập tức cảnh báo chúng ta rằng không có biểu thức điều kiện 'if' ở dòng 12
+   sex khớp bởi vì chỉ có chốt canh 
+
+    the compiler is warning us that no clause from the if on line 12 (<code>1 =:= 2, 1 =:= 1</code>) will ever match because its only guard evaluates to <code>false</code>. 
+    Remember, in Erlang, everything has to return something, and <code>if</code> expressions are no exception to the rule. As such, when Erlang can't find a way to have a guard succeed, it will crash: it cannot <em>not</em> return something. As such, we need to add a catch-all branch that will always succeed no matter what. In most languages, this would be called an 'else'. In Erlang, we use 'true' (this explains why the VM has thrown "no true branch found" when it got mad):</p>
 
 <pre class="brush:erl">
 oh_god(N) -&gt;
@@ -347,7 +357,8 @@ oh_god(N) -&gt;
     end.
 </pre>
 
-<p>And now if we test this new function (the old one will keep spitting warnings, ignore them or take them as a reminder of what not to do):</p>
+<p>chúng ta hãy thử  kiểm tra xem hàm mới được cập nhật lại xem ( khi bạn biên dịch và gọi module, nếu bạn vẫn đặt hàm 'heh_fine' bên trong file thì bộ biên dịch vẫn đưa ra cảnh báo, 
+    tuy nhiên đừng bận tậm, hãy bỏ qua cảnh báo đó đi , thay vào đó mục đích hiện tại của chúng ta là kiểm tra hàm mới viết này):</p>
 
 <pre class="brush:eshell">
 3&gt; c(what_the_if).
@@ -360,7 +371,8 @@ might_succeed
 always_does
 </pre>
 
-<p>Here's another function showing how to use many guards in an <code>if</code> expression. The function also illustrates how any expression must return something: <var>Talk</var> has the result of the <code>if</code> expression bound to it, and is then concatenated in a string, inside a tuple. When reading the code, it's easy to see how the lack of a <code>true</code> branch would mess things up, considering Erlang has no such thing as a null value (ie.: Lisp's NIL, C's NULL, Python's None, etc):</p>
+<p>Một cách khác để  sử  nhièu biểu thức chôt canh cùng với biẻu thức <code>if</code>. 
+   The function also illustrates how any expression must return something: <var>Talk</var> has the result of the <code>if</code> expression bound to it, and is then concatenated in a string, inside a tuple. When reading the code, it's easy to see how the lack of a <code>true</code> branch would mess things up, considering Erlang has no such thing as a null value (ie.: Lisp's NIL, C's NULL, Python's None, etc):</p>
 
 <pre class="brush:erl">
 %% note, this one would be better as a pattern match in function heads!
@@ -388,10 +400,15 @@ help_me(Animal) -&gt;
 {"it hurts!","says fgdadfgna!"}
 </pre>
 
-<p>You might be one of the many Erlang programmers wondering why 'true' was taken over 'else' as an atom to control flow; after all, it's much more familiar. Richard O'Keefe gave the following answer on the Erlang mailing lists. I'm quoting it directly because I couldn't have put it better:</p>
+<p>có thể  bạn giống như một số lập trình viên Erlang khác thắc mắc là tạo sao 'true' thì được ưu tiên hơn 'else' 
+   và coi như một atom để  điều khiển luông; Tóm lại, 'else' nhin vẫn thân thiện hơn. 
+   Richard O'Keefe đã giải đáp trong Erlang mailing lists: ( tôi sẽ trích dẫn lại câu trả lời bởi vì tóm tắt nó ):</p>
 
 <blockquote title="From the Erlang mailing lists: http://erlang.org/pipermail/erlang-questions/2009-January/041228.html">
-	<p>It may be more FAMILIAR, but that doesn't mean 'else' is a good thing.  I know that writing ';&nbsp;true&nbsp;-&gt;' is a very easy way to get 'else' in Erlang, but we have a couple of decades of psychology-of-programming results to show that it's a bad idea. I have started to replace:</p>
+	<p>It may be more FAMILIAR, but that doesn't mean 'else' is a good thing.  
+        I know that writing ';&nbsp;true&nbsp;-&gt;' 
+        is a very easy way to get 'else' in Erlang, but we have a couple of decades of psychology-of-programming results to show that it's a bad idea. 
+        I have started to replace:</p>
 	<pre>
                           by
 	if X &gt; Y -&gt; a()		if X &gt; Y  -&gt; a()
@@ -406,9 +423,12 @@ help_me(Animal) -&gt;
 	<p>which I find mildly annoying when _writing_ the code but enormously helpful when _reading_ it.</p>
 </blockquote>
 
-<p>'Else' or 'true' branches should be "avoided" altogether: <code>if</code>s are usually easier to read when you cover all logical ends rather than relying on a <em>"catch all"</em> clause.</p>
+<p>'Else' hay 'true' tránh lên "tránh" đi cùng nhau: <code>if</code> thì thường dễ đọc hơn khi bạn tât các các  
+    are usually easier to read when you cover all logical ends rather than relying on a <em>"catch all"</em> clause.</p>
 
-<p>As mentioned before, there are only a limited set of functions that can be used in guard expressions (we'll see more of them in <a class="chapter" href="types-or-lack-thereof.html#type-conversions" title="Type conversions">Types (or lack thereof)</a>). This is where the real conditional powers of Erlang must be conjured. I present to you: the <code>case</code> expression!</p>
+<p>như đã đề cập trước đó, cố  một số cá hàm mà nếu dùng biểu thức chốt canh sẽ bị hạn chế  (chúng ta sẽ tìm hiểu chi tiết hơn trong
+     <a class="chapter" href="types-or-lack-thereof.html#type-conversions" title="Type conversions">Types (or lack thereof)</a>). 
+    và đó là  This is where the real conditional powers of Erlang must be conjured. tơi sẽ giới thiêu tới bạn: biểu thức <code>case</code>!</p>
 
 <div class="note">
 	<p><strong>Note:</strong> All this horror expressed by the function names in <code>what_the_if.erl</code> is expressed in regards to the <code>if</code> language construct when seen from the perspective of any other languages' <code>if</code>. In Erlang's context, it turns out to be a perfectly logical construct with a confusing name.</p>

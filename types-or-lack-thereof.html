@@ -37,21 +37,55 @@
 
 <h3><a class="section" name="dynamite-strong-typing">Dynamite-strong Typing</a></h3>
 
-<p>As you might have noticed when typing in examples from <a class="local chapter" href="starting-out-for-real.html" title="Starting Out (for real)">Starting Out (for real)</a>, and then modules and functions from <a class="local chapter" href="modules.html" title="Modules">Modules</a> and <a class="chapter local" href="syntax-in-functions.html" title="Syntax in Functions">Syntax in Functions</a>, we never needed to write the type of a variable or the type of a function. When pattern matching, the code we had written didn't have to know what it would be matched against. The tuple <code>{<var>X</var>,<var>Y</var>}</code> could be matched with <code>{atom, 123}</code> as well as <code>{"A string", &lt;&lt;"binary stuff!"&gt;&gt;}</code>, <code>{2.0, ["strings","and",atoms]}</code> or really anything at all.</p>
+<p>Như bạn có thể  nhận thấy rằng nhưng vị dụ từ các chương trước đó <a class="local chapter" href="starting-out-for-real.html" title="Starting Out (for real)">Starting Out (for real)
 
-<p>When it didn't work, an error was thrown in your face, but only once you ran the code. This is because Erlang is <em>dynamically typed</em>: every error is caught at runtime and the compiler won't always yell at you when compiling modules where things may result in failure, like in <a class="chapter local" href="starting-out-for-real.html#bool-and-compare" title="Boolean Algebra &amp; Comparison Operators">Starting Out (for real)</a>'s <code>"llama + 5"</code> example.</p>
+</a>, vd về  modules và hàm từ <a class="local chapter" href="modules.html" title="Modules">Modules</a> và <a class="chapter local" 
+href="syntax-in-functions.html" title="Syntax in Functions">Syntax in Functions</a>,
+chúng ta không bao giờ phải khai báo kiểu dữ liệu của một biến hay của một hàm. 
+Trong khớp mẫu, các đoạn mã của chúng cũng không không phải khai báo để  biết nó lên khớp với kiểu nào. 
+Bộ <code>{<var>X</var>,<var>Y</var>}</code> có thể  khớp cùng với giá trị <code>{atom, 123}</code> hay  <code>{"A string", &lt;&lt;"binary stuff!"&gt;&gt;}</code>, 
+<code>{2.0, ["strings","and",atoms]}</code> hay bất cứ thứ gì.</p>
+
+<p>Khi không khớp, nó sẽ ném ra một lỗi nhưng chỉ xảy ra khi chạy đoạn mã đó. 
+	Đây là bởi vì Erlang là ngôn ngữ lập trình <em>dynamically typed</em>: do đó các lỗi sẽ được bắt trong qua trình chạy ( runtime ).
+	Nếu việc thực thi đoạn mã có khả năng gây lỗi, trình biện dịch cùng không phải lúc nào cũng thông báo về  lỗi từ đoạn mã đó, như vi dụ trong <a class="chapter local" href="starting-out-for-real.html#bool-and-compare" 
+	title="Boolean Algebra &amp; Comparison Operators">Starting Out (for real)</a>'s <code>"llama + 5"</code>.</p>
 
 <img class="right" src="static/img/ham.png" width="388" height="246" alt="A knife slicing ham." title="I'll let you decide which is static and which is dynamic" />
 
-<p>One classic friction point between proponents of static and dynamic typing has to do with the safety of the software being written. A frequently suggested idea is that good static type systems with compilers enforcing them with fervor will catch most errors waiting to happen before you can even execute the code. As such, statically typed languages are to be seen as safer than their dynamic counterparts. While this might be true when comparing with many dynamic languages, Erlang begs to differ and certainly has a track record to prove it. The best example is the often reported <em>nine nines</em> (99.9999999%) of availability offered on the <a class="external" href="http://www.erlang.se/publications/Ulf_Wiger.pdf" title="Ulf Wiger - Four-fold Increase in Productivity and Quality">Ericsson AXD 301 ATM switches</a>, consisting of over 1 million lines of Erlang code. Please note that this is not an indication that none of the components in an Erlang-based system failed, but that a general switch system was available 99.9999999% of the time, planned outages included. This is partially because Erlang is built on the notion that a failure in one of the components should not affect the whole system. Errors coming from the programmer, hardware failures or [some] network failures are accounted for: the language includes features which will allow you to distribute a program over to different nodes, handle unexpected errors, and <em>never</em> stop running.</p>
+<p>điểm tiếp xức One classic friction point giữa between các đề  xuất của static and dynamic typing là tính an toàn, tin cậy khi viết phần mềm. 
+	ý tưởng thường xuyên được đề  xuất là sử  dụng good static type systems và trình bình dịch sẽ bắt tất các lỗi 
+	trong code tại thời điẻm biên dịch trước khi nó được thực hiện trong code
+	. Vì vậy, các ngôn ngữ statically typed thương được nhin nhận là an toàn hơn các ngôn ngữ dynamic typed. 
+	Có thể  điều này chính xác khi so sánh với một số  ngôn ngữ dynamic typed khác, 
+	Tuy nhiên đó không phải là điều tương tự trong Erlang, bởi vì Erlang đã phản chứng ngược lại điều đó. 
+	ví dụ tôt nhát chứng mình là thông qua các bản báo cáo vê khả năng luôn sẵn sàng <em>nine nines</em> (99.9999999%) of availability offered on the 
+	<a class="external" href="http://www.erlang.se/publications/Ulf_Wiger.pdf" title="Ulf Wiger - Four-fold Increase in Productivity and Quality">
+		Ericsson AXD 301 ATM switches</a>, 
+		bao gồm hơn một triệu dòng code Erlang. 
+		Lưu ý rằng đây không phải là báo cáo chứng minh rằng ko có bất kỳ lỗi nào trong các thành phần trong hệ thống viết bằng Erlang.
+		bản báo cáo này chủ yếu chứng mình việc một hệ thống switch nói chung luôn sẵn sằng làm việc tới 99.9999999% thời gian, 
+		kể  cả khi có sự cố  hỏng hóc, ngắt điện. 
+		Đó là bởi vì Erlang được thiết kế  dựa trên ý tưởng rằng một lỗi sai gây hỏng trong một thành phần 
+		sẽ không ảnh hưởng tới các thành phàn còn lại hay nói các khác không gây lỗi cho toàn bộ hệ thống. 
+		Bao gồm cả các lỗi gây ra bởi lập trình viên, lối phần cứng và một số  lỗi liên quan tới mạng được giải thích như sau:
+		Ngôn ngữ gồm các đặc tính cho phép bạn phân tán một chương trình tới các node ( máy ảo, ứng dụng) khác nhau, 
+		xử lí các lỗi bất ngờ xảy ra và làm cho chương trình luôn chạy , </p>không bao giờ</p> nhưng giữa chừng.</p>
 
-<p>To make it short, while most languages and type systems aim to make a program error-free, Erlang uses a strategy where it is assumed that errors will happen anyway and makes sure to cover these cases: Erlang's dynamic type system is not a barrier to reliability and safety of programs. This sounds like a lot of prophetic talking, but you'll see how it's done in the later chapters.</p>
+<p>Nói Một cách ngắn gọn hơn , hầu hêý các ngôn ngữ lập trình và type system có gắng hướng tới việc viết các chương trình ít hoặc không có lỗi (
+		error-free ), Thì Erlang lại đã áp dụng chiến  lượt mà tin rằng bằng bất cứ cách nào các lỗi sẽ xảy ra và sẽ luôn được đảm bảo.
+		dynamic type system không phải là một trở ngại đối với các chương trình cần độ ổn định và độ an toàn. 
+		Nghe thì có vẻ giống như một lời tiên chi, nhưng bạn sẽ thấy vậy trong các chương sau.</p>
 
 <div class="note">
-    <p><strong>Note:</strong> Dynamic typing was historically chosen for simple reasons; those who implemented Erlang at first mostly came from dynamically typed languages, and as such, having Erlang dynamic was the most natural option to them.</p>
+	<p><strong>Chý ý:</strong> Dynamic typing được chọn bởi lí do rất đơn giản là hầu hết các nhà thiết kế của Erlang 
+		đều là những người có kinh nghiệm với ngôn ngữ lập dynamically typed, do chả có lí do gì mà họ lại không chọn dynamically typed.</p>
 </div>
 
-<p>Erlang is also strongly typed. A weakly typed language would do implicit type conversions between terms. If Erlang were to be weakly typed we could possibly do the operation <code>6 = 5 + "1".</code> while in practice, an exception for bad arguments will be thrown:</p>
+<p>đồng thơi Erlang cũng là một strongly typed. 
+	Trong một ngôn ngữ weakly typed, các kiểu dữ liệu sẽ được tự động ngầm định chuyển đổi qua lại. 
+	Nếu như ta gõ <code>6 = 5 + "1".</code>, sẽ không có bất cứ lỗi nào xảy ra với một ngôn ngữ weakly typed cả vì các kiểu dữ liệu theo tự động được cast lại, và kết quả sẽ có được là 
+	<code>6</code>, nhưng trong Erlang không cho phép điều này, một ngoại lệ về  việc sử  dụng sai thâm số  hay kiểu dữ liệu sẽ được đưa ra:</p>
 
 <pre class="brush:eshell">
 1&gt; 6 + "1".
@@ -60,12 +94,17 @@
         called as 6 + "1"
 </pre>
 
-<p>Of course, there are times when you could want to convert one kind of data to another one: changing regular strings into bit strings to store them or an integer to a floating point number. The Erlang standard library provides a number of functions to do it.</p>
+<p>Tất nhiên, đôi khi bạn có thể  vẫn muốn chuyển các loại kiểu dữ liệu này sang một kiểu dữ liệu khác: 
+	vd chuyển từ kiểu chuỗi ( strings ) sang kiểu bit strings để  lưu trữ hoặc chuyển từ kiểu số  nguyên sang kiểu số  thực. 
+	Khi đó bạn có thử  sử dụng một số  hàm trong bộ thư viện chuẩn của Erlang để  tường mình thực hiển việc chuyển đổi kiểu dữ liệu.</p>
 
 
 <h3><a class="section" name="type-conversions">Type conversions</a></h3>
 
-<p>Erlang, like many languages, changes the type of a term by casting it into another one. This is done with the help of built-in functions, as many of the conversions could not be implemented in Erlang itself. Each of these functions take the form &lt;type&gt;_to_&lt;type&gt; and are implemented in the <code>erlang</code> module. Here are a few of them:</p>
+<p>Tương tự một số  ngôn ngữ khác, Erlang cũng cho phép thay đổi kiểu dữ liệu. 
+   Vì nhiều kiểu chuyển đổi không được thực hiện trên Erlang, do đó chúng ta có thể  
+   thực hiện bằng cách sử  dụng các hàm xây dựng sẵn trong bộ thư viện chuẩn của Erlang, vì , 
+   mỗi một hàm sẽ có dạng sau &lt;type&gt;_to_&lt;type&gt; chúng được thực hiện trong module <code>erlang</code>. Dưới đây là một só vd:</p>
 
 <pre class="brush:eshell">
 1&gt; erlang:list_to_integer("54").
@@ -86,22 +125,32 @@
 "hi there"
 </pre>
 
-<p>And so on. We're hitting on a language wart here: because the scheme &lt;type&gt;_to_&lt;type&gt; is used, every time a new type is added to the language, a whole lot of conversion BIFs need to be added! Here's the whole list already there:</p>
+<p>Như vậy, Chúng ta sẽ phải We're hitting on a language wart here: 
+	because the scheme &lt;type&gt;_to_&lt;type&gt; is used, do đó mỗi khi một kiểu dữ liệu mới được thêm vào ngôn ngữ 
+	thì toàn bộ các hàm chuyển đổi kiểu dư liệu xây dựng sẵn ( BIFs ) cũng cần phải thêm vào! Dưới đây là toàn bộ các hàm chuyển đổi trong erlang:</p>
 
 <p><code>atom_to_binary/2, atom_to_list/1, binary_to_atom/2, binary_to_existing_atom/2, binary_to_list/1, bitstring_to_list/1, binary_to_term/1, float_to_list/1, fun_to_list/1, integer_to_list/1, integer_to_list/2, iolist_to_binary/1, iolist_to_atom/1, list_to_atom/1, list_to_binary/1, list_to_bitstring/1, list_to_existing_atom/1, list_to_float/1, list_to_integer/2, list_to_pid/1, list_to_tuple/1, pid_to_list/1, port_to_list/1, ref_to_list/1, term_to_binary/1, term_to_binary/2 and tuple_to_list/1.</code></p>
 
-<p>That's a lot of conversion functions. We'll see most if not all of these types through this book, although we probably won't need all of these functions.</p>
+<p>Như bạn thây có rất nhiều các hàm chuyển đổi trong module erlang. 
+	Chúng ta sẽ gặp hầu hết chúng ( không phải toàn bộ ) các hàm chuyển đổi xuyên suốt cuốn sách này. mặc dù không nhất thiết phải cần tới tất cả các hàm đó.</p>
 
 
 <h3><a class="section" name="to-guard-a-data-type">To Guard a Data Type</a></h3>
 
-<p>Erlang basic data types are easy to spot, visually: tuples have the curly brackets, lists the square brackets, strings are enclosed in double quotation marks, etc. Enforcing a certain data type has thus been possible with pattern matching: a function <code>head/1</code> taking a list could only accept lists because otherwise, the matching (<code>[H|_]</code>) would have failed.</p>
+<p>Các kiểu dữ liệu cơ bản trong Erlang tương đôi dễ  nhìn nhận và phần, visually: bộ có dấu ngoặc nhọn, danh sách thì sử  dụng dấu ngoặc vuông 
+   chuỗi thì đặt trong cặp ngoặc đôi, etc. Và để  chắn chắn một kiểu dữ liệu xác định cùng với khớp mẫu :
+   hàm <code>head/1</code> sẽ chỉ nhận đầu và là một danh sách, nếu không khi nó khớp với biểu thức (<code>[H|_]</code>) , nó sẽ thông báo lỗi.</p>
 
 <img class="left" src="static/img/my-name-is.png" width="146" height="79" alt="Hi, My name is Tuple" />
 
-<p>However, we've had a problem with numeric values because we couldn't specify ranges. Consequently, we used guards in functions about temperature, the age to drive, etc. We're hitting another roadblock now. How could we write a guard that ensures that patterns match against data of a single specific type, like numbers, atoms or bitstrings?</p>
+<p>Tuy nhiên, chúng ta có một vấn đề với kiểu giá trị số  ( numeric ), chúng ta không thể xác được được phạm vi, độ rộng. 
+   Vì vậy, chúng ta sử  dụng chốt canh như trong các vd về hàm nhiệt độ ( temperature ), độ tuổi cho phép lái xe, etc. 
+   Tuy nhiên giờ chúng ta sẽ phải đối mặt với một vấn đề  khác.
+   vậy chúng ta làm thế nào để viết một điều kiên chốt canh đảm bảo rằng nó sẽ khớp với một kiểu dữ liệu xác đinh như kiểu số , atom, hay bitstrings ?</p>
 
-<p>There are functions dedicated to this task. They will take a single argument and return true if the type is right, false otherwise. They are part of the few functions allowed in guard expressions and are named the <em>type test BIFs</em>:</p>
+<p>Tương tự module erlang cũng cung cấp các hàm để  giải quyết vấn này đề  này. Các hàm này sẽ nhận một tham số đầu vào và sẽ trả về  giá trị true nếu giá trị đó khớp với kiểu dữ liệu mà ta
+	so sánh , ngược lại nó trả về  false.  
+	Chúng tạo thành một phần của các hàm, được cho phép trong biểu thức chốt canh và được gọi chung là <em>type test BIFs</em>:</p>
 
 <pre class="brush:eshell">
 is_atom/1           is_binary/1         
@@ -112,16 +161,28 @@ is_pid/1            is_port/1           is_record/2
 is_record/3         is_reference/1      is_tuple/1          
 </pre>
 
-<p>They can be used like any other guard expression, wherever guard expressions are allowed. You might be wondering why there is no function just giving the type of the term being evaluated (something akin to <code>type_of(X)&nbsp;-&gt; Type</code>). The answer is pretty simple. Erlang is about programming for the right cases: you only program for what you know will happen and what you expect. Everything else should cause errors as soon as possible. Although this might sound insane, the explanations you'll get in <a class="chapter" href="errors-and-exceptions.html">Errors and Exceptions</a> will hopefully make things clearer. Until then, just trust me on that.</p>
+<p>Các hàm này có thể  được sử  dụng như bất kỳ các biểu thức chốt canh khác, ở bất cứ chỗ nào mà biểu thức chốt canh được sử  dụng.
+	có thể  bạn thắc mắc là vì sao không có hàm mà trả về  kiểu dữ liệu như trong một số ngôn ngữ lập trính khác, 
+	(giống như <code>type_of(X)&nbsp;-&gt; Type</code>). 
+	Rất đơn giản để trả lời câu hỏi trên là bởi vì Erlang là ngôn ngữ cần lập trình một cách đúng, chính xác:
+	bạn chỉ lập trình đói với chương trình mà bạn biết chắc chắn những gì nó sẽ xảy ra. mọi thứ lên xảy ra lỗi sớm nhất có thể .
+	Mặc dù điều này nghe thật sự điên rồ, nhưng mọi thư sẽ rõ ràng hơn sau khi bạn tới chương 
+	<a class="chapter" href="errors-and-exceptions.html">Errors and Exceptions</a>. Cho tới lúc đó, hãy tin tôi.</p>
 
 <div class="note">
-    <p><strong>Note:</strong> type test BIFs constitute more than half of the functions allowed in guard expressions. The rest are also BIFs, but do not represent type tests. These are: <br />
-<code>abs(Number), bit_size(Bitstring), byte_size(Bitstring), element(N, Tuple), float(Term), hd(List), length(List), node(), node(Pid|Ref|Port), round(Number), self(), size(Tuple|Bitstring), tl(List), trunc(Number), tuple_size(Tuple).</code></p>
+	<p><strong>Lưu ý:</strong> type test BIFs constitute more than half of the functions allowed in guard expressions. 
+		phần còn lại của The rest are also BIFs, nhưng chúng không biểu diễn type tests: <br />
+<code>abs(Number), bit_size(Bitstring), byte_size(Bitstring), element(N, Tuple), float(Term), hd(List), length(List), node(), node(Pid|Ref|Port), round(Number), 
+	self(), size(Tuple|Bitstring), tl(List), trunc(Number), tuple_size(Tuple).</code></p>
 
-    <p>The functions <code>node/1</code> and <code>self/0</code> are related to distributed Erlang and processes/actors. We'll eventually use them, but we've still got other topics to cover before then.</p>
+	<p>các hàm <code>node/1</code> và <code>self/0</code> liên qua tới phân tán Erlang ( sử  dụng Erlang trong hệ thống phân tán hay chạy
+		các máy ảo độc lâp với nhau trong cùng một máy tính ) và các tién trình actors ( processes/actors ). 
+		Chúng ta sẽ tìm hiểu và làm việc với chúng hơn trong các chương sau, nhưng giờ chúng ta có một số  các chủ đề  khác cần phải tìm hiểu trước tiên.</p>
 </div>
 
-<p>It may seem like Erlang data structures are relatively limited, but lists and tuples are usually enough to build other complex structures without worrying about anything. As an example the basic node of a binary tree could be represented as <code>{node, Value, Left, Right}</code>, where <var>Left</var> and <var>Right</var> are either similar nodes or empty tuples. I could also represent myself as:</p> 
+<p>cấu trúc dữ liệu trong Erlang dường như rất hạn chế. tuy vậy với kiểu danh sách và bộ cũng đủ để  tạo ra các cấu trúc dữ liệu phức tạp 
+	. vd như một node của cây nhị phân có thể  biểu diễn dứoi dạng <code>{node, Value, Left, Right}</code>, 
+	reong đó <var>Left</var> và <var>Right</var> là các node khác hoặc là node rỗng ( bộ rỗng ). Ta có thể biểu diễn như sau:</p> 
 
 <pre class="brush:erl">
 {person, {name, &lt;&lt;"Fred T-H"&gt;&gt;},
@@ -130,32 +191,61 @@ is_record/3         is_reference/1      is_tuple/1
          {skills, ["programming", "bass guitar", "underwater breakdancing"]}}.
 </pre>
 
-<p>Which shows that by nesting tuples and list and filling them with data, we can obtain complex data structures and build functions to operate on them.</p>
+<p>Như vd trên, Bạn có thể  nhận được các cấu trúc dữ liệu phức tạp bằng cách biểu diễn chứng dưới dạng các bộ và danh sách lồng nhau cùng với dữ liệu trong các bộ và danh
+	, và định nghĩa các hàm để  làm việc với dữ liệu đó.</p>
           
 <div class="note update">
     <p><strong>Update:</strong><br />
-    The release R13B04 saw the addition of the BIF <code>binary_to_term/2</code>, which lets you unserialize data the same way <code>binary_to_term/1</code> would, except the second argument is an option list. If you pass in <code>[safe]</code>, the binary won't be decoded if it contains unknown atoms or <a class="chapter local" href="higher-order-functions.html" title="Higher Order Functions chapter">anonymous functions</a>, which could exhaust memory.</p>
+	bản R13B04 có cật nhập thêm hàm <code>binary_to_term/2</code> vào BIFs, hàm này cho phép bạn unserialize dư liêu như hàm <code>binary_to_term/1</code>, và 
+	thêm một tham số thữ hai là danh sách các chọn lựa để  làm việc với unserialize dữ liệu. 
+	vd nếu lựa chọn <code>[safe]</code>, dữ liệu nhị phân sẽ không được giải mã nếu trong dữ liệu truyền vào chưa các atom không rõ ràng hay các hàm nhặc danh (
+	<a class="chapter local" href="higher-order-functions.html" title="Higher Order Functions chapter">anonymous functions</a>, gây ảnh hưởng tới bộ nhớ.</p>
 </div>
 
 <h3><a class="section" name="for-type-junkies">For Type Junkies</a></h3>
 
 <img class="right" src="static/img/type-dance.png" width="284" height="161" alt="A sign for homeless people: 'Will dance for types'" title="You know you would" />
 
-<p>This section is meant to be read by programmers who can not live without a static type system for one reason or another. It will include a little bit more advanced theory and everything may not be understood by everyone. I will briefly describe tools used to do static type analysis in Erlang, defining custom types and getting more safety that way. These tools will be described for anyone to understand much later in the book, given that it is not necessary to use any of them to write reliable Erlang programs. Because we'll show them later, I'll give very little details about installing, running them, etc. Again, this section is for those who really can't live without advanced type systems.</p>
+<p>Mục này được viết danh cho lập trình viên những người phần lớn quen thuộc với static type system và không muốn chuyển đổi. 
+	nó sẽ có một ít các lý thuyết phức tạp hơn, gây khó khăn cho người đọc. 
+	Toi sẽ tóm tắt một số công cụ sử  dụng cho việc phân tích static type trong Erlang, 
+	định nghĩa custom types và an toàn, ổn đinh. 
+	Các công cụ này sẽ được mô tả danh cho nhũng ai muốn hiểu rõ ràng hơn trong phần sau của cuốn sách.
+	và không yêu cầu bạn phải đọc given that it is not necessary to use any of them to write reliable Erlang programs. 
+	Tôi sẽ chỉ đề cập đơn giản tới vấn đề cài đặt hay cách chạy, etc.
+	nhắc lại, mục này chỉ dành cho những ai muốn viết chương trình vẫn dựa trên type systems.</p>
 
-<p>Through the years, there were some attempts to build type systems on top of Erlang. One such attempt happened back in 1997, conducted by Simon Marlow, one of the lead developers of the Glasgow Haskell Compiler, and Philip Wadler, who worked on Haskell's design and has contributed to the theory behind monads (<a class="external" href="http://homepages.inf.ed.ac.uk/wadler/papers/erlang/erlang.pdf" title="A Practical Subtyping System for Erlang">Read the paper</a> on said type system). Joe Armstrong later <a class="external" href="http://webcem01.cem.itesm.mx:8005/erlang/cd/downloads/hopl_erlang.pdf" title="A history of Erlang">commented on the paper</a>:</p>
+<p>Trong suốt nhiều năm, số rất nhiều thí nghiệm để xây dựng một hê thống type system lên Erlang.
+	một trong những thí nghiệm đó diễn ra vào năm 1997,
+	dưới sự giám sát bởi Simon Marlowm ( một trong những nhà phát triển thành công trong việc xây dừng GHC ( Glasgow Haskell Compiler ) )
+	và Philip Wadler (môt trong những người thiết kế Haskell và góp phần phát triển đằng sau lý thyết Monads (<a class="external" 
+	href="http://homepages.inf.ed.ac.uk/wadler/papers/erlang/erlang.pdf" title="A Practical Subtyping System for Erlang">Read the paper</a> on said type system) ). 
+	sau đó Joe Armstrong  <a class="external" href="http://webcem01.cem.itesm.mx:8005/erlang/cd/downloads/hopl_erlang.pdf" title="A history of Erlang">đã nhận xét trên paper</a>:</p>
 
 <blockquote title="Joe Armstrong - A History of Erlang">
-    <p>One day Phil phoned me up and announced that a) Erlang needed a type system, b) he had written a small prototype of a type system and c) he had a one year’s sabbatical and was going to write a type system for Erlang and “were we interested?” Answer —“Yes.”</p>
+    <p>Vào một ngày, Phil đã gọi điện cho tôi và đề  xuất:
+		a) Erlang cần một type system, 
+		b) he had written a small prototype of a type system and 
+		c) he had a one year’s sabbatical and was going to write a type system for Erlang and “were we interested?” Answer —“Yes.”</p>
 
-    <p>Phil Wadler and Simon Marlow worked on a type system for over a year and the results were published in [20]. The results of the project were somewhat disappointing. To start with, only a subset of the language was type-checkable, the major omission being the lack of process types and of type checking inter-process messages.</p>
+    <p>Phil Wadler and Simon Marlow worked on a type system for over a year and the results were published in [20]. 
+		The results of the project were somewhat disappointing. To start with, only a subset of the language was type-checkable, 
+		the major omission being the lack of process types and of type checking inter-process messages.</p>
 </blockquote>
 
-<p>Processes and messages both being one of the core features of Erlang, it may explain why the system was never added to the language. Other attempts at typing Erlang failed. The efforts of the HiPE project (attempts to make Erlang's performances much better) produced Dialyzer, a static analysis tool still in use today, with its very own type inference mechanism.</p>
+<p>Tiến trình ( Processes ) và thông điệp ( messages ) là thành phần cốt lõi của Erlang.
+	đó là lí do vì sao mà type system không bao giờ được thêm vào Erlang. 
+	Mọi sự cố  gắng thử  nghiệm đều thất bại. 
+	các nỗ  lực tới từ dự án HiPE ( một dự án thử  nghiệm nhằm tằng hiệu suất của Erlang) đã giới thiệu Dialyzer ( 
+		một công cụ phân tích tĩnh ( static type ) cùng với kiểu suy luận riêng, hiện nay vẫn đạng được sử  dụng ).</p>
 
-<p>The type system that came out of it is based on success typings, a concept different from Hindley-Milner or soft-typing type systems. Success types are simple in concept: the type-inference will not try to find the exact type of every expression, but it will guarantee that the types it infers are right, and that the type errors it finds are really errors.</p>
+<p>type system là kết quả dựa trên sự thành công của typing, một khái niệm khác với khái niệm của Hindley-Milner hay soft-typing type systems. 
+	nó rất đơn giản: the type inference sẽ không cố  để tìm chính xác kiểu trong mỗi biểu thức 
+	nhưng nó sẽ đảm bảo rằng kiểu dữ liệu đó luôn chính xác và các lỗi mà nó tìm thấy thực sự chính xác.</p>
 
-<p>The best example would come from the implementation of the function <code>and</code>, which will usually take two Boolean values and return 'true' if they're both true, 'false' otherwise. In Haskell's type system, this would be written <code>and :: bool -&gt; bool -&gt; bool</code>. If the <code>and</code> function had to be implemented in Erlang, it could be done the following way:</p>
+<p>cách tốt nhất để  chứng mình là chúng ta sẽ thực hiện viết một hàm đặt tên là <code>and</code>, hàm này sẽ nhận hai tham số  đầu vào là kiểu giá trị boolean 
+	và trả về  kết quả  'true' nếu cả hai tham số  đều mang giá trị là 'true', các trường hợp đèu trả về  'false'. trong Haskell's type system, 
+	nó sẽ được viết <code>and :: bool -&gt; bool -&gt; bool</code>. Trong Erlang ta sẽ viết như sau:</p>
 
 <pre class="brush:erl">
 and(false, _) -&gt; false;

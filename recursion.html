@@ -33,18 +33,30 @@
 			</div><!-- menu -->
 			<div id="content">
             <div class="noscript"><noscript>Hey there, it appears your Javascript is disabled. That's fine, the site works without it. However, you might prefer reading it with syntax highlighting, which requires Javascript!</noscript></div>
-<h2>Recursion</h2>
+<h2>Đệ Quy</h2>
 <h3><a class="section" name="hello-recursion">Hello recursion!</a></h3>
 
 <img class="right" src="static/img/reCURSE.png" width="337" height="182" alt="A car on the road. Dialogue: 'Are we there yet? - No! - Are we there yet? - No! - Are we there yet? - reCURSE YOU KIDS!" title="I apologize for this terrible pun. No great idea could be found to illustrate recursion so you're stuck with this." />
 
-<p>Some readers accustomed with imperative and object-oriented programming languages might be wondering why loops weren't shown already. The answer to this is "what is a loop?" Truth is, functional programming languages usually do not offer looping constructs like <code>for</code> and <code>while</code>. Instead, functional programmers rely on a silly concept named <em>recursion</em>.</p>
+<p>Chắn hẳn một số  độc giả những người quen thuộc với ngôn ngữ lập trình mệnh lệnh và hướng đối tượng sẽ thắc mắc là vì sao không thấy đề  cập tới 
+    cấu trúc vòng lặp. Tuy nhiên, trước tiên hãy trả lời cho câu hỏi được đặt ra: "vòng lặp là gì?", 
+    thực tế, trong ngôn ngữ lập trình không để  xuất xây dựng vòng lặp với <code>for</code> và <code>while</code>.
+    Mà thay vào đó, lập trình hàm dựa trên một khái niệm đơn giản được gọi là <em>đệ quy</em>.</p>
 
-<p>I suppose you remember how invariable variables were explained in the intro chapter. If you don't, you can <a class="chapter" href="starting-out-for-real.html#invariable-variables" title="invariable variables, from Starting out (for real)">give them more attention</a>! Recursion can also be explained with the help of mathematical concepts and functions. A basic mathematical function such as the factorial of a value is a good example of a function that can be expressed recursively. The factorial of a number <var>n</var> is the product of the sequence <code>1 x 2 x 3 x ... x <var>n</var></code>, or alternatively <code><var>n</var> x (<var>n</var>-1) x (<var>n</var>-2) x ... x 1</code>. To give some examples, the factorial of 3 is <code>3! = 3 x 2 x 1 = 6</code>. The factorial of 4 would be <code>4! = 4 x 3 x 2 x 1 = 24</code>. Such a function can be expressed the following way in mathematical notation:</p>
+<p>Háy nhớ lại về  invariable variables đã được giải thích trong chương trước đó. nếu bạn quên, 
+   hãy xem lại <a class="chapter" href="starting-out-for-real.html#invariable-variables" title="invariable variables, from Starting out (for real)">
+   và để  ý kỹ</a>! Đệ quy cũng có thể  được giải thích như một vòng lặp cùng với sự giúp dỡ đén từ các khái niệm toán học và hàm 
+   . một ví dụ điển hình để  đinh nghĩa một hàm đệ quy là phép tính giai thừa. 
+   nếu bạn không nhớ gì về giai thừa, thì sau đây là khái niệm: giai thừa của một số  <var>n</var> 
+   là kết quả của phép tính <code>1 x 2 x 3 x ... x <var>n</var></code>, một cách viết khác <code><var>n</var> x (<var>n</var>-1) x (<var>n</var>-2) x ... x 1</code>. 
+   Ví dụ chúng ta tính giai thừa 3 sẽ là <code>3! = 3 x 2 x 1 = 6</code>. Giai thừa của 4 sẽ là <code>4! = 4 x 3 x 2 x 1 = 24</code>. 
+   tương tự chúng ta có thể biểu diên bằng công thức toán học sau:</p>
 
 <img src="static/img/fac.png" alt="n! = { 1 if n = 0 }, { n((n-1)!) if n &gt; 0 }" width="214" height="60" />
 
-<p>What this tells us is that if the value of <var>n</var> we have is <samp>0</samp>, we return the result <samp>1</samp>. For any value above 0, we return <var>n</var> multiplied by the factorial of <code>n-1</code>, which unfolds until it reaches 1:</p>
+<p>Vậy điều gì sẽ xảy ra nêý giá trị của <var>n</var> là <samp>0</samp>, nếu vậy chúng ta sẽ trả về kêt quả là <samp>1</samp>. 
+    Còn đối với bất kỳ giá trị nào lớn hơn 0, chung ta sẽ trả về  kết là là <var>n</var> nhân với giai thừa của <code>n-1</code>, và cứ tiếp tục vậy cho tới khi 
+    giá trị của giai thừa là 1:</p>
 
 <pre class="expand">
 4! = 4 x 3!
@@ -53,7 +65,12 @@
 4! = 4 x 3 x 2 x 1 x 1
 </pre>
 
-<p>How can such a function be translated from mathematical notation to Erlang? The conversion is simple enough. Take a look at the parts of the notation: <code>n!</code>, <samp>1</samp> and <code>n((n-1)!)</code> and then the <code>if</code>s. What we've got here is a function name (<code>n!</code>), guards (the <code>if</code>s) and a the function body (<samp>1</samp> and <code>n((n-1)!)</code>). We'll rename <code>n!</code> to <code>fac(N)</code> to restrict our syntax a bit and then we get the following:</p>
+<p>vậy như thế nào để một hàm có thể truyền từ công thức toán học sang Erlang. Rất đơn giản, 
+    hãy nhin vào các phần của công thức: 
+    <code>n!</code>, <samp>1</samp> và <code>n((n-1)!)</code> và <code>if</code>s. 
+    nhưng gì ta cần ở đây là một hàm với tên là (<code>n!</code>), điều kiên chốt canh (<code>if</code>s) và một thân hàm 
+    (<samp>1</samp> và <code>n((n-1)!)</code>). chúng ta sẽ phải đổi tên của hàm<code>n!</code> sang <code>fac(N)</code> 
+    để  chặt chẽ cú pháp hơn:</p>
 
 <pre class="brush:erl">
 -module(recursive).
@@ -63,40 +80,63 @@ fac(N) when N == 0 -&gt; 1;
 fac(N) when N &gt; 0  -&gt; N*fac(N-1).
 </pre>
 
-<p>And this factorial function is now done! It's pretty similar to the mathematical definition, really. With the help of pattern matching, we can shorten the definition a bit:</p>
+<p>Như vậy chúng ra ddã hoàn thành hàm tình giai thừa! 
+   thực sự nó khá giống với định nghĩa trong toán học phải không ? . Chúng ra cũng có một cách viét ngắn hơn bằng cách kết hợp với khớp mẫu:</p>
 
 <pre class="brush:erl">
 fac(0) -&gt; 1;
 fac(N) when N &gt; 0 -&gt; N*fac(N-1).
 </pre>
 
-<p>So that's quick and easy for some mathematical definitions which are recursive in nature. We looped! A definition of recursion could be made short by saying "a function that calls itself." However, we need to have a stopping condition (the real term is <em>base case</em>), because we'd otherwise loop infinitely. In our case, the stopping condition is when <var>n</var> is equal to <samp>0</samp>. At that point we no longer tell our function to call itself and it stops its execution right there.</p>
+<p>Đó như bạn thấy đó , một số công thức toán học có So that's quick and easy for some mathematical definitions which are recursive in nature. 
+   lặp! đinh nghịa một hàm đệ quy có thể  phát biểu ngắn ngọn như sau: "một hàm mà gọi lại chính nó" 
+   Tuy nhiên, chúng ta vẫn càn phải có một điều kiện để  dừng lại ( hay còn gọi là <em>trường hợp cơ sở</em> ), 
+   bởi vì nếu không nó sẽ tạo ra một vòng lặp vô hạn.
+   trong vd trên, thì điều kiện dừng là khi <var>n</var> lớn hơn hay bằng <samp>0</samp>. 
+   ngay khi thỏa mãn điều đó, hàm sẽ không gọi lại chính nó nữa mà thay vào đó sẽ dừng việc thực thi, chấm dứt hàm.</p>
 
 
 <h3><a class="section" name="length">Length</a></h3>
 
-<p>Let's try to make it slightly more practical. We'll implement a function to count how many elements a list contains. So we know from the beginning that we will need:</p>
+<p>Nào, hãy thử  tiếp tục luyện tập với các vd khác. 
+    Tiếp theo chúng ra sẽ thực hiện viết một hàm tính kích thước/ chiều dài của một danh sách. Đây là ý tưởng bắt đầu cho việc thực hiện hàm này bằng đệ quy:</p>
 <ul>
     <li>a base case;</li>
     <li>a function that calls itself;</li>
     <li>a list to try our function on.</li>
 </ul>
 
-<p>With most recursive functions, I find the base case easier to write first: what's the simplest input we can have to find a length from? Surely an empty list is the simplest one, with a length of 0. So let's make a mental note that <code>[] = 0</code> when dealing with lengths. Then the next simplest list has a length of 1: <code>[_] = 1</code>. This sounds like enough to get going with our definition. We can write this down:</p>
+<p>với hầu hết các hàm đề quy, chúng ta sẽ dẽ dàng để  viết trường hợp cơ sở ( base case ) đầu tiên: 
+    tham số đầu vào dễ nhất là chúng có có thể  tìm tối vơi chiều dài cảu một danh sách là gì ?
+    Tất niên đó là một danh sách rỗng, tức là chiều dai bằng 0. vậy hãy ghi nhớ <code>[] = 0</code> khi thao tác với danh sách. 
+    trường hợp tiếp theo là khi danh sách có độ dài là 1: <code>[_] = 1</code>. 
+    Dường như chúng ta đã đủ để  điều kiện để  viết hàm rồi:</p>
 
 <pre class="brush:erl">
 len([]) -&gt; 0;
 len([_]) -&gt; 1.
 </pre>
 
-<p>Awesome! We can calculate the length of lists, given the length is either 0 or 1! Very useful indeed. Well of course it's useless, because it's not yet recursive, which brings us to the hardest part: extending our function so it calls itself for lists longer than 1 or 0. It was <a class="chapter local" href="starting-out-for-real.html#lists" title="Starting Out (for real): lists">mentioned earlier</a> that lists are defined recursively as <code>[1 | [2| ... [n | []]]]</code>. This means we can use the <code>[H|T]</code> pattern to match against lists of one or more elements, as a list of length one will be defined as <code>[X|[]]</code> and a list of length two will be defined as <code>[X|[Y|[]]]</code>. Note that the second element is a list itself. This means we only need to count the first one and the function can call itself on the second element. Given each value in a list counts as a length of 1, the function can be rewritten the following way:</p>
+<p>tuyện vời! chúng ra đã có thể  tính chiều dài của một danh sách khi nó rỗng hay khi nó có 1 phần tử  rồi! 
+    nó có thực sự hữu ích? Chưa hẳn đâu, bởi vì chúng ra chưa thực hiện bất kỳ một phép đệ quy nào cả.
+    giờ chúng ta sẽ thực hiện, và đây cũng là phần khó nhất làm viêhc với đệ quy: chúng ta sẽ mở rộng hàm này bằng cách gọi lại chính nó đối với danh sách thay vì chỉ 
+    nhận danh sách đầu vào và trả ra kết quả 0, 1. 
+    có thể  bạn sớm nhận ra ở chương <a class="chapter local" href="starting-out-for-real.html#lists" title="Starting Out (for real): lists"> chúng ta đã từng đề cập về  đệ quy</a> 
+    , các danh sách được xây đựng như một đệ quy <code>[1 | [2| ... [n | []]]]</code>. 
+    Điều này có nghĩa là chúng ta có hể sử  dụng mẫu biểu thức <code>[H|T]</code> để  khớp với một hay nhiều phần tử  của danh sách 
+    và tương ứng với chièu dài của danh sách có 1 phần tử sẽ viết như sau <code>[X|[]]</code> 
+    tương tựa với 2 phần tử  <code>[X|[Y|[]]]</code>. 
+    Hãy để  ý, phần tử  thứ là một danh sách, hay nó giống với trường hợp danh sách có một phần từ. 
+    Điều này rút ra là chúng ra chỉ cần tính toán đếm phần từ đầu tiên và sau đó gọi tới chính bản thân hàm dựa trên phần tử  thứ 2.
+    Như vậy nếu ra coi mỗi giá trị trong 1 danh sách có độ dài là một, vậy hàm tính độ dài viết theo đệ quy sẽ như sau:</p>
 
 <pre class="brush:erl">
 len([]) -&gt; 0;
 len([_|T]) -&gt; 1 + len(T).
 </pre>
 
-<p>And now you've got your own recursive function to calculate the length of a list. To see how <code>len/1</code> would behave when ran, let's try it on a given list, say <code>[1,2,3,4]</code>:</p>
+<p>Như vậy bạn đã hoàn thành hàm đệ quy tính chièu dài của một danh sách rồi.
+   và hãy nhìn xem hàm này ( <code>len/1</code> ) hoạt dộng như thế  nào, hãy thử  dưa vào một danh sách có giá trị <code>[1,2,3,4]</code>:</p>
 
 <pre class="expand">
 len([1,2,3,4]) = len([1 | [2,3,4])
@@ -111,17 +151,36 @@ len([1,2,3,4]) = len([1 | [2,3,4])
                = 4
 </pre>
 
-<p>Which is the right answer. Congratulations on your first useful recursive function in Erlang!</p>
+<p>Chúc mừng bạn, nó hoạt động chính xác!</p>
 
-<img class="right" src="static/img/tail-recursion.png" width="269" height="135" alt="A childish drawing of a pig with an arrow pointing to the tail mentionning 'tail recursion - Ferd, age 4'" />
+<img class="right" src="static/img/tail-recursion.png" width="269" height="135" alt="A childish drawing of a pig with an arrow 
+pointing to the tail mentionning 'tail recursion - Ferd, age 4'" />
 
 <h3><a class="section" name="length-tail-recursion">Length of a Tail Recursion</a></h3>
 
-<p>You might have noticed that for a list of 4 terms, we expanded our function call to a single chain of 5 additions. While this does the job fine for short lists, it can become problematic if your list has a few million values in it. You don't want to keep millions of numbers in memory for such a simple calculation. It's wasteful and there's a better way. Enter <em>tail recursion</em>.</p>
+<p>có thể  bạn thấy rằng đối với một danh sách gồm ô phần tử  dữ liệu ( terms ),
+    chúng ta  mở rọng hàm này bằng cách thay thế bởi mội chuỗi phép cộng của ̀  ̀̀5 phần tử.
+    tuy nhiên nguyên tắc này chỉ hoạt động tốt với một dánh sách có giới hạn về  độ dàì, 
+    trong trường hợp mà kích của danh sách lớn ( có thể  lên với vài triệu phần tử ), nó sẽ là một vân đề vì bạn sẽ phải lưu trữ hàng triệu giá trị
+    trong bộ nhớ chỉ để  thực hiện một phép tính đơn giản, nó thực sự là lãng phí do đó trong đệ quy giới thiệu cho ta một cách tốt hơn đó là đệ quy đuôi ( <em>tail recursion</em> ).</p>
 
-<p>Tail recursion is a way to transform the above linear process (it grows as much as there are elements) to an iterative one (there is not really any growth). To have a function call being tail recursive, it needs to be 'alone'. Let me explain: what made our previous calls grow is how the answer of the first part depended on evaluating the second part. The answer to <code>1 + len(Rest)</code> needs the answer of <code>len(Rest)</code> to be found. The function <code>len(Rest)</code> itself then needed the result of another function call to be found. The additions would get stacked until the last one is found, and only then would the final result be calculated. Tail recursion aims to eliminate this stacking of operation by reducing them as they happen.</p>
+<p>vậy thế  nào là đệ quy đuôi, ta có có thể  khai quat như sau: 
+    đệ quy đuoi là cách để  chuyển đổi việc xử  lí theo tuyến tính ( kich thước bộ nhớ tỉ lệ thuận vơi các phần tử  ) 
+    sang một dạng lặp lại ( sẽ không gây ảnh hưởng quá nhiều tới bộ nhớ ).
+    
+    Tail recursion is a way to transform the above linear process (it grows as much as there are elements) to an iterative one (there is not really any growth). 
+    Để  một hàm được gọi là đệ quy đuôi, nó cần phải 'độc lập'. Nghe có vẻ khó hiểu nhưng hay để  tôi giải thích:
+    : trong vd dụ về đẹ quy trước đó những cuộc gọi hàm trước đó được tăng dần , là bởi vì kêt quả của lần gọi thứ nhất phụ thuộc 
+    và kêt quả của lần gọi thứ 2. vd để trả lời cho <code>1 + len(Rest)</code> chúng ta sẽ phải trả lời cho hàm <code>len(Rest)</code> trước tiên. 
+    và bản thân hàm <code>len(Rest)</code>, bản thân nó cũng cần phụ thuộc vào kết quả một một hàm khác được gọi tới.
+    cứ sau mỗi lần hàm được gọi, ngăn xếp sẽ tích lũy, tăng dần cho tới khi kết quả cuối cùng ( điểm dừng ), sau đó các kết quả/hàm trong ngăn xếp mới đc đảy ra để  tính kết quả cuối cùng.
+    đó là vì sao mà đẹ quy trước đó nếu danh sách chưa một lượng lớn phần tử thì sẽ rất nguy hiểm.
+    Tuy vậy đệ quy cuối lại khác, nó hướng tới việc vắt giảm tránh các hoạt động lưu trữ quá nhiều và ngăn xếp.</p>
 
-<p>In order to achieve this, we will need to hold an extra temporary variable as a parameter in our function. I'll illustrate the concept with the help of the factorial function, but this time defining it to be tail recursive. The aforementioned temporary variable is sometimes called <em>accumulator</em> and acts as a place to store the results of our computations as they happen in order to limit the growth of our calls:</p>
+<p>Để làm được vây, chúng ra cần phải tạo ra các biên tạm thời ( phát sinh trong quá trình xử  lí hàm ) như một tham số  lưu trữ, bổ  sung
+    cho mỗi lần gọi hàm.
+    để  làm rõ nét khái niệm đệ quy cuối, chúng ra sẽ viết lại hàm tính giai thời bằng sử  dụng đệ quy cuối.  
+    và tạo ra một biến gọi tên là <em>accumulator</em, dùng để lưu trữ kết quả tính toán sau mỗi lần gọi hàm để  giảm việc đẩy qúa nhiều dữ liệu vào stack:</p>
 
 <pre class="brush:erl">
 tail_fac(N) -&gt; tail_fac(N,1).
@@ -130,7 +189,12 @@ tail_fac(0,Acc) -&gt; Acc;
 tail_fac(N,Acc) when N &gt; 0 -&gt; tail_fac(N-1,N*Acc).
 </pre>
 
-<p>Here, I define both <code>tail_fac/1</code> and <code>tail_fac/2</code>. The reason for this is that Erlang doesn't allow default arguments in functions (different arity means different function) so we do that manually. In this specific case, <code>tail_fac/1</code> acts like an abstraction over the tail recursive <code>tail_fac/2</code> function. The details about the hidden accumulator of <code>tail_fac/2</code> don't interest anyone, so we would only export <code>tail_fac/1</code> from our module. When running this function, we can expand it to:</p>
+<p>Ở đây tôi đã định nghĩa hai hàm <code>tail_fac/1</code> và <code>tail_fac/2</code>. 
+   Lí dó của việc làm này là bởi vì hàm trong Erlang không cho phép sử dụng mặc định tham số  (default arguments - các hàm mà cùng tên nhưng khác đối số  thì vẫn tương ứng là các hàm khác nhạu )
+   ) do đó chúng phải phải định nghĩa từng trương hợp bằng tay. trong trường hợp xác định trên,
+   hàm <code>tail_fac/1</code> sẽ hoạt động một cách trừu tương qua hàm đệ quy đuôi <code>tail_fac/2</code>. 
+   và thông của biến accumulator của hàm <code>tail_fac/2</code> sẽ được ẩn, 
+   do đó chùng ta chỉ cần export hàm <code>tail_fac/1</code> trong thuộc tính của module. cách thức hoạt động của đệ quy cuối trong hàm tính giai thừa được giải thích như sau:</p>
 
 <pre class="expand">
 tail_fac(4)    = tail_fac(4,1)
@@ -141,16 +205,23 @@ tail_fac(1,24) = tail_fac(1-1, 1*24)
 tail_fac(0,24) = 24
 </pre>
 
-<p>See the difference? Now we never need to hold more than two terms in memory: the space usage is constant. It will take as much space to calculate the factorial of 4 as it will take space to calculate the factorial of 1 million (if we forget 4! is a smaller number than 1M! in its complete representation, that is).</p>
+<p>Bạn có thấy sự khác biệt ko? chúng ta thấy không cần phải lưu trữ nhiều hơn 2 kiểu dữ liệu ( terms ) trong bộ nhớ 
+   : không gian bộ được cấp phát để  lưu trữ không đổi. 
+   không gian lưu trữ sử  dụng để  tính giái thừa của 4 với giao thừa của 1 triệu là như nhau
+   (giai thừa của 4! thì nhỏ hơn rất nhiều so với giai thừa của 1M!).</p>
 
-<p>With an example of tail recursive factorials under your belt, you might be able to see how this pattern could be applied to our <code>len/1</code> function. What we need is to make our recursive call 'alone'. If you like visual examples, just imagine you're going to put the <code>+1</code> part inside the function call by adding a parameter:</p>
+<p>Nào giờ bạn đã có kinh nghiệm việc sử  dụng hàm đê quy thông qua ví dụ của hàm tính giai thừa  
+     With an example of tail recursive factorials under your belt, 
+    Bạn có thể  thư áp dụng nó vào việc viêt lại hàm <code>len/1</code>. 
+    Nhưng gì chúng ra cần là việc tạo tạo ra một hàm đệ quy  ( recursive call 'alone' ). 
+    Nếu bạn thích ví dụ trực quan , hãy hình dung sau đây, giả sử  bạn đặt <code>+1</code> vào trong lời gọi hàm bằng cách thêm một tham số  như sau:</p>
 
 <pre class="brush:erl">
 len([]) -&gt; 0;
 len([_|T]) -&gt; 1 + len(T).
 </pre>
 
-<p>becomes:</p>
+<p>sẽ viết lại là:</p>
 
 <pre class="brush:erl">
 tail_len(L) -&gt; tail_len(L,0).
@@ -159,16 +230,25 @@ tail_len([], Acc) -&gt; Acc;
 tail_len([_|T], Acc) -&gt; tail_len(T,Acc+1).
 </pre>
 
-<p>And now your length function is tail recursive.</p>
+<p>Tuyệt, giờ chụg ta đã có được một hàm tính độ dài theo đệ quy đuôi.</p>
 
 
 <h3><a class="section" name="more-recursive-functions">More recursive functions</a></h3>
 
 <img class="left" src="static/img/rock-paper-scissors.png" width="287" height="259" alt="A tiny planet with a rock running after paper running after a pair of scissors which runs after the rock itself." title="I'm stretching the concept too much here." />
 
-<p>We'll write a few more recursive functions, just to get in the habit a bit more. After all, recursion being the only looping construct that exists in Erlang (except list comprehensions), it's one of the most important concepts to understand. It's also useful in every other functional programming language you'll try afterwards, so take notes!</p>
+<p>Tiếp theo chúng ra sẽ tiếp tục với các vd đệ quy khác để  hiểu rõ hơn,
+    . Như ban đã thấy, Trong Erlang chỉ có một cách duy nhất để  tạo vòng lặp đó là sử  dụng đệ quy ( ngoài ra bạn có thể  dùng list comprehensions)
+    , Do đó đây là một trong những khái niệm, kiến thức quan trọng cần phải hiểu. 
+    và cũng là kiến thức hữu ích nếu bạn có ý định nghĩa các ngôn ngữ lập trình hàm khác sau này, vì vậy hãy ghi nhớ!</p>
 
-<p>The first function we'll write will be <code>duplicate/2</code>. This function takes an integer as its first parameter and then any other term as its second parameter. It will then create a list of as many copies of the term as specified by the integer. Like before, thinking of the base case first is what might help you get going. For <code>duplicate/2</code>, asking to repeat something 0 time is the most basic thing that can be done. All we have to do is return an empty list, no matter what the term is. Every other case needs to try and get to the base case by calling the function itself. We will also forbid negative values for the integer, because you can't duplicate something <code>-n</code> times:</p>
+<p>Trong vd tiếp sau đây, chúng ta sẽ biết một hàm gọi tên là <code>duplicate/2</code>. 
+    hàm này sẽ nhận hai tham số đầu vào , tham số  thứ nhất thuộc kiểu dữ liệu số nguyên và tham số  thứ hai có thể  là bất kỳ kiểu dữ liệu nào khác.
+    tiếp theo chúng ra sẽ tạo ra một danh sách có kích thước bằng với giá trị ở tham số  đầu tiên và chứa các giá trị là giá trị ở tham số thứ hai:, 
+    . Hàm <code>duplicate/2</code> có điều kiện dừng là khi giá trị ở tham số  thứ nhất bằng 0 ( tức là sẽ không còn lần lặp nào nữa ) 
+    . Khi đó chúng ta sẽ trả về  kết quả là một danh sách rỗng, chúng ta sẽ không quan tâm tới việc dữ liệu thuộc kiểu gì.
+    Đối với các trường khác, chúng ta sẽ kiểm tra bằng cách gọi lại chính bản thân hàm đó đồng thời kiểm tra điều kiện dừng của hàm dó. 
+    bởi vì bạn không thể nào sao chép một thứ gì đó với <code>-n</code> lần, lên giá tri âm đối với số  nguyên sẽ không được phép:</p>
 
 <pre class="brush:erl">
 duplicate(0,_) -&gt;
@@ -177,7 +257,8 @@ duplicate(N,Term) when N &gt; 0 -&gt;
     [Term|duplicate(N-1,Term)].
 </pre>
 
-<p>Once the basic recursive function is found, it becomes easier to transform it into a tail recursive one by moving the list construction into a temporary variable:</p>
+<p>Bạn đã hoàn thành cơ bản hàm đệ quy rồi, từ hàm đệ quy gốc, bạn có thể  dễ  dàng chuyển nó sang đệ quy đuôi bằng cách 
+   chuyển danh sách khởi tạo tới một biến tạm thời như sau:</p>
 
 <pre class="brush:erl">
 tail_duplicate(N,Term) -&gt;
@@ -189,7 +270,9 @@ tail_duplicate(N,Term,List) when N &gt; 0 -&gt;
     tail_duplicate(N-1, Term, [Term|List]).
 </pre>
 
-<p>Success! I want to change the subject a little bit here by drawing a parallel between tail recursion and a while loop. Our <code>tail_duplicate/2</code> function has all the usual parts of a while loop. If we were to imagine a while loop in a fictional language with Erlang-like syntax, our function could look a bit like this:</p>
+<p>Tuyệt! Giờ tôi muốn thay đổi chủ để  một chút để  chỉ ra sự tương đồng giữa đệ quy đuôi và vong lặp while. 
+    Hàm <code>tail_duplicate/2</code> có tất cả các thành phần thường thấy ở vòng lặp while.
+    Hãy hình dùng bằng cách viết một vòng lặp while dưới một ngữ ngữ hư cấu thông qua việc sử  cú pháp của Erlang, nó sẽ có dạng như sai:</p>
 
 <pre class="brush:erl">
 function(N, Term) -&gt;
@@ -200,16 +283,24 @@ function(N, Term) -&gt;
     List.
 </pre>
 
-<p>Note that all the elements are there in both the fictional language and in Erlang. Only their position changes. This demonstrates that a proper tail recursive function is similar to an iterative process, like a while loop.</p>
+<p>Lưu ý, tất cả các phần tử  ở cả ngôn ngữ hư cấu với Erlang là như nhau. Chỉ khác mỗi vị trí thôi.
+    Điều này chứng tỏ việc viết một hàm đệ quy đuôi tương tự như viết một quá trình lặp ( iterative process ) như vòng lặp while.</p>
 
-<p>There's also an interesting property that we can 'discover' when we compare recursive and tail recursive functions by writing a <code>reverse/1</code> function, which will reverse a list of terms. For such a function, the base case is an empty list, for which we have nothing to reverse. We can just return an empty list when that happens. Every other possibility should try to converge to the base case by calling itself, like with <code>duplicate/2</code>. Our function is going to iterate through the list by pattern matching <code>[H|T]</code> and then putting <var>H</var> after the rest of the list:</p>
+<p>Ngoài ra có một điều thứ vị mà chúng ta có thể  'khám phá' khi so sánh giữa hàm đệ quy thường và đệ quy đuổi là bằng cách viết một hàm  
+    There's also an interesting property that we can 'discover' when we compare recursive and tail recursive functions by writing a 
+    gọi là <code>reverse/1</code>, hàm này sẽ có chứng năng nghịch đảo các phân tử  của một danh sách. 
+    Trường hợp cơ sở của hàm này là một danh sách rỗng . khi đó sẽ không có phần tử  nào để  nghịch đảo hết. 
+    Với các trường hợp khác, chúng lên quy về  trường hợp cơ sở bằng cấch gọi lại chính nó.
+    tương tự như khi ta viết hàm<code>duplicate/2</code>. Bằng cách duyệt danh sách kết hợp với sử  dụng khớp mẫu <code>[H|T]</code> 
+    và đặt giá trị <var>H</var> và cuối danh sách, chúng ra sẽ có được như sau:</p>
 
 <pre class="brush:erl">
 reverse([]) -&gt; [];
 reverse([H|T]) -&gt; reverse(T)++[H].
 </pre>
 
-<p>On long lists, this will be a true nightmare: not only will we stack up all our append operations, but we will need to traverse the whole list for every single of these appends until the last one! For visual readers, the many checks can be represented as:</p>
+<p>Trong trường hợp dánh sách quá dài, nó sẽ thật tồi tệ: ngắn xếp sẽ dần dần tăng lên sau mỗi lần gọi,
+     but we will need to traverse the whole list for every single of these appends until the last one! For visual readers, the many checks can be represented as:</p>
 
 <pre class="expand">
 reverse([1,2,3,4]) = [4]++[3]++[2]++[1]
@@ -221,7 +312,9 @@ reverse([1,2,3,4]) = [4]++[3]++[2]++[1]
                    = [4,3,2,1]
 </pre>
 
-<p>This is where tail recursion comes to the rescue. Because we will use an accumulator and will add a new head to it every time, our list will automatically be reversed. Let's first see the implementation:</p>
+<p>Đó là lí do vì sao chúng ta cần đến đệ quy đuôi, nó sẽ giải quyết được vấn đề  trên 
+   . Bằng cách sủ dụng một biến tạm thời  kiểu danh sách gọi là accumulator, biến này sẽ thêm mỗi phần tử  vào đầu sau mỗi lần gọi  
+   khi đó danh sách của chúng ra sẽ tự động được nghịch đảo , hãy xem việc thực hiện hàm này:</p>
 
 <pre class="brush:erl">
 tail_reverse(L) -&gt; tail_reverse(L,[]).
@@ -230,7 +323,7 @@ tail_reverse([],Acc) -&gt; Acc;
 tail_reverse([H|T],Acc) -&gt; tail_reverse(T, [H|Acc]).
 </pre>
 
-<p>If we represent this one in a similar manner as the normal version, we get:</p>
+<p>Nếu chúng ra đi chi tiết từng bước của hàm trên, chúng ra sẽ có:</p>
 
 <pre class="expand">
 tail_reverse([1,2,3,4]) = tail_reverse([2,3,4], [1])
@@ -240,9 +333,21 @@ tail_reverse([1,2,3,4]) = tail_reverse([2,3,4], [1])
                         = [4,3,2,1]   
 </pre>
 
-<p>Which shows that the number of elements visited to reverse our list is now linear: not only do we avoid growing the stack, we also do our operations in a much more efficient manner!</p>
+<p>Bạn có thể  thấy rằng việc nghịch đảo từng phần tử  trong danh sách của chúng ta giờ sẽ theo tuyến tính:
+    tránh được việc tăng kích thước của ngăn xếp, đông thời mang lại hiệu quả cao khi thực hiện!</p>
 
-<p>Another function to implement could be <code>sublist/2</code>, which takes a list <var>L</var> and an integer <var>N</var>, and returns the <var>N</var> first elements of the list. As an example, <code>sublist([1,2,3,4,5,6],3)</code> would return <samp>[1,2,3]</samp>. Again, the base case is trying to obtain 0 elements from a list. Take care however, because <code>sublist/2</code> is a bit different. You've got a second base case when the list passed is empty! If we do not check for empty lists, an error would be thrown when calling <code>recursive:sublist([1],2).</code> while we want <code>[1]</code> instead. Once this is defined, the recursive part of the function only has to cycle through the list, keeping elements as it goes, until it hits one of the base cases:</p>
+<p>Một ví dụ khác, chúng ra sẽ thực hiện hàm <code>sublist/2</code>, hàm này sẽ nhận hai tham số  đầu vào, tham số đầu tiên thuộc kiểu danh sách gọi là biến <var>L</var> và tham số  thứ hai 
+    là một biến <var>N</var> thuộc kiểu số nguyên , 
+    kết quả của hàm này là trả về  danh sách đó với <var>N</var> phần tử  ( tính từ phần từ đầu tiên của danh sách đó ). vd ta có 
+    <code>sublist([1,2,3,4,5,6],3)</code>, kết quả trả về  sẽ là <samp>[1,2,3]</samp>.
+    Ngược lại , chúng ta sẽ kết thúc nếu giá trị N là 0. 
+    Lưu ý, hàm <code>sublist/2</code> sẽ khác biệt đôi chút với những hàm ta đã viết trước đó. 
+    trong trường hợp nếu danh sách truyền vào là một anh sách rỗng khi đó bất kể  vị trí cần tìm là bao nhiêu thì kết quả trả về  vẫn là danh sách rỗng, do đó 
+    bạn sẽ có một điều kiện dừng ( base case ) thứ hai đối với giá trị truyền vào là một danh sách rỗng! 
+    Trường hợp bạn quên kiểm tra điệu kiện danh sách rống hay không, sẽ có lỗi xảy ra nếu bạn gọi hàm sau <code>recursive:sublist([1],2).</code> 
+    thay vì kêt quả mong muốn là <code>[1]</code> 
+    . Một khi được đinh nghĩa, phần đệ quy của hàm phải tập trung vào danh sách, giữ các phần tử  của danh sách 
+    cho tới khi khớp với một trong các đièu kiện dùng ( base case ):</p>
 
 <pre class="brush:erl">
 sublist(_,0) -&gt; [];
@@ -250,7 +355,7 @@ sublist([],_) -&gt; [];
 sublist([H|T],N) when N &gt; 0 -&gt; [H|sublist(T,N-1)].
 </pre>
 
-<p>Which can then be transformed to a tail recursive form in the same manner as before:</p>
+<p>Tương tự chúng ra cũng chuyển qua dạng đệ quy đuôi như sau:</p>
 
 <pre class="brush:erl">
 tail_sublist(L, N) -&gt; tail_sublist(L, N, []).
@@ -261,33 +366,52 @@ tail_sublist([H|T], N, SubList) when N &gt; 0 -&gt;
     tail_sublist(T, N-1, [H|SubList]).
 </pre>
 
-<p>There's a flaw in this function. <em>A fatal flaw!</em> We use a list as an accumulator in exactly the same manner we did to reverse our list. If you compile this function as is, <code>sublist([1,2,3,4,5,6],3)</code> would not return <samp>[1,2,3]</samp>, but <samp>[3,2,1]</samp>. The only thing we can do is take the final result and reverse it ourselves. Just change the <code>tail_sublist/2</code> call and leave all our recursive logic intact:</p>
+<p>Vậy là chúng ra đã xong ? không, có một thiếu sót trong hàm này. <em>Một thiếu sót tai họa!</em> 
+    chúng ta vẫn sử dụng một danh sách tạm như một accumulator giống với những gì đã làm với 'reverse' trước đó. 
+    tuy nhiên khi bạn gõi hàm này với <code>sublist([1,2,3,4,5,6],3)</code> nó sẽ không trả về  <samp>[1,2,3]</samp>, 
+    thay vào đó kêt quả nhận được là <samp>[3,2,1]</samp>. 
+    về  cơ bản hàm này thực hiện không sai nhưng điều khác biệt ở đây là kết quả cuối cùng ta nhận được lại là thứ tự nghịch đảo củ danh sách đó
+    . Vì thế  hãy thay đổi lại logic của hàm <code>tail_sublist/2</code> như sau:</p>
 
 <pre class="brush:erl">
 tail_sublist(L, N) -&gt; reverse(tail_sublist(L, N, [])).
 </pre>
 
-<p>The final result will be ordered correctly. It might seem like reversing our list after a tail recursive call is a waste of time and you would be partially right (we still save memory doing this). On shorter lists, you might find your code is running faster with normal recursive calls than with tail recursive calls for this reason, but as your data sets grow, reversing the list will be comparatively lighter.</p>
-
+<p>Hm, hãy gọi là vd trên , bạn sẽ nhận được kết quả chính xác. Nhưng khoan, trong thay đổi này chúng ta sẽ phải gọi tới 
+        hàm reverse trước tiên, và chúng ra cần phải định nghĩa hàm reverse trước tiên, bạn nhận thấy rằng đây là một danh sách con lên 
+        có vẻ như việc viết một hàm đệ quy đuổi và gọi nó cho việc nghịch đảo danh sách này thật thừa thái, lãng phí thời gian 
+        ( vì chúng vẫn lưu bên trong bộ nhớ )
+        Đùng với một danh sách ngắn, đoạn code của bạn viết ở đệ quy thường sẽ chạy nhanh hơn đệ quy đuôi 
+        nhưng khi làm việc với một lượng lớn dữ liệu, nghịch đảo danh sách với hàm đệ quy đuôi sẽ nhẹ hơn.</p>
+        
 <div class="note">
-    <p><strong>Note:</strong> instead of writing your own <code>reverse/1</code> function, you should use <code>lists:reverse/1</code>. It's been used so much for tail recursive calls that the maintainers and developers of Erlang decided to turn it into a BIF. Your lists can now benefit from extremely fast reversal (thanks to functions written in C) which will make the reversal disadvantage a lot less obvious. The rest of the code in this chapter will make use of our own reversal function, but after that you should not use it ever again.</p>
+    <p><strong>Lưu ý:</strong> thay vì việc tự đinh nghĩa một hàm <code>reverse/1</code>, bạn lên sử  dụng hàm đã được định nghĩa sẵn trong module lists<code>lists:reverse/1</code>. 
+        nó được sử  dụng rất nhiều do đó các nhà phát triển Erlang đã quyết đưa nó vào trong BIFs.
+        hơn nữa việc sử  dụng hàm này trong module lists sẽ làm cho danh sách của bạn đc nghịch đảo vô cùng nhanh ( bởi vì nó được được viết bằng C) và làm giảm rất nhiều nhược điểm 
+        của hàm mà trước đó chúng ta đã viết bằng Erlang. Chúng ta vẫn sử  dụng hàm 'reverse' do chúng đã đã viết trước đó trong chương này, các chương về  sau chúng ta lên sử  dụng
+        hàm BIFs từ module lists.</p>
 </div>
 
-<p>To push things a bit further, we'll write a zipping function. A zipping function will take two lists of same length as parameters and will join them as a list of tuples which all hold two terms. Our own <code>zip/2</code> function will behave this way:</p>
+<p>Để  tiếp tục, chúng ta sẽ thực hiện viết một hàm zipping. Hàm này sẽ nhận hay tham số  đầu vào thuộc kiểu dữ liệu danh sách và cùng cùng độ dài,
+    sau đó nó sẽ thực hiện việc nối các phần tử  của chúng lại với nhau thành một bộ danh sách ( mỗi phần tử là một bộ chưa 2 phần tử ).
+    Hàm của chúng ta sẽ có dạng <code>zip/2</code> và thưc hiện nhu sau:</p>
 
 <pre class="brush:eshell">
 1&gt; recursive:zip([a,b,c],[1,2,3]).
 [{a,1},{b,2},{c,3}]
 </pre>
 
-<p>Given we want our parameters to both have the same length, the base case will be zipping two empty lists:</p>
+<p>Giờ chúng ta sẽ viết chúng, trước tiện chúng ta sẽ đi tìm điều kiện dừng ( base case ) của hàm này.
+   đói với danh sách dễ  dang nghĩa ngay tới điều kiện danh sách rông đâu tiên, hơn nữa đầu vào yêu cầu là hai danh sách có cùng độ dại do đó, điều kiện của chúng ta sẽ là 
+   zipping hai danh sách rông lại với nhau và có dạng như sau:</p>
 
 <pre class="brush:erl">
 zip([],[]) -&gt; [];
 zip([X|Xs],[Y|Ys]) -&gt; [{X,Y}|zip(Xs,Ys)].
 </pre>
 
-<p>However, if you wanted a more lenient zip function, you could decide to have it finish whenever one of the two list is done. In this scenario, you therefore have two base cases:</p>
+<p>Tuy nhiên, nếu bạn muốn hoàn thiện hơn, bạn lên mở rộng bằng cách thêm điều kiện dừng khi một trong hay danh sách 
+   là rỗng. do đó ,bạn sẽ có 2 điều kiện dừng với hàm này:</p>
 
 <pre class="brush:erl">
 lenient_zip([],_) -&gt; [];
@@ -296,23 +420,55 @@ lenient_zip([X|Xs],[Y|Ys]) -&gt; [{X,Y}|lenient_zip(Xs,Ys)].
 </pre>
 
 
-<p>Notice that no matter what our base cases are, the recursive part of the function remains the same. I would suggest you try and make your own tail recursive versions of <code>zip/2</code> and <code>lenient_zip/2</code>, just to make sure you fully understand how to make tail recursive functions: they'll be one of the central concepts of larger applications where our main loops will be made that way.</p>
+<p>Chý ý là bất kể  chúng ta định nghĩa điều kiện dừng thế  nào thì phần đệ quy của hàm vẫn không thay đổi. 
+    và để hiểu rõ cũng như thanh thạo hơn, tôi khuyên bạn hay thử  chuyển hàm <code>zip/2</code> và <code>lenient_zip/2</code> sang đệ quy đuổi, 
+    bằng cách hiểu vvề cách hoạt động của đệ quy đuôi: nó sẽ rất hữu ích vì đây là khái niệm rất quan trọng đằng sau các ứng dụng lớn nơi mà các vòng lặp chính sẽ hoạt động.</p>
 
-<p>If you want to check your answers, take a look at my implementation of <a class="source" href="static/erlang/recursive.erl.html">recursive.erl</a>, more precisely the <code>tail_zip/2</code> and <code>tail_lenient_zip/3</code> functions.</p>
+<p>nếu bạn muốn tìm câu trả lời cho hàm đệ quy đuôi của <code>zip/2</code> và <code>lenient_zip/2</code>,  
+    bạn có thể  tìm kiếm chúng trong đoạn mã của tôi <a class="source" href="static/erlang/recursive.erl.html">recursive.erl</a>, 
+    tương ứng với 2 hàm <code>tail_zip/2</code> và <code>tail_lenient_zip/3</code>.</p>
 
 <div class="note">
-	<p><strong>Note:</strong> tail recursion as seen here is not making the memory grow because when the virtual machine sees a function calling itself in a tail position (the last expression to be evaluated in a function), it eliminates the current stack frame. This is called tail-call optimisation (TCO) and it is a special case of a more general optimisation named <em>Last Call Optimisation</em> (LCO).</p>
+    <p><strong>Lưu ý:</strong> đệ quy đuôi được xem là phương pháp sử  dụng đệ quy mà không làm tăng kích thước của ngăn xếp hay bộ nhớ 
+        sử  dụng vì trong máy ảo Erlang , nó được nhìn nhận như một lời gọi hàm cuồi cùng trong ngăn xếp ( hay biểu thức cuối cùng được thẩm định trong hàm (evaluation function))
+        tail recursion as seen here is not making the memory grow because when the virtual machine sees a function calling itself in a tail position 
+        , bằng cách này thay vì đẩy tưng biểu thức và hàm vào trong ngắn xếp, nó sẽ loại bỏ khung ngăn xếp hiện tại đi. 
+        kỹ thuật này được gọi là tail-call optimisation (TCO) và là một trong những trường hợp đặc biệt của 
+        kỹ thuật tối ưu hóa <em>Last Call Optimisation</em> (LCO).</p>
 
-	<p>LCO is done whenever the last expression to be evaluated in a function body is another function call. When that happens, as with TCO, the Erlang VM avoids storing the stack frame. As such tail recursion is also possible between multiple functions. As an example, the chain of functions <code>a() -&gt; b().  b() -&gt; c(). c() -&gt; a().</code> will effectively create an infinite loop that won't go out of memory as LCO avoids overflowing the stack. This principle, combined with our use of accumulators is what makes tail recursion useful.</p>
+	<p>LCO sẽ được gọi bất cứ khi nào biểu thức cuối cùng được thẩm định khi một hàm gọi một hàm khác.  
+        Khi điều đó ra, cùng với TCO , máy ảo Erlang tránh lưu trữ trong ngăn xếp, 
+        như trong trường hợp đệ quy đuôi, nó có thể xen giữa nhiều hàm. 
+        Vd ra có một chuôic các hàm như sau <code>a() -&gt; b().  b() -&gt; c(). c() -&gt; a().</code> 
+        ,nhìn các hàm trên bạn hãy để  ý tằng, hàm 'a', gọi hàm 'b', tương tự 'b' gọi 'c' và cuối cùng 'c' gọi 'a', bằng cách làm này
+        nó sẽ tạo ra một vòng lặp vòng hạn, tuy nhiên bộ nhớ sẽ không tràn ( hêt dung lượng ) bởi vì LCO sẽ điều chỉnh để 
+        tránh làm đầy ngăn xếp. Bằng cách ứng dụng nguyên lí này, kết hợp với viẹc sử  accumulators làm cho đệ quy cuối thật sự tỏa sáng.</p>
 </div>
 
 
 <h3><a class="section" name="quick-sort">Quick, Sort!</a></h3>
 
 <img class="right explanation" src="static/img/quicksort.png" width="326" height="320" alt="Quicksort expanded: smaller numbers go to the left of the pivot, larger to the right, recursively." />
-<p>I can (and will) now assume recursion and tail recursion make sense to you, but just to make sure, I'm going to push for a more complex example, quicksort. Yes, the traditional "hey look I can write short functional code" canonical example. A naive implementation of quicksort works by taking the first element of a list, the <em>pivot</em>, and then putting all the elements smaller or equal to the pivot in a new list, and all those larger in another list. We then take each of these lists and do the same thing on them until each list gets smaller and smaller. This goes on until you have nothing but an empty list to sort, which will be our base case. This implementation is said to be naive because smarter versions of quicksort will try to pick optimal pivots to be faster. We don't really care about that for our example though.</p>
+<p>Nào giờ có thể  bạn đã hiểu rõ ràng về đệ quy và đệ quy cuối, nhưng không có chỉ đảm bảo chắc cả bởi vì tất cả những ví dụ mà ta đã làm trên rất cơ bản,
+    do đó dể chắc chắn , chúng ta sẽ tìm hiểu những vidụ phức tạp hơn.
+    Trong cấu trúc dũ liệu và giải thuật , chắc hẳn không ai là không làm quen với các giải thuật sắp xếp, trong các giải thuật đó có một vài giải thuật phức tập sử  dụng đẹ quy đề  giải quyết,
+    vâng giải thuật tôi muốn nói ở đây là giải thuật quicksort.   
+    I can (and will) now assume recursion and tail recursion make sense to you, but just to make sure, I'm going to push for a more complex example, quicksort. 
+    
+    Yes, the traditional "hey look I can write short functional code" canonical example. 
+    Vâng, nhìn vào bạn có thể  tự hào và nói "tôi có viết một hàm này một cách ngắn gọn, nhanh chóng". 
+    Giải thuật quicksort có thể  thực hiện một cách nhanh chóng bằng cách lấy phần tử  đầu tiên của một danh sách dể  so sánh, ta gọi phần tử  này là
+    <em>pivot</em> hay <em>key</em>, tiếp đó ra phân vùng băng cách đặt tạo ra hai danh sách mới , bà đặt tất cả phần tử  nhỏ hơn hay bằng phần tử pivot sang bên trái 
+    sang danh sách mới đó ( nó sẽ nằm trước phần tử pivot ) và tất cả các phần tử  lớn hơn sang danh sách còn lại ( nằm phía sau pivot ).
+    tương tự chúng ra thực hiện lặp lại các bước như vậy với 2 danh sách mới mà chúng ta vừa nhân được sao cho tới khi danh chỉ còn 1 phần tử  hay không thể  chia nhỏ được nữa ( danh sách rông ).
+    Đó cũng là điều kiện dừng của giải thuật này khi áp dụng đệ quy.
+    Lưu ý: như đã đề  cập đây là cách thực hiện nhanh chóng do đó nó sẽ không được tối ưu, đối với bản tối ưu của quicksort với việc chọn ra phần tử  pivot chúng ta sẽ đè cập sau,
+    trước mắt chúng ta chỉ xét ví dụ cơ bản.</p>
 
-<p>We will need two functions for this one: a first function to partition the list into smaller and larger parts and a second function to apply the partition function on each of the new lists and to glue them together. First of all, we'll write the glue function:</p>
+<p>Đầu tiên, chúng ta sẽ cần có hai hàm: hàm đầu tiên có chức năng chia danh sách thành hay phần,  
+    phần chứa những phần tử nhỏ hơn và phàn cứ những phần tử lớn hơn,
+    hàm thứ hai là hàm gộp lại tất cả các thành phần đã chia nhỏ lúc trước. 
+    Hàm đâu tiên chúng ra viết sẽ là hàm gộp các phàn tử  lại:</p>
 
 <pre class="brush:erl">
 quicksort([]) -&gt; [];
@@ -321,7 +477,10 @@ quicksort([Pivot|Rest]) -&gt;
     quicksort(Smaller) ++ [Pivot] ++ quicksort(Larger).
 </pre>
 
-<p>This shows the base case, a list already partitioned in larger and smaller parts by another function, the use of a pivot with both lists quicksorted appended before and after it. So this should take care of assembling lists. Now the partitioning function:</p>
+<p>Tiếp theo chúng ta sẽ viết hàm còn lại 
+    như đã nói, tiếp theo chúng ta sẽ viết một hàm có chức năng chia danh sách thành hai phần lớn hơn và nhỏ hơn của các phần tử , 
+    phần tử  pivot có vai trò làm vách ngăn giữa hai danh sách lớn và nhỏ đồng thời là điểm kết nối các danh sách lại với nhau.
+    hàm 'partitioning' sẽ được viết như sau:</p>
 
 <pre class="brush:erl">
 partition(_,[], Smaller, Larger) -&gt; {Smaller, Larger};
@@ -331,7 +490,10 @@ partition(Pivot, [H|T], Smaller, Larger) -&gt;
     end. 
 </pre>
 
-<p>And you can now run your quicksort function. If you've looked for Erlang examples on the Internet before, you might have seen another implementation of quicksort, one that is simpler and easier to read, but makes use of list comprehensions. The easy to replace parts are the ones that create new lists, the <code>partition/4</code> function:</p>
+<p>như vậy hàm quicksort của chúng ta đã hoàn thành rồi. 
+    Nếu bạn tìm kiếm các vị dụ về giải thuật quicksort viết bằng Erlang trên Internet bạn có sẽ thấy nhiều cách thực hiện khác nhau,
+    trong các vd đấy có một cách đơn giảm và dễ đoc nhưng nhưng sẽ phải dùng tới list comprehensions. 
+    Và chúng sẽ dễ  dàng áp dụng vào trong các đoạn mã tạo ra các danh sách mới gọn hơn, vd như hàm <code>partition/4</code> sau:</p>
 
 <pre class="brush:erl">
 lc_quicksort([]) -&gt; [];
@@ -341,28 +503,51 @@ lc_quicksort([Pivot|Rest]) -&gt;
     lc_quicksort([Larger || Larger &lt;- Rest, Larger &gt; Pivot]).
 </pre>
 
-<p>The main differences are that this version is much easier to read, but in exchange, it has to traverse the list twice to partition it in two parts. This is a fight of clarity against performance, but the real loser here is you, because a function <code>lists:sort/1</code> already exists. Use that one instead.</p>
+<p>điểm khác biệt lớn trong hàm trên đó là gắn gọn và dễ  dàng đọc hơn, hơn nữa chúng ta không phải định thêm một các hàm tách biêt khác.
+    nhưng dễ  đọc không kèm với hiệu xuất thực hiện, trong hàm trên nó phải duyêt danh sách hai lần để phân chia danh sách lớn vào trong 2 danh sách nhỏ hơn 
+    trong một cuộc đua tốc độ thì rõ ràng đièu này sẽ chống lại hiệu suất thực hiên, 
+    tuy vậy bạn vẫn là người thôi cuộc thôi bởi vì chúng ta không cần phải thực hiện hàm sắp xếp gì hết bởi vì trong module lists hàm sắp xếp <code>lists:sort/1</code> 
+    đã tồn tại. Vì vậy chỉ gọi lên và sử  dụng thôi.</p>
 
 <div class="note koolaid">
 	<p><strong>Don't drink too much Kool-Aid:</strong><br />
-       All this conciseness is good for educational purposes, but not for performance. Many functional programming tutorials never mention this! First of all, both implementations here need to process values that are equal to the pivot more than once. We could have decided to instead return 3 lists: elements smaller, larger and equal to the pivot in order to make this more efficient.</p>
+       Mã sạch, ngăn gọn xúc tích thì luôn được khuyến khích trong luyện tập và thực tế , nhưng không phải lúc nào nó cũng tỉ lệ thuận với hiệu suất 
+       . thực tế, trên mạng có rất nhiều các bài hướng dẫn không bao giờ đề  cập vấn đề  này! 
+       cả hai vd thực hiện ở trên đều cần phải xử  lí liên tục so sánh các giá trị với giá tri pivot nhiều hơn một lần. 
+       Do đó bạn hiệu quả hơn bạn có thể chia làm 3 phần danh sách thay vì 2 như trước: một cho các phần tử  nhỏ hơn, một cho lớn hơn và còn lại cho nhưng giá trị bằng giá trị pivot theo thứ tự.</p>
 
-    <p>Another problem relates to how we need to traverse all the partitioned lists more than once when attaching them to the pivot. It is possible to reduce the overhead a little by doing the concatenation while partitioning the lists in three parts. If you're curious about this, look at the last function (<code>bestest_qsort/1</code>) of <a class="source" href="static/erlang/recursive.erl.html">recursive.erl</a> for an example.</p>
+    <p>một vấn đề khác nữa là cách chúng ta sẽ tiếp tục duyệt các danh sách mà sau khi đã được phân chia ra, xử  lí và gộp chúng với pivot ( cứ thể  lặp lại do đó sẽ phải duyệt nhiều hơn một lần ).
+        Do đó để  giảm nhệ việc này băng cách ghép chúng lại trong quá trình phân chia danh sách thành 3 phần.
+        Nếu vẫn chưa hinh dung được hãy nhin hàm (<code>bestest_qsort/1</code>) trong <a class="source" href="static/erlang/recursive.erl.html">recursive.erl</a>.</p>
 
-    <p>A nice point about all of these quicksorts is that they will work on lists of any data type you've got, even tuples of lists and whatnot. Try them, they work!</p>
+    <p>một điều thú vi của giải thuật quicksort là chúng có thể  hoạt động với bất kỳ kiểu dữ liệu nào trong danh sách ( thậm chí cả bộ danh sách ). Nếu bạn Không tin, hãy thử  
+       , Chúng sẽ hoạt động chính xác!</p>
 </div>
 
 <h3><a class="section" name="more-than-lists">More than lists</a></h3>
 
-<p>By reading this chapter, you might be starting to think recursion in Erlang is mainly a thing concerning lists. While lists are a good example of a data structure that can be defined recursively, there's certainly more than that. For the sake of diversity, we'll see how to build binary trees, and then read data from them.</p>
+<p>Đoc tơi đây, bạn có thể  bắt đầu nghĩ rằng đệ quy trong Erlang phần lớn làm việc cụ thể  với kiểu dữ liệu danh sách 
+    .Mặc dù danh sách là một ví dụ tốt nhất của cấu trúc dữ liệu để  minh họa cho đệ quy nhưng dĩ liên là 
+    vẫn có thể  sử  dụng các kiểu diệu khác, Trong cấu trúc dữ liệu và giải thuật chắc hẳn không thể  không nhăc tới cậy, đặc biệt là cậy nhin phân và sử dụng hàm hàm đệ quy cho thêm,
+    sửa , xóa và duyệt các nút con, chúng ta sẽ thực hiện một ví dụ đơn giản đó trong Erlang:</p>
 
 <img class="left" src="static/img/tree.png" width="167" height="250" alt="An angry tree with an axe" title="How do you like trees now, hippie?" />
 
-<p>First of all, it's important to define what a tree is. In our case, it's nodes all the way down. Nodes are tuples that contain a key, a value associated to the key, and then two other nodes. Of these two nodes, we need one that has a smaller and one that has a larger key than the node holding them. So here's recursion! A tree is a node containing nodes, each of which contains nodes, which in turn also contain nodes. This can't keep going forever (we don't have infinite data to store), so we'll say that our nodes can also contain empty nodes.</p>
+<p>Bước đầu tiên, chúng ta hãy xem lại lý thuyết, định nghĩa thế  nào là một cây. trong trường hợp của chúng ta, 
+    nó gồm các nút từ trên xuống. cá nút sẽ được coi là các bộ chứa một khóa, một giá trị liên kết với khóa đó, 
+    và 2 nút con. Tát nhiện với cây nhị phân, thì các nút con sẽ mang giá trị nhỏ hơn hay lớn hơn nút cha ( nút hiện tại ) tùy thuộc vào vị trị ( ở đâu ta sẽ coi nút con đầu tiên mang giá trị nhỏ hơn 
+    và nút con thứ hai mang giá trị lớn hơn nút cha ). vậy ta sẽ có đệ quy trong cây! một cây sẽ bao gồm một nút ( nút gốc ) chứa các nút con, trong đó mỗi một nút con lại chưa các nút con khác
+    và cứ liên tục như thé với các nút con thuộc nút cha trước đó. 
+    tuy nhiên nó sẽ không lặp lại như thế  vô tận bởi vị dung lượng bộ nhớ có hạn cho việc lưu trữ, 
+    vì vậy các nút con cũng có thể  không chưa bất kỳ một nút nào ( nút rỗng ).</p>
 
-<p>To represent nodes, tuples are an appropriate data structure. For our implementation, we can then define these tuples as <code>{node, {Key, Value, Smaller, Larger}}</code> (a tagged tuple!), where <var>Smaller</var> and <var>Larger</var> can be another similar node or an empty node (<code>{node, nil}</code>). We won't actually need a concept more complex than that.</p>
+<p>Trong vd này bộ là kiểu cấu trúc dữ liệu thích hợp nhất cho việc biểu diễn các nút. chúng ta sẽ định nghĩa một nút như sau <code>{node, {Key, Value, Smaller, Larger}}</code> 
+    (a tagged tuple!), trong đó  <var>Smaller</var> và <var>Larger</var> có thể  là các nút khác hay là một nút rỗng (<code>{node, nil}</code>). 
+    mặc dù nhìn có về  hơi khó , nhưng để  đơn giản chúng ta chỉ cần định nghĩa như vậy.</p>
 
-<p>Let's start building a module for our <a class="source" href="static/erlang/tree.erl.html" title="tree.erl module">very basic tree implementation</a>. The first function, <code>empty/0</code>, returns an empty node. The empty node is the starting point of a new tree, also called the <em>root</em>:</p>
+<p>hãy bắt đầu xây dựng một vd về  cẫu trúc dữ liệu cây đơn giản đặt tên là module <a class="source" href="static/erlang/tree.erl.html" title="tree.erl module"></a>. T
+   Hàm đầu tiên chúng ta sẽ định nghĩa là hàm <code>empty/0</code>, hàm này sẽ trả về  kết quả là một nút rỗng. 
+   trong cấu trúc dữ liệu cây, nút rỗng có thể được như như điểm bắt đầu của một cây hay còn được gọi là<em>root</em> ( nút gỗc ):</p>
 
 <pre class="brush:erl">
 -module(tree).
@@ -371,11 +556,23 @@ lc_quicksort([Pivot|Rest]) -&gt;
 empty() -&gt; {node, 'nil'}.
 </pre>
 
-<p>By using that function and then encapsulating all representations of nodes the same way, we hide the implementation of the tree so people don't need to know how it's built. All that information can be contained by the module alone. If you ever decide to change the representation of a node, you can then do it without breaking external code.</p>
+<p>By using that function and then encapsulating all representations of nodes the same way, 
+    chúng ta sẽ ẩn phần thực hiện của cấu trúc cây đi vì người dùng chỉ cần biết cách nó hoạt động thế  nào thôi thay biết biết nó được xây dưng thế  nào 
+    . Tất cả các thông tin chỉ tồn tại trong module đó. Nêu bạn có ý định đinh thay đổi trạng thái, logic của của môt nút, bạn có thể làm nhưng đừng phá vỡ cấu trúc của sử  dụng module đối với sử  dụng module tree trong các module khác.</p>
 
-<p>To add content to a tree, we must first understand how to recursively navigate through it. Let's proceed in the same way as we did for every other recursion example by trying to find the base case. Given that an empty tree is an empty node, our base case is thus logically an empty node. So whenever we'll hit an empty node, that's where we can add our new key/value. The rest of the time, our code has to go through the tree trying to find an empty node where to put content.</p>
+<p>để  thêm một nút, trước tiên chúng ta phải hiểu cách thức đệ quy trong thao tác duyệt cây. 
+    Hãy làm các bước tương tự với cách mà chúng ta đã làm với các vd đệ quy trước đó, bước đâu tiên của chúng ta khi viết một hàm đệ quy đó là 
+    tìm điẻm dừng ( base case ). trong trường hợp này sẽ là một nút rỗng, do đó bất cứ khi nào chúng ta gặp nút rỗng, chúng ta sẽ thêm một nút cùng với giá trị 
+    mà chúng ta cần thêm vào. tương tự trong các trường hợp khác, khi nút đó đã được được lấp giá trị, chúng ta sẽ tiến hành duyệt cho tới khi nào nút con của nút đó là nút rống (
+    lưu ý phải đảm bảo rằng giá trị đầu tiên của nút con luôn nhỏ hơn nút cha ( nut chứa nó ) và giá trị nút con thứ hai lớn hơn giá trị nút cha ).</p>
 
-<p>To find an empty node starting from the root, we must use the fact that the presence of <var>Smaller</var> and <var>Larger</var> nodes let us navigate by comparing the new key we have to insert to the current node's key. If the new key is smaller than the current node's key, we try to find the empty node inside <var>Smaller</var>, and if it's larger, inside <var>Larger</var>. There is one last case, though: what if the new key is equal to the current node's key? We have two options there: let the program fail or replace the value with the new one. This is the option we'll take here. Put into a function all this logic works the following way:</p>
+<p>chúng ta sẽ đi chi tiết vào việc duyệt nút, 
+    từ một nút gốc , để  tìm một nút rỗng, chúng ta phải xác định các nút con của nó, 
+    như bạn thấy trong một nút bao gồm hay nút con <var>Smaller</var> và <var>Larger</var>, các nút này chưa các nút con khác, điều này cho phép chúng ta 
+    di chuyển tới các nút đó bằng cách so sánh giá trị của khóa mới mà chúng ta muốn thêm vào với giá trị nút hiện tại. 
+    nếu giá trị nhỏ hơn ta sẽ tìm nút rỗng ở nút <var>Smaller</var> ( tức nút đâu tiên ) , ngược lại ta sẽ chuyển qua tìm ở nút <var>Larger</var>. 
+    Trong trường hợp nếu giá trị của khóa mới đó bằng với giá trị nút hiện tại đang so sánh, chúng ta sẽ có hai lựa chọn: đầu tiên là thay thế  giá nút đó với giá trị mới, lựa chọn còn lại là để cho chương trình tạo ra lỗi. Trong ví dụ này 
+    chúng ta sẽ chọn phương án đầu tiên dó là thay thế  giá trị của nút, chúng ta sẽ thực hiện như sau:</p>
 
 <pre class="brush:erl">
 insert(Key, Val, {node, 'nil'}) -&gt;
@@ -388,9 +585,20 @@ insert(Key, Val, {node, {Key, _, Smaller, Larger}}) -&gt;
     {node, {Key, Val, Smaller, Larger}}.
 </pre>
 
-<p>Note here that the function returns a completely new tree. This is typical of functional languages having only single assignment. While this can be seen as inefficient, most of the underlying structures of two versions of a tree sometimes happen to be the same and are thus shared, copied by the VM only when needed.</p>
+<p>Lưu ý rằng kết quả trả về  của hàm luôn là một nút với một cây hoàn toàn mới. đây là đặc điểm của các ngôn ngữ lập trình hàm vì chúng quy định chỉ có 
+    có một biến chỉ được phép gán duy nhất một giá trị. Mặc du cách làm này không hiệu quả và làm giảm hiệu suất của chương trình, tuy vậy trong máy ảo Erlang, nó sẽ lưu trữ 
+    Note here that the function returns a completely new tree. This is typical of functional languages having only single assignment. 
+    While this can be seen as inefficient, most of the underlying structures of two versions of a tree sometimes happen to be the same and are thus shared, copied by the VM only when needed.</p>
 
-<p>What's left to do on this example tree implementation is creating a <code>lookup/2</code> function that will let you find a value from a tree by giving its key. The logic needed is extremely similar to the one used to add new content to the tree: we step through the nodes, checking if the lookup key is equal, smaller or larger than the current node's key. We have two base cases: one when the node is empty (the key isn't in the tree) and one when the key is found. Because we don't want our program to crash each time we look for a key that doesn't exist, we'll return the atom <samp>'undefined'</samp>. Otherwise, we'll return <samp>{ok, Value}</samp>. The reason for this is that if we only returned <var>Value</var> and the node contained the atom <samp>'undefined'</samp>, we would have no way to know if the tree did return the right value or failed to find it. By wrapping successful cases in such a tuple, we make it easy to understand which is which. Here's the implemented function:</p>
+<p>Cuối cùng để  hoàn thành cấu trúc dữ liệu cây này, chung ta viết hàm tìm kiếm, duyệt cây, những gì chũng ta cần làm là tạo ra một hàm 
+    với tên gọi là <code>lookup/2</code>, hàm này sẽ cho phép bạn tìm giá trị ( hay nút ) của cây bằng cách truyền vào khóa của một. 
+    logic trong hàm tìm kiếm này tương tự giống với những gì ta đã là khi thêm một giá trị vào cây: 
+    chúng sẽ sẽ tiến hành duyệt nút, so sánh khóa bằng, nhỏ hơn hay lớn hơn khóa của nút hiện tại, trong trường hợp không tìm thấy khóa nào và để  tránh lỗi xảy ra 
+    ( có thể  làm ngừng chương trình ) chúng ta sẽ trả về  một atom <samp>'undefined'</samp>, ngược lại trả về <samp>{ok, Value}</samp>
+    . Đối với kết quả của việc tìm tháy ban sẽ thắc mắc tại sao lại trả về  một bộ có dạng <samp>{ok, Value}</samp> thay vì chỉ trả về  giá trị tìm được <samp>Value</samp>, lí giải của viẹc làm này 
+    đó là nếu chúng ta chỉ trả về  <var>Value</var> , có điều nếu giá trị đó của một node chứa <samp>'undefined'</samp>, khi kết hợp phép khớp trong khớp mẫu,
+    chúng ta sẽ không biết thực sự là tìm được giá trị hay không tìm thấy giá trị đó. do đó để  tránh rủi ro, chúng ta đặt giá trị tìm được đó trong bộ, kềm theo một atom để 
+    chỉ sự thành công của việc tìm kiếm. Hàm của chúng ta sẽ được viết như sau:</p>
 
 <pre class="brush:erl">
 lookup(_, {node, 'nil'}) -&gt;
@@ -403,7 +611,8 @@ lookup(Key, {node, {_, _, _, Larger}}) -&gt;
     lookup(Key, Larger).
 </pre>
 
-<p>And we're done. Let's test it with by making a little email address book. Compile the file and start the shell: </p>
+<p>Giờ bạn đã có hoàn chỉnh module tree rồi, hãy biên dịch và kiểm tra hàm này trong shell cùng với một ví dụ nhỏ 
+    về  địa chỉ emai: </p>
 
 <pre class="brush:eshell">
 1&gt; T1 = tree:insert("Jim Woodland", "jim.woodland@gmail.com", tree:empty()).
@@ -430,7 +639,7 @@ lookup(Key, {node, {_, _, _, Larger}}) -&gt;
                      {node,nil}}}}}}}
 </pre>
 
-<p>And now you can lookup email addresses with it:</p>
+<p>Giờ hãy thử gọi hàm tìm kiếm để tìm kiếm địa chỉ email:</p>
 
 <pre class="brush:eshell">
 4&gt; tree:lookup("Anita Bath", Addresses).

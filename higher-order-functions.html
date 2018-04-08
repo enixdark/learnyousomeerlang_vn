@@ -38,11 +38,20 @@
 
 <img class="left" src="static/img/lambda.png" width="128" height="172" alt="A lambda symbol with a sexy mustache" title="lambdude!" />
 
-<p>An important part of all functional programming languages is the ability to take a function you defined and then pass it as a parameter to another function. This in turn binds that function parameter to a variable which can be used like any other variable within the function. A function that can accept other functions transported around that way is named a <em>higher order function</em>. Higher order functions are a powerful means of abstraction and one of the best tools to master in Erlang.</p>
+<p>Trong các chương trước chúng ta đã tiếp cận rất nhiều các thành phàn quan trong của ngôn ngữ lập trình rồi ( danh sách, đệ quy ),
+    ở chương này ta cũng tìm hiểu một thành phần cũng quan trong không kém.
+    Như bạn biết trong một số  ngôn ngữ đôi khi ta thấy định nghĩa một hàm, sau đó dùng hàm đó như một tham số  đầu vào cho một hàm khác.
+    nói cách khác, hàm sẽ được coi như một tham số , biến và có thể sử  dụng như bất kỳ các biến nào khác trong một hàm.
+    những hàm như thế  này được gọi dưới một cái tên là <em>higher order function</em>. <em>Higher order function</em>
+    là một hàm chấp nhận một hàm khác như một tham số  truyền vào. Higher order functions là một phương pháp trừu tượng mạnh mẽ 
+    và là công cụ tốt nhất trong Erlang.</p>
 
-<p>Again, this a concept rooted in mathematics, mainly <a class="external" href="http://en.wikipedia.org/wiki/Lambda_calculus" title="Wikipedia to the rescue!">lambda calculus</a>. I won't go into much detail about lambda calculus because some people have a hard time grasping it and it's a bit out of scope. However, I'll define it briefly as a system where everything is a function, even numbers. Because everything is a function, functions must accept other functions as parameters and can operate on them with even more functions!</p>
+<p>Hơn nữa, nguồn gôc của khai niệm này xuất phát từ toán học, cụ thể  là <a class="external" href="http://en.wikipedia.org/wiki/Lambda_calculus" title="Wikipedia to the rescue!">lambda calculus</a>. 
+    tôi sẽ không đi sâu vào lambda calculus bởi vì rất khó để  có thể  nắm vững được lý thuyết này trong thời gian ngắn và nó vượt xa khỏi những kiến thức mà chúng ta
+    cần trong chương này, tuy vậy tôi vẫn sẽ mô tả một cách ngắn gọn, nó như một hệ thống trong đó mọi thứ là hàm, thậm chí là số .
+    bởi vì bất kỳ những hàm nào, những hàm chấp nhận các hàm khác như một tham số và có thể  sử  dụng chùng cùng với các hàm khác!</p>
 
-<p>Alright, this might be a little bit weird, so let's start with an example:</p>
+<p>Vâng, có một chút lã lẫm và khó để  hình dung dựa trên lý thuyết , do đó chúng ta sẽ đi vào các ví dụ cụ thể  để  hiẻu rõ hơn:</p>
 
 <pre class="brush:erl">
 -module(hhfuns).
@@ -54,7 +63,7 @@ two() -&gt; 2.
 add(X,Y) -&gt; X() + Y().
 </pre>
 
-<p>Now open the Erlang shell, compile the module and get going:</p>
+<p>Hãy lưu lại vào một file module và biên dịch, sau đó mở shell lên và gõ:</p>
 
 <pre class="brush:eshell">
 1&gt; c(hhfuns).
@@ -69,11 +78,22 @@ add(X,Y) -&gt; X() + Y().
 3
 </pre>
 
-<p>Confusing? Not so much, once you know how it works (isn't that always the case?) In command 2, the atoms <code>one</code> and <code>two</code> are passed to <code>add/2</code>, which then uses both atoms as function names (<code>X() + Y()</code>). If function names are written without a parameter list then those names are interpreted as atoms, and atoms can not be functions, so the call fails. This is the reason why expression 3 also fails: the values 1 and 2 can not be called as functions either, and functions are what we need!</p>
+<p>Thật khó hiểu? tại sao dòng lệnh số  2 lại không hoạt động ? Nếu bạn hiểu được nguyên tắc làm việc của việc dùng hàm như một tham số  trong Erlang, 
+    thì nó sẽ trở nên rõ ràng hơn. Như ta thấy ở dòng số  hai, atom <code>one</code> và <code>two</code> được truyền vào hàm <code>add/2</code>, 
+    ở phía trên chúng ta định nghĩa 2 <code>one/0</code> và <code>two/0</code> và sử  dụng hai atom này cho tên của hai hàm 
+    và gọi (<code>X() + Y()</code>). tuy nhiên trong Erlang , nếu tên của hàm mà được viết không cùng với một danh sách sách đối số  truyền vào thì 
+    trình dịch vẫn hiểu nó như một atom thường, do giải thích lí do tại sao trong thân hàm ở dòng lệnh số  hai không hoạt động.
+    Tương tự giải thích cho dòng lệnh số  3, ta truyền vào hai giá trị là kiểu dữ liệu số , so đó nó không thể  hoạt động được bởi vì hai giá trị đó không phải là 
+    hàm.</p>
 
-<p>This is why a new notation has to be added to the language in order to let you pass functions from outside a module. This is what <code>fun Module:Function/Arity</code> is: it tells the VM to use that specific function, and then bind it to a variable.</p>
+<p>Vì vây, chúng ta phải sử  dụng một phương pháp mới để  có thể  sử  dụng một hàm như một đôi số  truyền vào hàm khác và gọi nó bên trong hàm đó. 
+    Trong Erlang chúng ta sẽ sử  dụng công thức <code>fun Module:Function/Arity</code>: tượng tự như vd dòng lệnh thứ 4, 
+    khi sử  dụng công thức này , máy ảo sẽ ghi nhận nó như hôm hàm, và cho phép gán với một giá trị.</p>
 
-<p>So what are the gains of using functions in that manner? Well a little example might be needed in order to understand it. We'll add a few functions to <code><a class="source" href="static/erlang/hhfuns.erl.html" title="final implementation">hhfuns</a></code> that work recursively over a list to add or subtract one from each integer of a list:</p>
+<p>Vậy những gì chúng ta sẽ nhận được từ việc sử  dụng các hàm theo cách này ? 
+    Để  hiêỉ hơn chúng ta sẽ đi xét một ví dự cụ thể. , chúng ta sẽ đinh nghĩa hai hàm <code>increment</code> và <code>decrement</code>
+    và đặt chúng trong module <code><a class="source" href="static/erlang/hhfuns.erl.html" title="final implementation">hhfuns</a></code> 
+    , hai hàm này sẽ ứng với tên gọi của nó, được dùng để  tăng giảm giá trị của các số  nguyen trong một danh sách lên một đơn vị, và ta sẽ sử  dụng đệ quy để  viêt chúng:</p>
 
 <pre class="brush:erl">
 increment([]) -&gt; [];
@@ -83,7 +103,12 @@ decrement([]) -&gt; [];
 decrement([H|T]) -&gt; [H-1|decrement(T)].
 </pre>
 
-<p>See how similar these functions are? They basically do the same thing: they cycle through a list, apply a function on each element (<code>+</code> or <code>-</code>) and then call themselves again. There is almost nothing changing in that code: only the applied function and the recursive call are different. The core of a recursive call on a list like that is always the same. We'll abstract all the similar parts in a single function (<code>map/2</code>) that will take another function as an argument:</p>
+<p>Bạn có thể  nhin thấy sự tương đồng giữa hai hàm trên ? về  cơ bản chúng không khác nhau: duyêt một danh sách, 
+    ở mối phần tử  của danh gọi tới toán tử  <code>+</code> hay <code>-</code>, và tiếp tục lặp lại cho tới cuối dánh sách 
+    . Hầu như chúng không có gì thay đổi nhiều trong đoạn mã ngoại trừ việc áp dụng toán tử  ( hoặc có thể  là hàm ) và lời gọi đệ quy hai hàm khác nhau.
+    Còn lại các thành phần như làm việc với một danh sách bên trong lời gọi đệ quy là như nhau. 
+    Từ dó, chúng ta có thể  quy ước các thanh phần tương tự nhau như vậy vào một hàm chung , gọi là <code>map/2</code>, hàm này sẽ 
+    nhận một đầu vào là một hàm khác như một đối số :</p>
 
 <pre class="brush:erl">
 map(_, []) -&gt; [];
@@ -93,7 +118,7 @@ incr(X) -&gt; X + 1.
 decr(X) -&gt; X - 1.
 </pre>
 
-<p>Which can then be tested in the shell:</p>
+<p>Giờ hãy biên dịch đoạn mã trên và mở shell lên để  kiểm tra:</p>
 
 <pre class="brush:eshell">
 1&gt; c(hhfuns).
@@ -110,12 +135,22 @@ decr(X) -&gt; X - 1.
 [0,1,2,3,4]
 </pre>
 
-<p>Here the results are the same, but you have just created a very smart abstraction! Every time you will want to apply a function to each element of a list, you only have to call <code>map/2</code> with your function as a parameter. However, it is a bit annoying to have to put every function we want to pass as a parameter to <code>map/2</code> in a module, name it, export it, then compile it, etc. In fact it's plainly unpractical. What we need are functions that can be declared on the fly...</p>
+<p>Để  ý rằng kết qủa của hàm gọi từ module và hàm gọi từ higher older function là như nhau.
+    nhưng cách viết của higher older function mà bạn vừa tạo ra trông rất smart abstraction! 
+    bằng cách sử  dụng higher older function, mỗi khi bạn muốn áp dụng một hàm hay một biểu thử  cho mỗi một phần tử  trong danh sách 
+    bạn chỉ cần sử  dụng hàm đó nhu một tham số  truyền vào tới hàm <code>map/2</code> thay vì nhưng trước ta đưa ra chi tiết hàm cần gọi hàm bên trong. 
+    Tuy vậy, có một chút phiền phức khi mỗi lần muón truyền vào một hàm tới <code>map/2</code> ta lại phải định nghĩa tên một hàm, export , và biên dịch nó, etc.
+
+    However, it is a bit annoying to have to put every function we want to pass as a parameter to <code>map/2</code> in a module, name it, export it, then compile it, etc. 
+    In fact it's plainly unpractical. What we need are functions that can be declared on the fly...</p>
 
 
-<h3><a class="section" name="anonymous-functions">Anonymous functions</a></h3>
+<h3><a class="section" name="anonymous-functions">Hàm ẩn danh (Anonymous functions)</a></h3>
 
-<p>Anonymous functions, or <em>funs</em>, address that problem by letting you declare a special kind of function inline, without naming them. They can do pretty much everything normal functions can do, except calling themselves recursively (how could they do it if they are anonymous?) Their syntax is:</p>
+<p>Anonymous functions , viết là <em>funs</em>, để giải quyết vấn đề  trên, đây là một hàm đặc biêt được dùng 
+    bên trong (inline) một module hay hàm ( sử  dụng cục bộ ) và không cân phải khai báo tên hàm,
+    . bởi vì chúng không được đặt tên dó ngoài trừ việc không thể sử  dụng chúng như một hàm đệ quy (how could they do it if they are anonymous?) ra còn lại 
+    chúng có hoạt động như một hàm thông thường được, cú pháp định nghĩa đối với anonymous functions như sau:</p>
 
 <pre class="brush:erl">
 fun(Args1) -&gt;
@@ -127,7 +162,7 @@ fun(Args1) -&gt;
 end
 </pre>
 
-<p>And can be used the following way:</p>
+<p>Bạn có thấy thấy chúng không khác nhiều định nghĩa một hàm thông thường, và chúng có thể  đươc sử dụng theo các cách sau:</p>
 
 <pre class="brush:eshell">
 7&gt; Fn = fun() -&gt; a end.
@@ -140,7 +175,9 @@ a
 [0,1,2,3,4]
 </pre>
 
-<p>And now you're seeing one of the things that make people like functional programming so much: the ability to make abstractions on a very low level of code. Basic concepts such as looping can thus be ignored, letting you focus on what is done rather than how to do it.</p>
+<p>Giờ có lẽ bạn phần nào hiểu tạo tại sao nhiều người thích thú với lập trình hàm: 
+    đây là một trong những khẳ  năng tạo ra các dữ liệu trức tượng ở mức thấp của mã (low level of code). 
+    Khái niệm này giống với vòng lặp do đó chúng sẽ tập trung vào những gì chúng làm được hơn là tìm hiểu cách hoạt đống của chúng.</p>
 
 <p>Anonymous functions are already pretty dandy for such abstractions but they still have more hidden powers:</p>
 
@@ -159,9 +196,22 @@ ok
 </pre>
 
 
-<p>Hold the phone Batman! What's going on here? Well, first of all, we declare an anonymous function assigned to <var>PrepareAlarm</var>. This function has not run yet: it only gets executed when <code>PrepareAlarm("bathroom").</code> is called. <img class="left" src="static/img/batman.png" width="137" height="224" alt="Batman with a manly mustache" title="le batman" /> At that point, the call to <code>io:format/2</code> is evaluated and the "Alarm set" text is output. The second expression (another anonymous function) is returned to the caller and then assigned to <var>AlarmReady</var>. Note that in this function, the variable <var>Room</var>'s value is taken from the 'parent' function (<var>PrepareAlarm</var>). This is related to a concept called <em>closures</em>.</p>
+<p>Batman, hãy giữ điện thoại! Chuyện quái gì đang xảy ra ở đây vậy ? 
+   Trước tiện , chúng ra khai báo một anonymous function và gán nó vào biến <var>PrepareAlarm</var>. 
+   để  ý rằng sau khi gán, hàm này vẫn chưa được thực thi: 
+   chỉ cho tới khi chúng ra gọi <code>PrepareAlarm("bathroom")</code> , nó mới được thực. 
+   <img class="left" src="static/img/batman.png" width="137" height="224" alt="Batman with a manly mustache" title="le batman" /> 
+   tuy nhiên hãy để  ý tại thời điểm ta gán tới biến, ở biểu thức thứ nhất lời gọi hàm<code>io:format/2</code> đã được thẩm định và thực hiện cùng với dòng chữ 
+   "Alarm set" đã được in ra. Nhưng ở biêủ thức thứ hai ( một anonymous function khác ) 
+   , nó sẽ trả về  một hàm gán và gán tới biến <var>AlarmReady</var>. 
+   Lưu ý rằng trong hàm này, giá trị của biến <var>Room</var> được lấy từ hàm 'cha' (<var>PrepareAlarm</var>). 
+   Chắc hẳn với những ai đã làm quen với một số  ngôn ngữ lập trình Prototype ( Lua , Javácript ) sẽ thấy quen thuộc ,đây là một trong những khái niệm liên qua tới <em>closures</em>.</p>
 
-<p>To understand closures, one must first understand scope. A function's scope can be imagined as the place where all the variables and their values are stored. In the function <code>base(A) -&gt; B = A + 1.</code>, <var>A</var> and <var>B</var> are both defined to be part of <code>base/1</code>'s scope. This means that anywhere inside <code>base/1</code>, you can refer to <var>A</var> and <var>B</var> and expect a value to be bound to them. And when I say 'anywhere', I ain't kidding, kid; this includes anonymous functions too:</p>
+<p>Để hiểu rõ ràng vè closures, đâu tiên ta phải hiểu phạm vị hoạt động ( scope ) của chúng trước đã. 
+    phạm vi hoạt động của một hàm có thể được hình dưng như nơi mà tất cá các biến và giá trị của chúng được lưu trữ 
+    . Ví dụ như trong hàm <code>base(A) -&gt; B = A + 1.</code>, biến <var>A</var> vf biến <var>B</var> là  một phần được định nghĩa trong hàm <code>base/1</code>. 
+    tức là ở bất cứ nơi nào trong hàm <code>base/1</code>, bạn đều có thể  gọi tới và sử  dụng biến <var>A</var> và biến <var>B</var> 
+    . Khi tôi nối 'bất cứ đâu', đó không phải là trò đùa, hãy nhìn ví dụ đây, ngay cả trong anonymous functions cũng có thể  được:</p>
 
 <pre class="brush:erl">
 base(A) -&gt;
@@ -170,7 +220,11 @@ base(A) -&gt;
     F().
 </pre>
 
-<p><var>B</var> and <var>A</var> are still bound to <code>base/1</code>'s scope, so the function <var>F</var> can still access them. This is because <var>F</var> inherits <code>base/1</code>'s scope. Like most kinds of real-life inheritance, the parents can't get what the children have:</p>
+<p>hay nhìn biến <var>B</var> và biến <var>A</var> vẫn nằm trong phạm vi của hàm <code>base/1</code>, 
+    và hàm <var>F</var> có thể  truy cập , sử  dụng được chúng. 
+    giải thích điều này là bởi vì hàm <var>F</var> đang kế  thừa các biến trong phạm vi định nghĩa của hàm <code>base/1</code>. 
+    Tương tự với hầu hết các loại kế thừa trong thực tế, con sẽ được thừa hưởng tất cả nhưng gì cha có nhưng ngược lại cha không thể 
+    có những gì mà con đang có:</p>
 
 <pre class="brush:erl">
 base(A) -&gt;

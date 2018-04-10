@@ -149,7 +149,7 @@ decr(X) -&gt; X - 1.
 
 <p>Anonymous functions , viết là <em>funs</em>, để giải quyết vấn đề  trên, đây là một hàm đặc biêt được dùng 
     bên trong (inline) một module hay hàm ( sử  dụng cục bộ ) và không cân phải khai báo tên hàm,
-    . bởi vì chúng không được đặt tên dó ngoài trừ việc không thể sử  dụng chúng như một hàm đệ quy (how could they do it if they are anonymous?) ra còn lại 
+    . bởi vì chúng không được đặt tên do đó ngoài trừ việc không thể  sử  dụng chúng như một hàm đệ quy (how could they do it if they are anonymous?) ra còn lại 
     chúng có hoạt động như một hàm thông thường được, cú pháp định nghĩa đối với anonymous functions như sau:</p>
 
 <pre class="brush:erl">
@@ -196,7 +196,7 @@ ok
 </pre>
 
 
-<p>Batman, hãy giữ điện thoại! Chuyện quái gì đang xảy ra ở đây vậy ? 
+<p>Gọi cho Batman đi! Chuyện quái gì đang xảy ra ở đây vậy ? 
    Trước tiện , chúng ra khai báo một anonymous function và gán nó vào biến <var>PrepareAlarm</var>. 
    để  ý rằng sau khi gán, hàm này vẫn chưa được thực thi: 
    chỉ cho tới khi chúng ra gọi <code>PrepareAlarm("bathroom")</code> , nó mới được thực. 
@@ -234,9 +234,14 @@ base(A) -&gt;
     C.
 </pre>
 
-<p>In this version of the function, <var>B</var> is still equal to <code>A + 1</code> and <var>F</var> will still execute fine. However, the variable <var>C</var> is only in the scope of the anonymous function in <var>F</var>. When <code>base/1</code> tries to access <var>C</var>'s value on the last line, it only finds an unbound variable. In fact, had you tried to compile this function, the compiler would have thrown a fit. Inheritance only goes one way.</p>
+<p>Ở hàm trên, biến <var>B</var> được gán băng giá trị của <code>A + 1</code> và định nghĩa một anonymous function <var>F</var>, bên trong đó ta tại ra một biến 
+    <var>C</var>, và chúng ta sẽ sủ dụng hàm <var>F</var> ngay sau biểu thức định nghĩa của nó.Tuy nhiên, 
+    hay để  ý, biến <var>C</var> chỉ có phạm vi hoạt động bên trong thân của hàm <var>F</var>. 
+    ở biểu thức cuối trong thân hàm <code>base/1</code>, lỗi sẽ xảy ra nếu nó cố  truy cập vào biến <var>C</var>, 
+    bởi vì máy ảo nhìn nhận nó như một biến chưa được liên kết giá trị it ( unbound variable ).</p>
 
-<p>It is important to note that the inherited scope follows the anonymous function wherever it is, even when it is passed to another function:</p>
+<p>đây là một trong những điểm lưu ý về  phạm vi kế thừa của một It is important to note that the inherited scope follows the anonymous function wherever it is, 
+    thậm chí ngay cả khi nó được truyền vào một hàm khác:</p>
 
 <pre class="brush:erl">
 a() -&gt;
@@ -247,7 +252,7 @@ b(F) -&gt;
     "a/0's password is "++F().
 </pre>
 
-<p>Then if we compile it:</p>
+<p>Hãy biên dịch và kiểm tra hàm trên</p>:</p>
 
 <pre class="brush:eshell">
 14&gt; c(hhfuns).
@@ -256,9 +261,14 @@ b(F) -&gt;
 "a/0's password is pony"
 </pre>
 
-<p>Who told <code>a/0</code>'s password? Well, <code>a/0</code> did. While the anonymous function has <code>a/0</code>'s scope when it's declared in there, it can still carry it when executed in <code>b/1</code>, as explained above. This is very useful because it lets us carry around parameters and content out of its original context, where the whole context itself are not needed anymore (exactly like we did with Batman in a previous example).</p>
+<p>Who told <code>a/0</code>'s password? Well, <code>a/0</code> did. 
+    như đã giải thích ở trên, một anonymous function được khai báo bên trong hàm <code>a/0</code>, 
+    và hàm <code>b/1</code> vẫn có quyền truy cập vào anonymous function đó. 
+    Đây là một trong những đặc tính rất hữu ích, nó sẽ cho phép chúng ta mạng nội dung và các tham số  ra bên ngoài sử  dụng
+    ( giống như cách mà chúng ta đã làm với Batman ở ví dụ trước đó ).</p>
 
-<p>You're most likely to use anonymous functions to carry state around when you have functions defined that take many arguments, but you have a constant one:</p>
+<p>Các anonymous functions thường được sử  dụng để  lưu trạng thái khi bạn muốn to định nghĩa một hàm với nhiều đối số, nhưng một trong số  các đối số  này có giá trị
+    không đổi ( constant ), vd:</p>
 
 <pre class="brush:eshell">
 16&gt; math:pow(5,2).
@@ -271,7 +281,10 @@ b(F) -&gt;
 [2.0,4.0,8.0,16.0]
 </pre>
 
-<p>By wrapping the call to <code>math:pow/2</code> inside an anonymous function with the <var>Base</var> variable bound in its scope, we made it possible to have each of the calls to <var>PowerOfTwo</var> in <code>hhfuns:map/2</code> use the integers from the list as the exponents of our base.</p>
+<p>Như bạn thấy, bằng cách đặt lời gọi hàm <code>math:pow/2</code> vào bên trong một anonymous function cùng với một biến không đôi <var>Base</var> 
+   đã được gán giá trị, 
+   chúng ta có thể  sử  dụng <var>PowerOfTwo</var> như một biến truyền vào hàm <code>hhfuns:map/2</code> để  áp dụng cho mỗi phần tử của một 
+   danh sách số  nguyên.</p>
 
 <!-- Secret for you crazy people who read the html comments! Just copy/paste this or something! -->
 <!-- 
@@ -339,7 +352,9 @@ cat(Name) -&gt;
 
 <p>Alright, this is not very impressive when we compare it to real OOP languages, but we still managed to cover concepts such as class inheritance, method overriding and constructors (albeit in a terribly basic manner). The important lesson here is that closures can be used to carry state around from function to function. <strong>Note that you should <em>not</em> write new Erlang programs based on that OOP example; nobody does that.</strong> It's an example and nothing more.</p> -->
 
-<p>A little trap you might fall into when writing anonymous functions is when you try to redefine the scope:</p>
+<p>Với một số  ngôn ngữ khác bạn được phép thay đổi phạm vi của biến trong,
+    nhưng với Erlang, chúng ta không được phép thay đổi giá trị khi nó đã có giá trị liên kết rồi do đó chương trình sẽ báo lỗi 
+    nếu bạn cố  gắng định nghĩa lại phạm vi của bién trong anonymous functions:</p>
 
 <pre class="brush:erl">
 base() -&gt;
@@ -347,7 +362,12 @@ base() -&gt;
     (fun() -&gt; A = 2 end)().
 </pre>
 
-<p>This will declare an anonymous function and then run it. As the anonymous function inherits <code>base/0</code>'s scope, trying to use the <code>=</code> operator compares 2 with the variable <var>A</var> (bound to 1). This is guaranteed to fail. However it is possible to redefine the variable if it's done in the nested function's head:</p>
+<p>Bởi vì ban đầu bạn định nghĩa một biên <var>A</var> và liên kết nó với một giá trị, sau đó định nghĩa anonymous function và gọi.  
+    Ta thấy anonymous function sẽ kế  thừa phạm vi của hàm <code>base/0</code>, 
+    Do đó nó cũng sẽ kế thừa biến <var>A</var>, trong hàm anonymous function bạn lại sử  dụng toán tử 
+    <code>=</code> để so sánh khớp biến <var>A</var> với giá trị 2 nhưng bién <var>A</var> đã được liên kết với giá trị trước đó rôi (liên kết với 1). 
+    Do đó nó không được phép và dẫn tới lỗi. 
+    tuy nhiên chúng ta vẫn có cách để  định nghĩa lại giá trị của một biến bằng cách sử  dụng hàm lồng nhau như sau:</p>
 
 <pre class="brush:erl">
 base() -&gt;
@@ -355,12 +375,20 @@ base() -&gt;
     (fun(A) -&gt; A = 2 end)(2).
 </pre>
 
-<p>And this works. If you try to compile it, you'll get a warning about <em>shadowing</em> (<em>"Warning: variable 'A' shadowed in 'fun'"</em>). Shadowing is the term used to describe the act of defining a new variable that has the same name as one that was in the parent scope. This is there to prevent some mistakes (usually rightly so), so you might want to consider renaming your variables in these circumstances.</p>
+<p>Giờ hãy thử  biên dịch và kiểm tra xem, nó sẽ hoạt động mà không nó bất kỳ lỗi nào, thay vào đó bạn sẽ chỉ nhận một cảnh báo <em>shadowing</em> 
+    (<em>"Warning: variable 'A' shadowed in 'fun'"</em>). 
+    Shadowing là thuật ngữ dùng để  mô tả tình huống định nghĩa một biến mới  mà tên của biến đó đã 
+    trùng với tên của biến đã được sử  dụng ở phạm vi gốc. Cánh báo này được đưa ra để  ngăn chặn các lỗi có thể  xảy ra ( thương là chính xác lỗi xảy ra)
+    do đó bạn cần cân nhắc việc tới việc đổi tên  các biến của bạn trong các trường hợp như vậy.</p>
 
 <div class="note update">
     <p><strong>Update:</strong><br />
-    Starting with version 17.0, the language supports using anonymous functions with an internal name. That's right, <em>anonymous but named functions</em>.</p>
-    <p>The trick is that the name is visible only within the function's scope, not outside of it. The main advantage of this is that it makes it possible to define anonymous recursive functions. For example, we could make an anonymous function that keeps being loud forever:</p>
+    Tuy nhiên bắt đầu từ phiên bản 17.0 trở đi, Bạn có thể  định nghĩa <em>tên</em> cho anonymous functions
+    <p>Điều thú vị ở đây là mặc dù tên của hàm chỉ sử  dụng bên trong phạm vi hoạt động của hàm đó chứ không dùng ở các thành phần khác 
+        nhưng bằng vào việc đặt tên , ta có sử  dụng đệ quy đổi với các anonymous functions 
+        The main advantage of this is that it makes it possible to define anonymous recursive functions. 
+        vd, bằng cách dùng anonymous function kết hơp với đê quy chúng ta có thể tao ra một lặp vô hạn 
+        ( bạn sẽ thấy trong các chương sau vòng lặp vô hạn là môt trong những thành phần quan trọng trong Erlang ):</p>
 
     <pre class="brush:eshell">
 18&gt; f(PrepareAlarm), f(AlarmReady).
@@ -384,24 +412,30 @@ Alarm tripped in bathroom! Call Batman!
 ...
 </pre>
 
-<p>The <var>Loop</var> variable refers to the anonymous function itself, and within that scope, will be usable as any other similar variable pointing to an anonymous function. This should generally make a lot of operations in the shell a lot less painful moving on forward.</p>
+<p>Như ta thấy ở ví dụ trên chúng ta đã tạo ra một anonymous function đệ quy cùng với tên và gán tới một biến, biến này ta hay
+    tạm gọi là biến lặp <var>Lặp</var> , and within that scope, 
+    will be usable as any other similar variable pointing to an anonymous function. 
+    This should generally make a lot of operations in the shell a lot less painful moving on forward.</p>
 </div>
 
-<p>We'll set the anonymous function theory aside a bit and we'll explore more common abstractions to avoid having to write more recursive functions, like I promised at the end of the previous chapter.</p>
+<p>Tiếp theo chúng ta sẽ tạm thời 
+    We'll set the anonymous function theory aside a bit and we'll explore more common abstractions to avoid having to write more recursive functions, 
+    like I promised at the end of the previous chapter.</p>
 
 
 <img class="right" src="static/img/erland.png" width="267" height="238" alt="A map of Erland, the mystic Erlang island!" />
 
 <h3><a class="section" name="maps-filters-folds">Maps, filters, folds and more</a></h3>
 
-<p>At the beginning of this chapter, I briefly showed how to abstract away two similar functions to get a <code>map/2</code> function. I also affirmed that such a function could be used for any list where we want to act on each element. The function was the following:</p>
+<p>Ở phần đầu của mục này , trước tiên tôi sẽ mô ta ngắn gọn trừu tượng cách để  viết hàm <code>map/2</code>, đồng thời tôi cũng chứng minh 
+    một hàm tương tự như vậy cũng có thể  sử dụng với mỗi phần tử  của bất kỳ kiểu danh sách nào. hàm <code>map/2</code> của chúng ta sẽ thực hiện như sau:</p>
 
 <pre class="brush:erl">
 map(_, []) -&gt; [];
 map(F, [H|T]) -&gt; [F(H)|map(F,T)].
 </pre>
 
-<p>However, there are many other similar abstractions to build from commonly occurring recursive functions. Let's first take a look at these two functions:</p>
+<p>Têy vậy cũng có rất nhiều cách trừu tượng tương tự để  xây dụng từ các hàm đệ quy. trước tiên chúng ra hay thử  ví dụ với hai hàm sau:</p>
 
 <pre class="brush:erl">
 %% only keep even numbers
@@ -423,7 +457,12 @@ old_men([_|People], Acc) -&gt;
     old_men(People, Acc).
 </pre>
 
-<p>The first one takes a list of numbers and returns only those that are even. The second one goes through a list of people of the form <code>{Gender, Age}</code> and only keeps those that are males over 60. The similarities are a bit harder to find here, but we've got some common points. Both functions operate on lists and have the same objective of keeping elements that succeed some test (also a <em>predicate</em>) and then drop the others. From this generalization we can extract all the useful information we need and abstract them away:</p>
+<p>Với vi dụ đâu tiên, hàm này sẽ nhận đầu vào là một dash sách chữ số  và lọc ra để  trả về  kết quả là danh sách số  chắn.
+    Hàm thứ hai tương tự nhận đầu vào là một danh sách bộ thông tin về  người có dạng <code>{Gender, Age}</code>, sau đó lọc và đưa ra kết quả ;à những người giới tính là nam và có đô tuổi
+    dưới 60. Mặc dù để  tìm sự tương đồng giữa hai hàm này khó hơn chút, nhưng chúng ta hãy xét một số  điểm chung giữa chúng trc, và hãy để  ý cả 
+    hai hàm này về  mặt chức năng thực hiện rất giống nhau, chúng cũng nhận đầu vào là một kiểu dữ liệu danh sách và trả về  các phần tử  qua một số  hoạt động kiểm tra 
+    (hay <em>dữ đoán</em>), những phần tử  còn lại cùng hoạt động kiểm tra không đúng thì loại bỏ. Từ góc nhìn tổng quát này, chúng ra có thể  rút ra được những thông tin cần thiết 
+    và quy ước thành một chức năng như sau:</p>
 
 <pre class="brush:erl">
 filter(Pred, L) -&gt; lists:reverse(filter(Pred, L,[])).
@@ -436,7 +475,9 @@ filter(Pred, [H|T], Acc) -&gt;
     end.
 </pre>
 
-<p>To use the filtering function we now only need to get the test outside of the function. Compile the <code><a class="source" href="static/erlang/hhfuns.erl.html" title="final implementation">hhfuns</a></code> module and try it:</p>
+<p>Tiếp đó, để  sử  dụng hàm <code>filter</code> này, chúng ra chỉ cần kiểm tra kết quả hoạt động.Nào hãy biên dịch file module 
+    To use the filtering function we now only need to get the test outside of the function. Compile the 
+    <code><a class="source" href="static/erlang/hhfuns.erl.html" title="final implementation">hhfuns</a></code> và chạy:</p>
 
 <pre class="brush:eshell">
 1&gt; c(hhfuns).
@@ -451,9 +492,13 @@ filter(Pred, [H|T], Acc) -&gt;
 [{male,66},{male,74}]
 </pre>
 
-<p>These two examples show that with the use of the <code>filter/2</code> function, the programmer only has to worry about producing the predicate and the list. The act of cycling through the list to throw out unwanted items is no longer necessary to think about. This is one important thing about abstracting functional code: try to get rid of what's always the same and let the programmer supply in the parts that change.</p>
+<p>Hai ví dụ trên chỉ cho chúng ta bằng cách sử  dụng hàm <code>filter/2</code>, lập tình viên sẽ không quan tâm tới việc đinh nghĩa  cho từng thành phần mà thay vào đó 
+    họ chỉ cần quan tâm tới việc tạo kết quả mong muốn từ một danh sách gốc hay nói cách khác họ chỉ cần xác đinh truyền vào điều kiện cần qua một hàm và một danh sách, sau đó lọc danh sách đó 
+    . Việc lặp qua một danh sách và loại bỏ những gi chúng ta không mong muốn không cón cần thiết nữa. 
+    điều này là rất quan trong cho việc code, lập trình viên sẽ chỉ cần quan tới tới phần càn thay đổi và bỏ qua những thanh phần giống nhau.</p>
 
-<p>In the previous chapter, another kind of recursive manipulation we applied on lists was to look at every element of a list one after the other and reduce them to a single answer. This is called a <em>fold</em> and can be used on the following functions:</p>
+<p>Trong chương trước, chúng ta đã viết một số  ví dụ về  hàm đệ quy làm việc với kiểu dữ liệu danh sách, trong đó với mỗi phần tử của danh sách chúng ta sẽ tiến hành kiểm tra 
+    và đưa chúng về  một câu trả lời duy nhất. Cách làm này được gọi là <em>fold</em> và có thể sử  dụng như sau:</p>
 
 <pre class="brush:erl">
 %% find the maximum of a list
@@ -477,18 +522,30 @@ sum([], Sum) -&gt; Sum;
 sum([H|T], Sum) -&gt; sum(T, H+Sum).
 </pre>
 
-<img class="right" src="static/img/foldr.png" width="172" height="248" alt="A playing card with 'Joker' replaced by 'Foldr'. The joker has huge glasses, a hook and hairy legs" title="Terrrrrible puns, ladies and gentlemen!" />
+<img class="right" src="static/img/foldr.png" width="172" height="248" alt="A playing card with 'Joker' replaced by 'Foldr'. The joker has huge glasses, a hook and hairy legs" 
+title="Terrrrrible puns, ladies and gentlemen!" />
 
-<p>To find how the fold should behave, we've got to find all the common points of these actions and then what is different. As mentioned above, we always have a reduction from a list to a single value. Consequently, our fold should only consider iterating while keeping a single item, no list-building needed. Then we need to ignore the guards, because they're not always there: these need to be in the user's function. In this regard, our folding function will probably look a lot like sum.</p>
+<p>Để  hiểu hoạt , chúng ta sẽ tìm tất các những điểm chung và khác của các hoạt động trong cách ví dụ trên 
+    . Như đã đè cập , bằng cách cách cắt giảm, đưa một danh sách về  một giá trị duy nhất. 
+    Do đó, hoạt động <code>fold</code> chỉ lên duy trì một giá trị nhưng vẫn tiến lặp danh sách, chúng ta cũng không cần thiết để xây dựng một danh sách khác 
+    . Do chúng ta cũng không cần tới chốt canh, bởi vì không phải lúc nào cũng cần và nếu cần chúng ta có thê thay bằng hoạt động qua một hàm 
+    . Nhìn phương diện này, nó sẽ giống như việc tính tổng của một danh sách.</p>
 
-<p>A subtle element of all three functions that wasn't mentioned yet is that every function needs to have an initial value to start counting with. In the case of <code>sum/2</code>, we use 0 as we're doing addition and given <code>X = X + 0</code>, the value is neutral and we can't mess up the calculation by starting there. If we were doing multiplication we'd use 1 given <code>X = X * 1</code>. The functions <code>min/1</code> and <code>max/1</code> can't have a default starting value: if the list was only negative numbers and we started at 0, the answer would be wrong. As such, we need to use the first element of the list as a starting point. Sadly, we can't always decide this way, so we'll leave that decision to the programmer. By taking all these elements, we can build the following abstraction:</p>
+<p>Trong cả ba ví dụ trên còn một thành phần nữa mà chúng ta chưa đề cập tới, đó là 
+    giá trị trị khởi tạo ban đầu của mỗi hàm. 
+    như trong trường hợp của hàm <code>sum/2</code>, giá trị khởi tạo là 0, bởi vì với giá trị này phép tính <code>X = X + 0</code> là một phép tính với két quả không đổi. 
+    trong trường trường hợp tính tích, giá trị sẽ là một ưng với <code>X = X * 1</code>
+    . Với trường hợp của hàm <code>min/1</code> và hàm <code>max/1</code> , giá trị khởi tạo có thể  có hoặc không, 
+    bởi trong trường hợp nếu giá trị khởi tạo là 0, thì với đầu vào là một danh sách số  nguyên âm, chúng ta có thể sẽ nhận được kết quả sai. 
+    Vì vậy, thông thường trong một số  trường hợp ( không phai tất cả moj trường hợp đều đúng ) chúng ta có thể  sử  dụng phần tử  đầu tiên của danh sách như gía trị khởi tạo ban đầu.
+    Bằng việc lặp, đánh giá các phần từ trong danh sách chúng ta có thể  viết như sau:</p>
 
 <pre class="brush:erl">
 fold(_, Start, []) -&gt; Start;
 fold(F, Start, [H|T]) -&gt; fold(F, F(H,Start), T).
 </pre>
 
-<p>And when tried:</p>
+<p>Tiếp đó hãy thử  kiểm tra:</p>
 
 <pre class="brush:eshell">
 6&gt; c(hhfuns).
@@ -503,7 +560,8 @@ fold(F, Start, [H|T]) -&gt; fold(F, F(H,Start), T).
 21
 </pre>
 
-<p>Pretty much any function you can think of that reduces lists to 1 element can be expressed as a fold.</p>
+<p>Thật tuyêt, ba hàm trước đó chúng ta định nghĩa phía trên hay với bất kỳ hàm nào dùng cho việc cắt giảm một danh sách tới một phần tử, giá trị duy nhất giờ đều 
+    có thể  thực hiện thông qua hàm fold.</p>
 
 <p>What's funny there is that you can represent an accumulator as a single element (or a single variable), and an accumulator can be a list. Therefore, we can use a fold to build a list. This means fold is universal in the sense that you can implement pretty much any other recursive function on lists with a fold, even map and filter:</p>
 

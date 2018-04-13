@@ -287,7 +287,8 @@ in function  hhfuns:add/2
 
 <h4>Errors</h4>
 <p>Đây là ngoại lệ chúng ta sẽ tìm hiểu đầu tiên, băng cách gọi hàm <code>erlang:error(Reason)</code> , tại thời điểm gọi, nó sẽ chấm dứt tiến trình hiện tại , tiếp đó nó sẽ cung cấp cho bạn 
-    dấu vết của ngăn xếp cùng với hàm gần nhất mà được gọi cùng với đối số  của hàm đó.
+    dò ngăn xếp ( stack trace , hãy hiểu đơn giản nó là một tập các thông tin về  hàm, biểu thức, câu lệnh được lưu trữ tuần tự trong ngắn xếp 
+    và bạn có thể  dễ dang do tìm, truy được thông tin lỗi dựa trên chúng) cùng với hàm gần nhất mà được gọi cùng với đối số  của hàm đó.
     will end the execution in the current process and include a stack trace of 
     the last functions called with their arguments when you catch it. 
     Đây là một trong những ngoại lệ gây ra trong quá trình chạy mà tôi đã cập ở trên..</p>
@@ -350,9 +351,9 @@ in function  hhfuns:add/2
 
 <p> Từ các khai niệm cơ bản trên cho phép nhưng người phát triển của Erlang có thể  sử  dụng các loại thông điệp 
     đặc biệt cho việc giao tiếp ngoại lệ giữa các tiến trình với nhau, hay có thể  coi chúng như 'last breath' của một tiến trình.
-    Chũng sẽ được gửi tới trước khi tiến trình tạch và chưa các doạn mạng đê dừng việc thực thi.
+    Chúng sẽ được gửi tới trước khi tiến trình tạch và chứa các đoạn mã để  dừng việc thực thi.
     Hay một số các trình khác trình đang lắng nghe , đợi một số  loại thông điệp cụ thể  có thể biết được các sự kiện và thực hiện một điều gì đó bởi các 
-    thông điệp đặc biệt này. thông thường nó gồm có logging và phụ hồi trạng thái của tiến trình mà đã tách trước đó, etc.</p>
+    thông điệp đặc biệt này. thông thường nó gồm có logging và phục hồi trạng thái của tiến trình mà đã die trước đó, etc.</p>
 
     These basic concepts let the implementors of Erlang use a special kind of message to communicate exceptions between processes. 
     They act a bit like a process' last breath; they're sent right before a process dies and the code it contains stops executing. 
@@ -364,7 +365,10 @@ in function  hhfuns:add/2
 <p>Bằng cách giải thích trên, ta có thấy thấy rõ sự khác nhau khi sử  dụng giữa <code>erlang:error/1</code> và <code>exit/1</code>.
    Mặc dù cả hai được sử  dụng theo cách giống nhau , nhưng sự khác biệt thực sự đến từ mục đích mà muốn sử  dụng chúng.
    Khi nhận môi lỗi như vậy bạn có thể  quyét định giũa việc coi nó là một lỗi 'đơn giản' hay là một điều kiện để  chấm dứt tiến trình hiện tại đi.
-   Một sự lưu ý là hàm <code>erlang:error/1</code>  sẽ trả vê một dấu vết ngăn xếp , ngược lại hàm <code>exit/1</code> thì không.
+   Một sự lưu ý là hàm <code>erlang:error/1</code> sẽ trả vê một stack trace , ngược lại hàm <code>exit/1</code> thì không.
+   Trong trường hợp nếu bạn có một lượng lớn stack trace hoặc một hàm với rất nhiều đối số ,
+   nếu hàm </code>exit/1</code> thực hiện việc sao chép thông điệp tới các tiến trình đang lắng nghe, đợi thông điệp đó, và nếu  nó trả về  stack trace hoặc thông tin dữ liệu của các đối số  trong hàm 
+   tức là nó sẽ phải sao chép toàn bộ các dữ liệu đó vào các thông điệp và gửi đi, thông thuòng nó sẽ ko có gì lạ nếu bạn có đủ tài nguyên và điệu kiện lí tưởng nhưng ngược điều đó sẽ cự kỳ tồi tệ.
    While both can be used in an extremely similar manner, the real difference is in the intent. 
    You can then decide whether what you've got is 'simply' an error or a condition worthy of killing the current process. 
    This point is made stronger by the fact that <code>erlang:error/1</code> returns a stack trace and <code>exit/1</code> doesn't. 
@@ -372,31 +376,62 @@ in function  hhfuns:add/2
    copying the exit message to every listening process would mean copying the data. In some cases, this could become unpractical.</p>
 
 <h4>Throws</h4>
-<p>một throw là một lớp của ngoại lệ và được sử  dụng để  tạo ra các ngoại lệ mong muốn is a class of exceptions used for cases that the programmer can be expected to handle. In comparison with exits and errors, they don't really carry any 'crash that process!' intent behind them, but rather control flow. As you use throws while expecting the programmer to handle them, it's usually a good idea to document their use within a module using them.</p>
+<p>một throw là một lớp của ngoại lệ và được sử  dụng để  tạo ra các ngoại lệ mong muốn để  người lập trình có thể  dễ  dàng xử lí hơn.
+    So sánh với exits và errors, throw không mang bât kỳ ý định nào với việc 'crash that process!', thay vào đó nó mang lại cho lập trình viên có thể  dễ  dàng 
+    quản lí luồng logic của chương trình. Vd như việc bạn dùng throw với ý định để  lập trình viên tin tưởng, biết cách để  xử  lí chúng.
 
-<p>The syntax to throw an exception is:</p>
+
+     is a class of exceptions used for cases that the programmer can be expected to handle. In comparison with exits and errors, they don't really carry any 'crash that process!' intent behind them, 
+     but rather control flow. As you use throws while expecting the programmer to handle them, 
+     it's usually a good idea to document their use within a module using them.</p>
+
+<p>Cú pháp của ngoại lệ throw được viết như sau:</p>
 
 <pre class="brush:eshell">
 1&gt; throw(permission_denied).
 ** exception throw: permission_denied
 </pre>
 
-<p>Where you can replace <code>permission_denied</code> by anything you want (including <code>'everything is fine'</code>, but that is not helpful and you will lose friends).</p>
+<p>bạn có thể  thay thế  từ <code>permission_denied</code> bằng bất kỳ từ nào bạn muốn( bao gồm cả cụm từ như <code>'everything is fine'</code>, 
+    nhưng thông thường nó không giúp ích được gì nhiều mà chỉ khiến người đoc cảm thây rối hơn).</p>
 
-<p>Throws can also be used for non-local returns when in deep recursion. An example of that is the <code><a class="docs" href="http://erldocs.com/18.0/ssl/ssl.html" title="you don't actually need to click this to understand the chapter">ssl</a></code> module which uses <code>throw/1</code> as a way to push <code>{error, Reason}</code> tuples back to a top-level function. This function then simply returns that tuple to the user. This lets the implementer only write for the successful cases and have one function deal with the exceptions on top of it all.</p>
+<p>Throws cũng có thể  được sử  dụng đối với trả về  một hàm không cục bộ ( non-local , đây là thuật ngữ sủ dụng đối với việc kết quả trả về  nằm ở một hàm khác thay vì 
+    tại hàm đang gọi, vd thông thường bạn tạo ra một hàm vè trả về  kêt quả 'return' cuồi hay một phần của hàm, nhưng trong trường hợp bạn sử dụng một kết quả từ một
+    anonymous function, hay một hàm khác nằm ngoài hàm đang sử  dụng, khi đó giá trị trả về  dược gọi là non-local ) trong một phép đệ quy sâu. 
+    ví dự như trong module <code><a class="docs" href="http://erldocs.com/18.0/ssl/ssl.html" title="you don't actually need to click this to understand the chapter">ssl</a></code> 
+    sử  dụng hàm  <code>throw/1</code> để  trả về  một bộ có dạng <code>{error, Reason}</code>.
+    nhờ cách làm này người phát triển chỉ cần quan tâm tới việc viết các trường hợp đúng và có một hàm để  tương tác, xư lí cùng các ngoại lệ 
+    module which uses <code>throw/1</code> as a way to push <code>{error, Reason}</code> tuples back to a top-level function. 
+    This function then simply returns that tuple to the user. 
+    This lets the implementer only write for the successful cases and have one function deal with the exceptions on top of it all.</p>
 
-<p>Another example could be the array module, where there is a lookup function that can return a user-supplied default value if it can't find the element needed. When the element can't be found, the value <code>default</code> is thrown as an exception, and the top-level function handles that and substitutes it with the user-supplied default value. This keeps the programmer of the module from needing to pass the default value as a parameter of every function of the lookup algorithm, again focusing only on the successful cases.</p>
+<p>Một ví dụ nữa trong việc sử  dụng module array, giả sử  bạn có một hàm tìm kiếm một phần tử  trong danh sách, 
+    hàm này trả về  kết quả mặc định do người dùng cung câp nếu như không thể  tìm kiếm 
+    được. Do đó khi tới cuối danh sách , mà không thể  tìm được phần tử  thỏa mãn, giá trị <code>mặc định</code> sẽ được ném ra như một ngoại lệ.
+    và top-level function sẽ xử  lí chúng, sau đó thay thế  bằng giá trị mặc định do người dùng cung cấp.
+    Việc làm này giúp cho người lập trình không cần phải truyền vào giá trị mặc định như một tham số  ở mỗi hàm thay vào đó họ chỉ cần quan tới tới việ xứ lí logic trong hàm và 
+    quan tâm tới các trường hợp dúng thôi.  
+    where there is a lookup function that can return a user-supplied default value if it can't find the element needed. 
+    When the element can't be found, the value <code>default</code> is thrown as an exception, 
+    and the top-level function handles that and substitutes it with the user-supplied default value. 
+    This keeps the programmer of the module from needing to pass the default value as a parameter of every function of the lookup algorithm, again focusing only on the successful cases.</p>
 
 <img class="right" src="static/img/catch.png" width="107" height="248" alt="A fish that was caught" title="catch the pun" />
 
-<p>As a rule of thumb, try to limit the use of your throws for non-local returns to a single module in order to make it easier to debug your code. It will also let you change the innards of your module without requiring changes in its interface.</p>
+<p>Như một quy tắc chung, hãy thử  hạn chế  việc sử  dụng throw đối với non-local trong một module để  dễ  dàng hơn cho việc gỡ lỗi   
+    As a rule of thumb, try to limit the use of your throws for non-local returns to a single module in order to make it easier to debug your code. Đồng thời nó còn 
+    giúp bạn thay đổi nôi dung của module mà không yêu cầu bạn phải thay đổi các thành phần giao tiếp ( interface ) của nó 
+    It will also let you change the innards of your module without requiring changes in its interface.</p>
 
 
 <h3><a class="section" name="dealing-with-exceptions">Dealing with Exceptions</a></h3>
 
-<p>I've already mentioned quite a few times that throws, errors and exits can be handled. The way to do this is by using a <code>try ... catch</code> expression.</p>
+<p>Như tôi đã đề  cập trước đó, trogn chương này chúng ta sẽ tìm hiểu về  việc xứ lí với các ngoại lệ throws, errors và exits. 
+    Giống với một số ngôn ngữ khác Erlang cũng hỗ  trợ biểu thức <code>try ... catch</code>.</p>
 
-<p>A <code>try ... catch</code> is a way to evaluate an expression while letting you handle the successful case as well as the errors encountered. The general syntax for such an expression is:</p>
+<p>Tôi sẽ giaỉ thích về  biểu thức <code>try ... catch</code>, thông thường khi bạn thao tác với một biểu thức, câu lệnh nó 
+    sẽ một là thực hiện thành công , trường hợp còn lại sai và xuất hiện lỗi, bằng việc dùng <code>try ... catch</code>, nó sẽ ước định biểu thức đó 
+    và xét, nếu biểu thức đó là sai thì nó sẽ bắt và xử  lí lỗi , ngược lại nếu đúng thì biểu thức nó hoạt động như một biểu thức thông thường. Dưới đây là cú pháp chung:</p>
 
 <pre class="brush:erl">
 try Expression of
@@ -412,9 +447,19 @@ catch
 end.
 </pre>
 
-<p>The <var>Expression</var> in between <code>try</code> and <code>of</code> is said to be <em>protected</em>. This means that any kind of exception happening within that call will be caught. The patterns and expressions in between the <code>try ... of</code> and <code>catch</code> behave in exactly the same manner as a <code>case ... of</code>. Finally, the <code>catch</code> part: here, you can replace <var>TypeOfError</var> by either <code>error</code>, <code>throw</code> or <code>exit</code>, for each respective type we've seen in this chapter. If no type is provided, a <code>throw</code> is assumed. So let's put this in practice.</p>
+<p>Như bạn thấy biểu thức ( <var>Expression</var> ) được bao bọc giữa <code>try</code> và <code>of</code> như một vòng bao vệ <em>protected</em>.
+    Điều này có nghĩa là bất kỳ lỗi ngoại lệ nào xảy ra sẽ được băt   
+    this means that any kind of exception happening within that call will be caught. 
+    tương tự các mẫu biểu thức giữa <code>try ... of</code> và <code>catch</code> có hành vi giống với 
+    hành vi trong <code>case ... of</code>. thành phần <code>catch</code> có thể  thay thế  bằng <var>TypeOfError</var>
+    cho cả <code>error</code>, <code>throw</code> hay <code>exit</code> chõ từng kiểu ngoại lệ tương ứng mà chúng ta đã thấy trong chương này.
+    nếu khống có ngoại lệ được chỉ định, thì mặc định  <code>throw</code> sẽ được sử  dụng. Nao giờ chúng ta sẽ luyện tập với chúng.</p>
+    here, you can replace <var>TypeOfError</var> by either <code>error</code>, <code>throw</code> 
+    or <code>exit</code>, for each respective type we've seen in this chapter. If no type is provided, 
+    a <code>throw</code> is assumed. So let's put this in practice.</p>
 
-<p>First of all, let's start a module named <code><a class="source" href="static/erlang/exceptions.erl.html">exceptions</a></code>. We're going for simple here:</p>
+<p>Việc dầu tiên , hãy tạo ra một module mới và đặt tên nó là <code><a class="source" href="static/erlang/exceptions.erl.html">exceptions</a></code>. 
+    Tiếp đó hãy gõ đoạn mã sau:</p>
 
 <pre class="brush:erl">
 -module(exceptions).
@@ -428,7 +473,7 @@ throws(F) -&gt;
     end.
 </pre>
 
-<p>We can compile it and try it with different kinds of exceptions:</p>
+<p>Giờ hay lưu lại và biện dịch file module mà chúng ta vừa tạo và chạy shell:</p>
 
 <pre class="brush:eshell">
 1&gt; c(exceptions).
@@ -439,7 +484,9 @@ throws(F) -&gt;
 ** exception error: pang
 </pre>
 
-<p>As you can see, this <code>try ... catch</code> is only receiving throws. As stated earlier, this is because when no type is mentioned, a throw is assumed. Then we have functions with catch clauses of each type:</p>
+<p>Như bạn thấy, biẻu thức <code>try ... catch</code> sẽ sử  dụng throws. 
+    Như đã nói lúc trước, nếu không có bất kỳ ngoại lệ nào xác đinh thì throws sẽ được sử  dụng. 
+    Tiếp đó chúng ta sẽ viết các hàm khác cùng với <code>try ... catch</code> cho các kiểu ngoại lệ còn lại:</p>
 
 <pre class="brush:erl">
 errors(F) -&gt;
@@ -468,7 +515,8 @@ exits(F) -&gt;
 {exit,caught,goodbye}
 </pre>
 
-<p>The next example on the menu shows how to combine all the types of exceptions in a single <code>try ... catch</code>. We'll first declare a function to generate all the exceptions we need:</p>
+<p>tiếp theo chúng ta sẽ viêt một ví dụ để  hiển thị hết tất cả các ngoại lệ trên bằng duy nhất một biểu thức <code>try ... catch</code>. 
+    đầu tiên chúng ta sẽ viết các hàm để sinh ra các ngoại lệ đó trước đã:</p>
 
 <pre class="brush:erl">
 sword(1) -&gt; throw(slice);
@@ -488,13 +536,14 @@ black_knight(Attack) when is_function(Attack, 0) -&gt;
     end.
 </pre>
 
-<p>Here <code>is_function/2</code> is a BIF which makes sure the variable <var>Attack</var> is a function of arity 0. Then we add this one for good measure:</p>
+<p>Ở đây hàm <code>is_function/2</code> là một BIF dùng để  kiểm tra biến <var>Attack</var> có phải là một hàm mà không chứa bất kỳ tham số  đầu vào nào không. 
+    tiếp đó chúng ta thêm:</p>
 
 <pre class="brush:erl">
 talk() -&gt; "blah blah".
 </pre>
 
-<p><cite>And now for something completely different</cite>:</p>
+<p><cite>giờ hãy biên dịch module và mở shell lên để  kiểm tra, bạn sẽ thấy có sự khác biệt</cite>:</p>
 
 <pre class="brush:eshell">
 7&gt; c(exceptions).
@@ -517,11 +566,23 @@ talk() -&gt; "blah blah".
 
 <img class="right" src="static/img/black-knight.png" width="221" height="262" alt="Monty Python's black knight" title="Just a flesh wound." />
 
-<p>The expression on line 9 demonstrates normal behavior for the black knight, when function execution happens normally. Each line that follows that one demonstrates pattern matching on exceptions according to their class (throw, error, exit) and the reason associated with them (<code>slice</code>, <code>cut_arm</code>, <code>cut_leg</code>).</p>
+<p>Ở biểu thứ sô ̣9, đây là trạng thái hoàn toàn bình thường của hàm 'black knight', do đó không có điều gì lạ cả, và hàm hoạt động một cách bình thường 
+    . các dòng tiếp sau đó sẽ là những gì xảy ra khi có một ngoại lệ, bạn sẽ thấy việc sử  dụng khớp mẫu để khớp với 
+    các ngoại lệ dựa trên các lớp ngoại lệ mà chúng ta đã nhắc đén trong chương này (throw, error, exit), đi kèm với chúng sau dấu <code>:</code> 
+    là nguyên nhân , thường đi kèm của ngoại lệ đó (<code>slice</code>, <code>cut_arm</code>, <code>cut_leg</code>).</p>
+    Each line that follows that one demonstrates pattern matching on exceptions according to their class (throw, error, exit) 
+    and the reason associated with them (<code>slice</code>, <code>cut_arm</code>, <code>cut_leg</code>).</p>
 
-<p>One thing shown here on expressions 13 and 14 is a catch-all clause for exceptions. The <code>_:_</code> pattern is what you need to use to make sure to catch any exception of any type. In practice, you should be careful when using the catch-all patterns: try to protect your code from what you can handle, but not any more than that. Erlang has other facilities in place to take care of the rest.</p>
+<p>Cuối cùng ở biểu thức dòng 13, 14 là trường hợp mặc định của ngoại lệ sử  dụng mệnh đề  catch-all, nếu như tất cả các trường hợp định nghĩa đều không được khớp 
+    . Đoạn mẫu <code>_:_</code> chỉ ra việc bất kể  ngoại lệ đưa vào là thế  nào nó cũng đêù bắt.
+    Trong luyện tập bạn lên thận trọng trong việc sử  dụng các mẫu catch-all: để  đảm bảo được bạn có thể  xử  lí được đoạn mã của bạn  
+    One thing shown here on expressions 13 and 14 is a catch-all clause for exceptions. The <code>_:_</code> pattern 
+    is what you need to use to make sure to catch any exception of any type. 
+    In practice, you should be careful when using the catch-all patterns: try to protect your code from what you can handle, 
+    but not any more than that. Erlang has other facilities in place to take care of the rest.</p>
 
-<p>There's also an additional clause that can be added after a <code>try ... catch</code> that will always be executed. This is equivalent to the 'finally' block in many other languages:</p>
+<p>Bạn cũng có thể  thêm một mệnh đề  'after' bổ  sung nữa ngay sau đoạn <code>try ... catch</code> , và nó luôn gọi trong tất cả các trường hợp. 
+    Cách làm này tương tự như 'finally' trong các ngôn ngữ khác:</p>
 
 <pre class="brush:erl">
 try Expr of
@@ -533,9 +594,19 @@ after % this always gets executed
 end
 </pre>
 
-<p>No matter if there are errors or not, the expressions inside the <code>after</code> part are guaranteed to run. However, you can not get any return value out of the <code>after</code> construct. Therefore, <code>after</code> is mostly used to run code with side effects. The canonical use of this is when you want to make sure a file you were reading gets closed whether exceptions are raised or not.</p>
+<p>Bất kể  là trường hợp có lỗi hay không thì biểu thức bên trong <code>after</code>  vẫn luôn được thực hiện.
+    Nhưng hay nhớ là biểu thức trong <code>after</code> sẽ không có giá trị trả về. Do đó 
+    thông thường nó được sử  dụng để  thực hiện các đoạn mã cùng side effects.
+    Ví dụ phổ  biến thường xử  dụng là khi bạn đang đoc một file và bất kể trong trường hợp nào sau khi biểu thức  <code>try ... catch</code>
+    kết thúc file sẽ luôn đươc đóng lại. 
+    No matter if there are errors or not, the expressions inside the <code>after</code> part are guaranteed to run. 
+    However, you can not get any return value out of the <code>after</code> construct. 
+    Therefore, <code>after</code> is mostly used to run code with side effects. 
+    The canonical use of this is when you want to make sure a file you were reading gets closed whether exceptions are raised or not.</p>
 
-<p>We now know how to handle the 3 classes of exceptions in Erlang with catch blocks. However, I've hidden information from you: it's actually possible to have more than one expression between the <code>try</code> and the <code>of</code>!</p>
+<p>Giơ chúng ta đã biết làm thế  nào để  thao tác xử  lí với 3 lơp ngoại lệ trong Erlang cùng với 
+    catch block rồi. Tuy nhiên có một điều tôi đã không nói với bạn: 
+    thực tế  là bạn có thể  đặt nhiều biểu thức giữa <code>try</code> và <code>of</code> thay vì chỉ một biểu thức như trong công thức mà tôi đã cho bạn xem trước đó.</p>
 
 <pre class="brush:erl">
 whoa() -&gt;
@@ -552,9 +623,13 @@ whoa() -&gt;
     end.
 </pre>
 
-<p>By calling <code>exceptions:whoa()</code>, we'll get the obvious <code>{caught, throw, up}</code>, because of <code>throw(up)</code>. So yeah, it's possible to have more than one expression between <code>try</code> and <code>of</code>...</p>
+<p>Hãy xét đoạn mã trên, với việc gọi hàm <code>exceptions:whoa()</code>, chúng ta chắc chắn sẽ nhận được kết quả là <code>{caught, throw, up}</code>, 
+    rõ rang trong biểu thức bạn thấy hàm <code>throw(up)</code> sẽ được gọi và sinh ra một ngoại lệ, sau đó nó sẽ được bắt trong mệnh đề  catch của biểu thức. 
+    Như ví dụ bạn tháy chúng ta có thể  có rất nhiều biểu thức giữa <code>try</code> và <code>of</code> và ngăn cách các biểu thức với nhau bởi dấu phẩy <code>,</code></p>
 
-<p>What I just highlighted in <code>exceptions:whoa/0</code> and that you might have not noticed is that when we use many expressions in that manner, we might not always care about what the return value is. The <code>of</code> part thus becomes a bit useless. Well good news, you can just give it up:</p>
+<p>Có thể  bạn không chú ý điều tôi muốn nhấn mạnh tới trong hàm <code>exceptions:whoa/0</code>. hãy để  ý là khi chúng ta sử  dụng nhiều biểu thưc giữa 
+    <code>try</code> và <code>of</code>, kết quả trae về không phải lúc nào cũng quan trọng, hãy để  ý việc tạo ra throw, khiến cho kêt qủa trong
+    <code>of</code> trở lên vô nghĩa. Tuyệt! Có một tin tốt là nếu gặp trường hợp như vậy bạn có thể bỏ luôn mệnh đề  <code>of</code> đi:</p>
 
 <pre class="brush:erl">
 im_impressed() -&gt;
@@ -569,20 +644,39 @@ im_impressed() -&gt;
     end.
 </pre>
 
-<p>And now it's a bit leaner!</p>
+<p>Giờ trông nó thật gọn gàng hơn!</p>
 
 <div class="note">
-    <p><strong>Note:</strong> It is important to know that the protected part of an exception can't be tail recursive. The VM must always keep a reference there in case there's an exception popping up.</p>
+    <p><strong>Lưu ý :</strong> không lên sử  dụng đệ quy đuôi trong các thành phần bảo về  của ngoại lệ 
+        , vì máy ảo sẽ luôn giữ một tham chiếu tới nó trong trường hopwj một ngoại lệ xảy ra. 
+        It is important to know that the protected part of an exception can't be tail recursive. 
+        The VM must always keep a reference there in case there's an exception popping up.</p>
 
-	<p>Because the <code>try ... catch</code> construct without the <code>of</code> part has nothing but a protected part, calling a recursive function from there might be dangerous for programs supposed to run for a long time (which is Erlang's niche). After enough iterations, you'll go out of memory or your program will get slower without really knowing why. By putting your recursive calls between the <code>of</code> and <code>catch</code>, you are not in a protected part and you will benefit from Last Call Optimisation.</p>
+    <p>Cấu trúc <code>try ... catch</code> mà không cùng với <code>of</code> part has nothing but a protected part, 
+        một lời gọi đệ quy từ trong cấu trúc này thực sự nguy hiểm và gây treo chương trình.
+        tài nguyên bộ nhớ sẽ đầy hay chương trình của bạn sẽ ngày càng chậm hơn sau một lượng lặp nhât định trong đệ quy, vì vậy 
+        hãy đăt
+        calling a recursive function from there might be dangerous for programs supposed to run for a long time (which is Erlang's niche). 
+        After enough iterations, you'll go out of memory or your program will get slower without really knowing why. 
+        By putting your recursive calls between the <code>of</code> and <code>catch</code>, 
+        you are not in a protected part and you will benefit from Last Call Optimisation.</p>
 
-	<p>Some people use <code>try ... of ... catch</code> rather than <code>try ... catch</code> by default to avoid unexpected errors of that kind, except for obviously non-recursive code with results that won't be used by anything. You're most likely able to make your own decision on what to do!</p>
+    <p>Một vài người thích sử  dụng cấu trúc mặc định <code>try ... of ... catch</code> hơn là cấu trúc <code>try ... catch</code> 
+        để  tránh một số  lỗi không mong muốn xảy ra,
+        ngoại trừ việc cẩn thận hơn trong các trường hợp đê quy ra thì gần như ta thấy rằng việc sử  dụng cấu trúc mặc định rõ ràng dài hơn và không đem lại nhiều ý nghĩa gì 
+        khác, kết quả vẫn tương tự cấu trúc rút gọn, tuy nhiên tôi sẽ không đề cập gì thêm, việc lựa chọn giữa hai cấu trúc trên tùy theo quyết định của bạn!</p>
 </div>
 
 
 <h3><a class="section" name="theres-more">Wait, there's more!</a></h3>
 
-<p>As if it wasn't enough to be on par with most languages already, Erlang's got yet another error handling structure. That structure is defined as the keyword <code>catch</code> and basically captures all types of exceptions on top of the good results. It's a bit of a weird one because it displays a different representation of exceptions:</p>
+<p>Nếu như bạn cảm thấy rằng việc xử  lí lỗi trong Erlang chưa bằng so với các ngôn ngữ khác thì đừng lo, 
+    bởi bị chúng ta vẫn chưa tìm hiểu hết, ngoài cách xử  lí lỗi ở phần trước ra, Erlang vân còn một cấu trúc xử  lí lỗi khác.
+    Nó xác định bằng từ khóa <code>catch</code>, về cơ bản nó sẽ bắt tất cả lỗi ngoại lệ xảy ra trên đầu của kết quả đúng.
+    Có vẻ như hơi khó hiểu và khác ngoại lệ trước đó mà ta đã làm, vì vậy hãy xem các ví dụ sau đây để  hiểu hơn. 
+    As if it wasn't enough to be on par with most languages already, Erlang's got yet another error handling structure. 
+    That structure is defined as the keyword <code>catch</code> and basically captures all types of exceptions on top of the good results. 
+    It's a bit of a weird one because it displays a different representation of exceptions:</p>
 
 <pre class="brush:eshell">
 1&gt; catch throw(whoa).
@@ -600,9 +694,12 @@ whoa
 4
 </pre>
 
-<p>What we can see from this is that throws remain the same, but that exits and errors are both represented as <code>{'EXIT', Reason}</code>. That's due to errors being bolted to the language after exits (they kept a similar representation for backwards compatibility).</p>
+<p>Chúng ta có thể  thấy rằng kết quả của throw vãn giống như kết quả trong <code>try...catch</code> trước đó, tuy nhiên 
+    với cái dòng tiếp theo chúng ta đã thấy sự khác biệt đối với các ngoại lệ exits và errors, cả hai đều hiển thị cấu trúc dạng <code>{'EXIT', Reason}</code>. 
+    Lí giải của việc này là do errors được viết sau exits (do đó nhũng người tạo ra chúng muốn giữ kết quả như vậy như một sự tương thích ngược 
+    giữa chúng).</p>
 
-<p>The way to read this stack trace is as follows:</p>
+<p>sau đây là cách đọc stack trace:</p>
 
 <pre class="brush:eshell">
 5&gt; catch doesnt:exist(a,4).              
@@ -614,16 +711,18 @@ whoa
                 {shell,eval_loop,3}]}}
 </pre>
 <ul>
-    <li>The type of error is <code>undef</code>, which means the function you called is not defined (see the list at the beginning of this chapter)</li>
-    <li>The list right after the type of error is a stack trace</li>
-    <li>The tuple on top of the stack trace represents the last function to be called (<code>{Module, Function, Arguments}</code>). That's your undefined function.</li>
-    <li>The tuples after that are the functions called before the error. This time they're of the form <code>{Module, Function, Arity}</code>.</li>
-    <li>That's all there is to it, really.</li>
+    <li>lỗi <code>undef</code>, là là lỗi mà hàm bạn muốn gọi không được định nghĩa which means the function you called is not defined (see the list at the beginning of this chapter)</li>
+    <li>lỗi tiếp sau phía bên phải của bộ là một tập các stack trace</li>
+    <li>bô đầu tiên nằm ở phàn tử  đầu tiên của danh sách stack trace chỉ ra hàm cuối cùng được gọi (<code>{Module, Function, Arguments}</code>). 
+        đó chính là nơi xảu ra lỗi hay chính xác tại hàm mà bạn muốn gọi nhưng không đinh nghĩa.</li>
+    <li>các phần tử  bộ tiếp sau trong danh sách là những hàm được gọi trước khi lỗi xảy ra. 
+        Và chúng luôn có dạng <code>{Module, Function, Arity}</code>.</li>
+    <li>Nói chúng đó là tất cả những gì chúng ta cần biết.</li>
 </ul>
 
-<p>You can also manually get a stack trace by calling <code>erlang:get_stacktrace/0</code> in the process that crashed.</p>
+<p>Trong trường hợp bạn muốn chủ động, bạn có thể  hiển thị stack trace bằng cách gọi hàm <code>erlang:get_stacktrace/0</code> tại tiến trình mà bị crash.</p>
 
-<p>You'll often see <code>catch</code> written in the following manner (we're still in <a class="source" href="static/erlang/exceptions.erl.html">exceptions.erl</a>):</p>
+<p>Thông thường bạn sẽ thấy cấu trúc <code>catch</code> được viết như sau (chúng ta vẫn dang xét tại <a class="source" href="static/erlang/exceptions.erl.html">exceptions.erl</a>):</p>
 
 <pre class="brush:erl">
 catcher(X,Y) -&gt;
@@ -633,7 +732,7 @@ catcher(X,Y) -&gt;
     end.
 </pre>
 
-<p>And as expected:</p>
+<p>Hãy biên dịch và mở shell lên kiếm tra, để  nhận những gì chúng ra chờ đợi:</p>
 
 <pre class="brush:eshell">
 6&gt; c(exceptions).
@@ -646,7 +745,8 @@ catcher(X,Y) -&gt;
 "uh oh"
 </pre>
 
-<p>This sounds compact and easy to catch exceptions, but there are a few problems with <code>catch</code>. The first of it is operator precedence:</p>
+<p>Nhìn chung , chúng ta có thể  thấy cách viết để  xử lí ngoại lệ này thật ngăn gọn và dễ  dàng, nhưng dừng vội, 
+    thật sự có một vài vấn đè khi sử dụng cùng với cấu trúc <code>catch</code>. Đầu tiên chúng ta xét thú tự ưu tiên thưc hiện trong một câu lệnh xem:</p>
 
 <pre class="brush:eshell">
 10&gt; X = catch 4+2.
@@ -655,7 +755,12 @@ catcher(X,Y) -&gt;
 6
 </pre>
 
-<p>That's not exactly intuitive given that most expressions do not need to be wrapped in parentheses this way. Another problem with <code>catch</code> is that you can't see the difference between what looks like the underlying representation of an exception and a real exception:</p>
+<p>Trong hầu hết các trường hợp từ đâu cuốn sách tới giờ , bạn không cần phải sử  dụng cặp ngoặc tròn để  phân biệt độ ưu tiên của một hành động, nhưng 
+    trong trường hopwj này bạn có thể  thấy nếu không sử  dụng cặp ngoặc tròn để  bọc lấy biểu thức của <code>catch</code>, thì lỗi sẽ xảy ra.
+    Ngoài ra còn một vấn đề nữa là khi sử  dụng  <code>catch</code>, bạn sẽ không thể phân biệt giữa đâu là ngoại lệ: 
+    
+    That's not exactly intuitive given that most expressions do not need to be wrapped in parentheses this way. 
+    Another problem with <code>catch</code> is that you can't see the difference between what looks like the underlying representation of an exception and a real exception:</p>
 
 <pre class="brush:eshell">
 11&gt; catch erlang:boat().
@@ -674,14 +779,16 @@ catcher(X,Y) -&gt;
                 {shell,eval_loop,3}]}}
 </pre>
 
-<p>And you can't know the difference between an error and an actual exit. You could also have used <code>throw/1</code> to generate the above exception. In fact, a <code>throw/1</code> in a <code>catch</code> might also be problematic in another scenario:</p>
+<p>Nhìn xem, với ví dụ này bạn thực sự không biết được đâu là ngoại lệ với errors hay đâu là ngoại lệ exit.
+    hay một cách khác là bạn có thể  sử  dụng <code>throw/1</code> dể tạo ra ngoại lệ ở vd trên. 
+    nhưng hay cẩn thận, việc dùng <code>throw/1</code> với <code>catch</code> cũng có một số  vấn đè:</p>
 
 <pre class="brush:erl">
 one_or_two(1) -&gt; return;
 one_or_two(2) -&gt; throw(return).
 </pre>
 
-<p>And now the killer problem:</p>
+<p>Và hãy nhìn xem vấn đề  ở đây:</p>
 
 <pre class="brush:eshell">
 13&gt; c(exceptions).
@@ -692,14 +799,27 @@ return
 return
 </pre>
 
-<p>Because we're behind a <code>catch</code>, we can never know if the function threw an exception or if it returned an actual value! This might not really happen a whole lot in practice, but it's still a wart big enough to have warranted the addition of the <code>try ... catch</code> construct in the R10B release.</p>
+<p>Giaỉ thích cho kết quả trên là vì sau <code>catch</code>, chúng ta không thể  biết được chính xác hàm sẽ ném ra ngoại lệ hoặc nếu nó trả lại một giá trị!
+    Mặc dù lỗi trên chúng ta ít bắt gặp trong toàn bộ quá trình luyện tập nhưng bởi vì nó là một lỗi tiềm ẩn, và có thẻ xảy ra do đó 
+    những người tạo ra Erlang đã thêm cấu trúc <code>try ... catch</code> trong phiên bản R10B vào để  đảm bảo tính an toàn. 
+    we can never know if the function threw an exception or if it returned an actual value! 
+    This might not really happen a whole lot in practice, 
+    but it's still a wart big enough to have warranted the addition of the <code>try ... catch</code> construct in the R10B release.</p>
 
 
 <h3><a class="section" name="try-a-try-in-a-tree">Try a try in a tree</a></h3>
 
-<p>To put exceptions in practice, we'll do a little exercise requiring us to dig for our <code><a class="source" href="static/erlang/tree.erl.html">tree</a></code> module. We're going to add a function that lets us do a lookup in the tree to find out whether a value is already present in there or not. Because the tree is ordered by its keys and in this case we do not care about the keys, we'll need to traverse the whole thing until we find the value.</p>
+<p>để  luyện tập củng cố  kiến thức với ngoại lệ và thành thạo hơn, tiếp chúng ta sẽ quay trở lại module <code><a class="source" href="static/erlang/tree.erl.html">tree</a></code> chương trước và 
+    làm một ví dụ nhỏ. Như trong vd tree trước đây chúng ta đã làm, chúng ta mới chỉ giải quyết vấn đề logic đúng thôi còn với những vấn đề  liên quan tới lỗi chúng ta chưa 
+    xứ lí gì hết cả, do đó lân này chúng ta sẽ bổ sung thêm một hàm cho một hàm tìm kiếm để  tìm một giá trị có tồn tại hay không trong cây.
+    Vì quy ước của chúng ta là làm việc với cây nhị phân do đó thứ tự của các từ khóa trong cây chúng ta sẽ bỏ qua ( vì bản chát cây nhị phân đã phải tuân theo quy tắc thứ tự rồi), do đó 
+    điều quan trọng ở dây là việc duyệt cậy cho tới khi chúng ta tìm được giá trị cần tìm.</p>
 
-<p>The traversal of the tree will be roughly similar to what we did in <code>tree:lookup/2</code>, except this time we will always search down both the left branch and the right branch. To write the function, you'll just need to remember that a tree node is either <code>{node, {Key, Value, NodeLeft, NodeRight}}</code> or <code>{node, 'nil'}</code> when empty. With this in hand, we can write a basic implementation without exceptions:</p>
+<p>Cách duyệt cây tương tự như những gì chúng ta đã làm trước đó với hàm <code>tree:lookup/2</code>, 
+    ngoài trừ trong lần này chúng ta sẽ bổ  sung thêm việc kiểm tra cả hai nhánh con ( nhánh trái , nhánh phải) theo thứ tự từ trên xuống.
+    Trước khi bắt đầu vào viết hàm này, bạn có thể  xem lại chương trước để nhớ lại về  cấu trúc cây mà chúng ta định nghĩa (một node cậy sẽ có dạng  
+    <code>{node, {Key, Value, NodeLeft, NodeRight}}</code> hoặc với node rỗng <code>{node, 'nil'}</code>).
+    Trước tiên chúng ta sẽ thực hiện tương tự hàm <code>tree:lookup/2</code> cùng với bỏ qua việc xử  lí ngoại lệ:</p>
 
 <pre class="brush:erl">
 %% looks for a given value 'Val' in the tree.
@@ -714,11 +834,12 @@ has_value(Val, {node, {_, _, Left, Right}}) -&gt;
     end.
 </pre>
 
-<p>The problem with this implementation is that every node of the tree we branch at has to test for the result of the previous branch:</p>
+<p>Nào hãy nhìn nhận ván đề  ở đoạn mã này đó là việc mỗi node phân nhánh , chúng ta luôn phải kiêm tra kêt quả trả về của nhánh trước đó:</p>
 
 <img class="center explanation" src="static/img/tree-case.png" width="495" height="176" alt="A diagram of the tree with an arrow following every node checked while traversing the tree, and then when returning the result" />
 
-<p>This is a bit annoying. With the help of throws, we can make something that will require less comparisons:</p>
+<p>Điều này thật sự phiền liễu, mất thời gian. Do đó chúng ta có thể  sử  dụng ngoại lệ thrơw để  giảm bớt việc làm này   
+    This is a bit annoying. With the help of throws, we can make something that will require less comparisons:</p>
 
 <pre class="brush:erl">
 has_value(Val, Tree) -&gt; 
@@ -737,11 +858,24 @@ has_value1(Val, {node, {_, _, Left, Right}}) -&gt;
     has_value1(Val, Right).
 </pre>
 
-<p>The execution of the code above is similar to the previous version, except that we never need to check for the return value: we don't care about it at all. In this version, only a throw means the value was found. When this happens, the tree evaluation stops and it falls back to the <code>catch</code> on top. Otherwise, the execution keeps going until the last <samp>false</samp> is returned and that's what the user sees:</p>
+<p>Đó bạn nhìn xem, bằng cách làm này chúng ta vẫn đạt được ý định như lúc trước mà không phải kiểm tra 
+    kết quả trả về  nữa. trong phiên bản này, chúng ta sẽ sử  dụng throw đói với giá trị được tìm thấy và 
+    quá trình kiểm tra đánh giá cây sẽ dừng lại và đi tới mệnh đề  <code>catch</code>.
+    Ngược lại, quá trình duyệt và kiểm tra vẫn được tiép tục cho tới khi không còn node nào để  kiểm tra nữa và nó sẽ trả về  gia trị  samp>false</samp>.  
+    The execution of the code above is similar to the previous version, except that we never need to check for the return value: we don't care about it at all. 
+    In this version, only a throw means the value was found. 
+    When this happens, the tree evaluation stops and it falls back to the <code>catch</code> on top. 
+    Otherwise, the execution keeps going until the last <samp>false</samp> is returned and that's what the user sees:</p>
 
 <img class="center explanation" src="static/img/tree-throw.png" width="495" height="176" alt="A diagram of the tree with an arrow following every node checked while traversing the tree, and then skipping all the nodes on the way back up (thanks to a throw)" />
 
-<p>Of course, the implementation above is longer than the previous one. However, it is possible to realize gains in speed and in clarity by using non-local returns with a throw, depending on the operations you're doing. The current example is a simple comparison and there's not much to see, but the practice still makes sense with more complex data structures and operations.</p>
+<p>Một điều dễ  thấy đó là đoạn mã mà chúng ta viết khi thêm ngoại lệ vào thực sự dài hơn so với 
+    đoạn ma trước đó. tuy nhiên hãy xét tổng thể , việc làm này có thể  nhận được một sô lợi ích như tốc độ chương trình cải thiện nhờ vào việc sử  dụng non-local cùng với throw,
+    nhưng hiệu suât của nó cũng phụ thuộc vào các hoạt động mà bạn thao tác thực hiện nữa. Đây chỉ là một ví dụ đơn giản giúp bạn có thể  hiểu hơn và thành thạo hơn khi phải làm việc
+    thao tác với các cấu trúc dữ liệu phức tạp chứ nó không phải là một quy tắc, quy ước nào cả.     
+     Of course, the implementation above is longer than the previous one. However, it is possible to realize gains in speed and in clarity by using non-local returns with a throw, 
+    depending on the operations you're doing. The current example is a simple comparison and there's not much to see, 
+    but the practice still makes sense with more complex data structures and operations.</p>
 
 <p>That being said, we're probably ready to solve real problems in sequential Erlang.</p>
 				<ul class="navigation">

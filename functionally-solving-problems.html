@@ -36,19 +36,43 @@
 <h2>Functionally Solving Problems</h2>
 
 <div class="note" style="margin-top:2.5em">
-<p>Sounds like we're ready to do something practical with all that Erlang juice we drank. Nothing new is going to be shown but how to apply bits of what we've seen before. The problems in this chapter were taken from Miran's <a class="external" href="http://learnyouahaskell.com/functionally-solving-problems" title="Miran's chapter">Learn You a Haskell</a>. I decided to take the same solutions so curious readers can compare solutions in Erlang and Haskell as they wish. If you do so, you might find the final results to be pretty similar for two languages with such different syntaxes. This is because once you know functional concepts, they're relatively easy to carry over to other functional languages.</p>
+<p>Giống như việc uống một cốc nước ép trái cây giải khát, sau một hôi tập luyên. 
+    Trong chương này tôi sẽ không đưa ra bất kỳ một lí thuyết mới nào mà thay vào đó tôi sẽ chỉ cho bạn thấy một số 
+    cách vận dụng những gì mà chúng ta đã thấy trước đó.
+    Các vân đề  trong chương này phần lớn sẽ dựa trên cuốn sách  
+    <a class="external" href="http://learnyouahaskell.com/functionally-solving-problems" title="Miran's chapter">Learn You a Haskell</a>
+    của tác giả Miran. Đối với các ví dụ, tôi cũng sử  dụng cách giải quyết tương tự, do đó đối với độc giả hiếu kỳ , 
+    họ có thể  xem và so sánh các đoạn mã giữa Erlang và Haskell theo ý họ muốn.
+    và nếu bạn làm điều đó, bạn chắc chắn sẽ đi đến kết luận chung việc hay ngôn ngữ với hai cú pháp khác nhau nhưng cách giải quyết khá giống nhau.
+    lí giải cho việc này là bởi vì hai ngôn ngữ này đều dựa trên khái niệm cơ bản về  hàm, do đó có thể dễ dang chuyển đổi sang các ngôn ngữ lập trình hàm khác nhưng 
+    về  mặt logic vẫn không đổi.</p>
 </div>
 
 
 <h3><a class="section" name="rpn-calculator">Reverse Polish Notation Calculator</a></h3>
 
-<p>Most people have learned to write arithmetic expressions with the operators in-between the numbers (<code>(2 + 2) / 5</code>). This is how most calculators let you insert mathematical expressions and probably the notation you were taught to count with in school. This notation has the downside of needing you to know about operator precedence: multiplication and division are more important (have a higher <em>precedence</em>) than addition and subtraction.</p>
+<p>Trong toán học hay trong lập trình, phần lớn moi người đều được học cách viết các biểu thức số  học 
+    cùng với các toán tử  đặt giữa các con số  (<code>(2 + 2) / 5</code>). Nó cũng là cách mà các máy tính số  thực hiện với việc chèn các 
+    biểu thức toán học theo thứ tự như vậy, và ở trường chắc hẳn bạn cũng được dạy như vậy.
+    tuy nhiên nếu để  ý bạn sẽ thấy cách làm này có một nhược điểm là bạn phải biết được độ yêu tiên của các toán tử hay nói cách dễ dàng là thư tự thực hiện của các phép tính, 
+    chắc hẳn trong toán học bạn cũng biết rằng thứ tự yêu tiên của các phép nhân, chia thì cao hơn các phép công trừ.</p>
 
-<p>Another notation exists, called <em>prefix notation</em> or <em>Polish notation</em>, where the operator comes before the operands. Under this notation, <code>(2 + 2) / 5</code> would become <code>(/ (+ 2 2) 5)</code>. If we decide to say <code>+</code> and <code>/</code> always take two arguments, then <code>(/ (+ 2 2) 5)</code> can simply be written as <code>/ + 2 2 5</code>.</p>
+<p>Ngoài ra có một cách viết khác nữa mà ít người biết tới, cách viết này còn gọi với cái tên là <em>tiền tố ( prefix notation)</em> hoặc <em>balan ( Polish notation)</em>, 
+    với cách viết này, các toán tử  sẽ được viết trước các toán hạng. ví dụ <code>(2 + 2) / 5</code> sẽ viết thành <code>(/ (+ 2 2) 5)</code>. 
+    nếu chúng ta nói phép cộng <code>+</code> và phép chia <code>/</code> luôn cần 2 đối số , thì <code>(/ (+ 2 2) 5)</code> có thể  viết một cách đơn giản thành<code>/ + 2 2 5</code>
+    .</p>
 
-<p>However, we will instead focus on <em>Reverse Polish notation</em> (or just <em>RPN</em>), which is the opposite of prefix notation: the operator follows the operands. The same example as above in RPN would be written <code>2 2 + 5 /</code>. Other example expressions could be <code>9 * 5 + 7</code> or <code>10 * 2 * (3 + 4) / 2</code> which get translated to <code>9 5 * 7 +</code> and <code>10 2 * 3 4 + * 2 /</code>, respectively.  This notation was used a whole lot in early models of calculators as it would take little memory to use. In fact some people still carry RPN calculators around. We'll write one of these.</p>
+<p>tuy vậy, trong cách viết balan còn một công thức nghịch đảo hay gọi là <em>ngịch đảo balan ( Reverse Polish notation )</em> (or just <em>RPN</em>) và chúng ta sẽ tập trung vào
+    nó ở phần này. Ở công thức này sẽ đối nhịch với công thức tiền tố: các toán hạng sẽ viết trước các toán tử. chúng ta sẽ xét ví dụ trước, thay vì viết <code>/ + 2 2 5</code>
+    , nó sẽ được viết thành  <code>2 2 + 5 /</code>. Một số ví dụ nữa như <code>9 * 5 + 7</code>, <code>10 * 2 * (3 + 4) / 2</code> sẽ viết thành 
+    <code>9 5 * 7 +</code> and <code>10 2 * 3 4 + * 2 /</code>. Thực sự mà nói thì , các công thức này đã được sử  dụng trong rất nhiều trong những gian đoạn sớm của mô hình tính toán 
+    của máy tính, hơn nữa cách viết này không se tiết kiệm bộ nhớ hơn các cách viết thông thường.
+    which is the opposite of prefix notation: the operator follows the operands. The same example as above in RPN would be written <code>2 2 + 5 /</code>. 
+    . In fact some people still carry RPN calculators around. We'll write one of these.</p>
 
-<p>First of all, it might be good to understand how to read RPN expressions. One way to do it is to find the operators one by one and then regroup them with their operands by arity:</p>
+<p>Trước khi bắt đầu, với những ai mới làm quen , thì tốt hơn là việc hiểu được cách đọc của biểu thức RPN sẽ rất có lợi.
+    Để  đọc và hiểu rõ, bước đầu tiên ta cần làm đó là tìm các toán tử , và dựa trên tính chất số  học với các phép tính và nhóm chúng vào các toán hạng
+    cùng với đối số  của mỗi toán tử  (như ở trên ta hiểu phép chia, cộng sẽ nhận hai tham số  đầu vào):</p>
 
 <pre class="expand">
 10 4 3 + 2 * -
@@ -60,40 +84,88 @@
 -4
 </pre>
 
-<p>However, in the context of a computer or a calculator, a simpler way to do it is to make a <em>stack</em> of all the operands as we see them. Taking the mathematical expression <code>10 4 3 + 2 * -</code>, the first operand we see is <samp>10</samp>. We add that to the stack. Then there's <samp>4</samp>, so we also push that on top of the stack. In third place, we have <samp>3</samp>; let's push that one on the stack too. Our stack should now look like this:</p>
+<p>Tuy vậy có một cách dễ  dang hơn khi làm việc với máy tính hay máy tính cầm tay đó là sử  dụng tạo ra ngăn xếp <em>stack</em> của tất cả các toán hạng,
+    Vd cho một biểu thức có dạng <code>10 4 3 + 2 * -</code>, bước đâu tiên là tạo ngăn xếp, và đi tưng phần tử  theo thứ tự từ trái sang phải,
+    toán hạng đầu tiên ta thấy được là số  <samp>10</samp>, do đó chúng ta sẽ đẩy nó vào stack, tiếp dó vẫn là một toán hạng có giá trị là <samp>4</samp>, vì vậy 
+    chúng ta tiếp tục đẩy nó vào ngăn xếp tương tự làm thế với bước 3 với toán hạng <samp>3</samp>, ngắn xếp sẽ tăng thêm một.
+    Và giờ nhìn vào hình minh hoa ngăn xếp của chúng ta sẽ nhu sau:</p>
 
 <img class="center explanation" src="static/img/stack1.png" width="95" height="113" alt="A stack showing the values [3 4 10]" /> 
 
-<p>The next character to parse is a <code>+</code>. That one is a function of arity 2. In order to use it we will need to feed it two operands, which will be taken from the stack:</p>
+<p>tiếp tục tới phần tử , ký tự tiếp theo, ta thấy đó là một toán tử  <code>+</code>. 
+    như đã quy ước lúc đâu , ta có thể  coi toán tử  <code>+</code> như một hàm nhận 2 tham số  đầu vào. 
+    Do đó để  sử  dụng được toán tử  này chúng ta cần phải có 2 tham số  tức là cần 2 toán hạng, vậy chúng ta sẽ 
+    lấy từ stack ra:</p>
 
 <img class="center explanation" src="static/img/stack2.png" width="336" height="137" alt="Drawing showing the operands 3 and 4 taken from the stack, used in the postfix exppression '3 4 +' and returning 7 on top of the stack" />
 
-<p>So we take that <samp>7</samp> and push it back on top of the stack (yuck, we don't want to keep these filthy numbers floating around!) The stack is now <samp>[7,10]</samp> and what's left of the expression is <code>2 * -</code>. We can take the <samp>2</samp> and push it on top of the stack. We then see <code>*</code>, which needs two operands to work. Again, we take them from the stack:</p>
+<p>Chúng ta sẽ lấy toán hai toán hạng gần nhất trong stack ra đó là toán hạng <samp>4</samp> và <samp>3</samp>, sau thực hiện chúng với toán tử  <code>+</code>, chúng ta sẽ được kết quả của phép công này là 
+    <samp>7</samp> ( hãy nhớ trong stack sử  dụng quy FILO do đó những phần từ nào vào sau thì sẽ được lấy ra trước) 
+    , từ kết quả này chung ta sẽ đẩy lại vảo stack (yuck, chúng ta sẽ không lưu giữ những con số  filthy numbers floating around!), 
+    và stack giờ sẽ có dạng <samp>[7,10]</samp> và biểu thức ban đầu của chúng ta giờ chỉ còn <code>2 * -</code>. 
+    Chúng ta sẽ tiếp tục xét, phần tử  tiếp theo là một toán hạng <samp>2</samp> do đó sẽ đẩy nó vào stack. 
+    tiếp tục, chúng ta có toán tử  <code>*</code>, tương tự toán tử  <code>+</code>, nó sẽ cần đầu vào hay toán hạng. Do đó một lần nữa chúng ta sẽ lấy từ stack ra:</p>
 
 <img class="center explanation" src="static/img/stack3.png" width="340" height="134" alt="Drawing showing the operands 2 and 7 taken from the stack, used in '7 2 *', which returns 14 and pushes it on top of the stack." />
 
-<p>And push 14 back on top of our stack. All that remains is <code>-</code>, which also needs two operands. O Glorious luck! There are two operands left in our stack. Use them!</p>
+<p>Sau khi có được kêt quả từ phép nhân toán hạng <samp>2</samp> với <samp>7</samp>, chúng ta được kết qủa là <samp>14</samp>, chúng ta sẽ lại đẩy nó vào lại stack 
+  . Giờ chỉ còn lại toán tử <code>-</code>, tương tự nó cũng cần 2 toán hạng. O Glorious luck! còn đúng 2 toán hạng trong stack, vậy hay sử dụng chúng thôi!</p>
 
 <img class="center explanation" src="static/img/stack4.png" width="275" height="97" alt="Drawing of the operands 14 and 10 taken from the stack into the operation '10 14 -' for the result '-4'" />
 
-<p>And so we have our result. This stack-based approach is relatively fool-proof and the low amount of parsing needed to be done before starting to calculate results explains why it was a good idea for old calculators to use this. There are other reasons to use RPN, but this is a bit out of the scope of this guide, so you might want to hit the <a class="external" href="http://en.wikipedia.org/wiki/Reverse_Polish_notation">Wikipedia article</a> instead.</p>
+<p>Cuối cùng chúng ta đã có kết quả từ việc thực hiện phép tính bằng quy tắc ngịch đảo Balan. 
+  Cách làm này tương đối rõ ràng và chỉ cần một lượng phân tích cú pháp nhỏ trước khi bắt đầu tính toán đó là lí do vì sao các máy tính cầm tay cũ có thể  sử  dụng
+  phương pháp này. ngoài ra cũng có một số  lí do khác cho việc sử  dụng RPN, nhưng chúng ta sẽ không đề  cập tới vì nó nằm ngoài phạm vi cần cho hướng dẫn này,
+  và nếu muốn bạn tìm hiẻu chi tiết, bạn có thể  xem  <a class="external" href="http://en.wikipedia.org/wiki/Reverse_Polish_notation">Wikipedia article</a>  
+  And so we have our result. This stack-based approach is relatively fool-proof and the low amount of parsing needed to be done before starting to calculate results 
+  explains why it was a good idea for old calculators to use this. There are other reasons to use RPN, 
+  but this is a bit out of the scope of this guide, so you might want to hit the <a class="external" href="http://en.wikipedia.org/wiki/Reverse_Polish_notation">Wikipedia article</a> 
+  instead.</p>
 
-<p>Writing this solution in Erlang is not too hard once we've done the complex stuff. It turns out the tough part is figuring out what steps need to be done in order to get our end result and we just did that. Neat. Open a file named <code><a class="source" href="static/erlang/calc.erl.html" title="the file itself">calc.erl</a></code>.</p>
+<p>Một khi chúng ta giải quyêt được các vấn đề  phức tạp thì việc viết các đoạn mã cho vấn đề  này không khó.
+    Trong vd trên việc khó nhất là chỉ ra các bước cần làm theo theo để  đạt được kết quả cuối cùng và như bạn thấy chúng ta đã làm được điều đo.
 
-<p>The first part to worry about is how we're going to represent a mathematical expression. To make things simple, we'll probably input them as a string: <code>"10 4 3 + 2 * -"</code>. This string has whitespace, which isn't part of our problem-solving process, but is necessary in order to use a simple tokenizer. What would be usable then is a list of terms of the form <code>["10","4","3","+","2","*","-"]</code> after going through the tokenizer. Turns out the function <code><a class="docs" href="http://erldocs.com/18.0/stdlib/string.html#tokens/2" title="non-official doc">string:tokens/2</a></code> does just that:</p>
+    Writing this solution in Erlang is not too hard once we've done the complex stuff. 
+    It turns out the tough part is figuring out what steps need to be done in order to get our end result and we just did that.
+    Nào giờ hay tạo một file mời và đặt tên nó là <code><a class="source" href="static/erlang/calc.erl.html" title="the file itself">calc.erl</a></code>.</p>
+
+<p>Đừng lo lắng về  cách mà chúng ta sẽ biểu diễn một biểu thức toán học, hãy làm mọi thứ một cách đơn giản thôi, 
+    việc đầu tiên thường làm là ta có thể  sẽ nhâp một chuỗi ký tự để  biểu diễn biểu thức toán học như: <code>"10 4 3 + 2 * -"</code>,
+    hãy để  ý ở chuỗi này có phân cách các toán tử  và toán hạng bởi dấu cách, Mặc dù đây không phải nằm trong vấn đề  cần giải quyết lúc trước mà chúng
+    ta nói tới nhưng rất cần thiết đối với một trước cho một thuật toán tách từ ( tokenizer ) đơn giản để  xử  lí trước khi tiến tới vấn đề chính cần giải quyết 
+    .Sau khi xư lí những chúng ta muốn có được sẽ là một danh sách thuật ngữ term có dạng  <code>["10","4","3","+","2","*","-"]</code>.
+
+    The first part to worry about is how we're going to represent a mathematical expression. To make things simple, 
+    we'll probably input them as a string: <code>"10 4 3 + 2 * -"</code>. This string has whitespace, 
+    which isn't part of our problem-solving process, but is necessary in order to use a simple tokenizer. 
+    What would be usable then is a list of terms of the form <code>["10","4","3","+","2","*","-"]</code>.
+    Chúng ta đã đưa ra vấn đề  cần giaỉ quyết rồi, giờ hãy chuyển nó vào trong hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/string.html#tokens/2" 
+        title="non-official doc">string:tokens/2</a></code>:</p>
 
 <pre class="brush:eshell">
 1&gt; string:tokens("10 4 3 + 2 * -", " ").
 ["10","4","3","+","2","*","-"]
 </pre>
 
-<p>That will be a good representation for our expression. The next part to define is the stack. How are we going to do that? You might have noticed that Erlang's lists act a lot like a stack. Using the cons (<code>|</code>) operator in <code>[Head|Tail]</code> effectively behaves the same as pushing <var>Head</var> on top of a stack (<var>Tail</var>, in this case). Using a list for a stack will be good enough.</p>
+<p>Kết quả biểu diễn chính xác với những gì mà chúng ta đã nêu trên. 
+    tiếp theo chúng ta sẽ đinh nghĩa ngẵn xếp (stack). 
+    Vậy chúng ta sẽ làm như thế  nào ? Bạn hãy để ý rằng kiểu danh sách của Erlang hoạt động tương đối giống với định nghĩa của stack.
+    Bằng cách sử  dụng ký tự (<code>|</code>) trong <code>[Head|Tail]</code>, bạn sẽ tạo ra một hành vi giống với việc đẩu một dữ liệu vào đâu/đỉnh stack 
+    (<var>Tail</var>, trong trường hợp này sẽ là trạng thái hiện tại của ngăn xếp ). Do đó chúng ta không cần phải định nghĩa cấu trúc stack làm gì nưa, chỉ cần thao tác với danh sách 
+    là dủ rồi.</p>
 
-<p>To read the expression, we just have to do the same as we did when solving the problem by hand. Read each value from the expression, if it's a number, put it on the stack. If it's a function, pop all the values it needs from the stack, then push the result back in. To generalize, all we need to do is go over the whole expression as a loop only once and accumulate the results. Sounds like the perfect job for a fold!</p>
+<p>Giờ chúng ta sẽ tới vần đọc biểu thức, như phần trước, chúng ta đã có giải pháp để  giải quyết vấn đề  này bằng cách thử  công do đó sẽ chỉ cần làm tương tự.
+    . Chúng ta sẽ đọc hay nói cách khác duyệt mỗi phần tử trong danh sách, kiểm tra xem nếu nó là chữ số  
+    thì đẩy nó vào stack. ngước lại nếu nó là hàm hay toán tử  thì đẩy tất cả giá trị cần ra khỏi ngăn xếp tính toán được kết quả sau đó đẩy lại vào ngăn xếp. 
+    tổng quát lại , việc cần làm chỉ đơn giản là duyệt biểu thức bởi một vòng lặp và tính tổng kết quả. Nó khá giống với việc mà chúng ta đã làm với hàm 'fold' 
+    và đây là cách xử  lí tốt nhất!</p>
 
-<p>What we need to plan for is the function that <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#foldl/3">lists:foldl/3</a></code> will apply on every operator and operand of the expression. This function, because it will be run in a fold, will need to take two arguments: the first one will be the element of the expression to work with and the second one will be the stack.</p>
+<p>Những gì chúng ta cần làm lúc này là cần một chức năng giống như hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#foldl/3">lists:foldl/3</a></code> 
+    , chức năng này sẽ áp dụng cho mỗi toán tử và toán hạng của một biểu thức.
+    Vởi vì nó sẽ hoạt động trong một fold, do đó nó cần nhận vào 2 đối số: đối số đầu tiên sẽ là phần tử  của biểu thức và đối số  thứ 2 sẽ là stack.</p>
 
-<p>We can start writing our code in the <code><a class="source" href="static/erlang/calc.erl.html">calc.erl</a></code> file. We'll write the function responsible for all the looping and also the removal of spaces in the expression:</p>
+<p>Nào chúng ta sẽ bắt đầu viết mã trong file module <code><a class="source" href="static/erlang/calc.erl.html">calc.erl</a></code>. 
+    trước tiên chúng ta sẽ viết hàm có chức năng lọc, loại bỏ các ký tự cách hay ký tự rỗng trong danh sách:</p>
 
 <pre class="brush:erl">
 -module(calc).
@@ -104,15 +176,29 @@ rpn(L) when is_list(L) -&gt;
     Res.
 </pre>
 
-<p>We'll implement <code>rpn/2</code> next. Note that because each operator and operand from the expression ends up being put on top of the stack, the solved expression's result will be on that stack. We need to get that last value out of there before returning it to the user. This is why we pattern match over <code>[Res]</code> and only return <var>Res</var>.</p>
+<p>Tiếp theo, chúng ta sẽ thực hiện hàm <code>rpn/2</code>. 
+    Một điều lưu ý là bởi vì mỗi toán tử và toán hạng từ biểu thức cuối cùng luôn được đặt vào đầu stack, do
+    đó các kết quả sẽ luộn được đặt ở đầu stack. Vì vậy chúng ta sẽ cần lấy giá trị cuối cùng ra khỏi stack và trả về cho người dùng.
+    Đó là lí do vì sao chúng ta sử  dụng khớp mẫu <code>[Res]</code> với danh sách để  lấy kết quả và trả về  <var>Res</var>.</p>
+    
 
-<p>Alright, now to the harder part. Our <code>rpn/2</code> function will need to handle the stack for all values passed to it. The head of the function will probably look like <code>rpn(Op,Stack)</code> and its return value like <code>[NewVal|Stack]</code>. When we get regular numbers, the operation will be:</p>
+    Note that because each operator and operand from the expression ends up being put on top of the stack, 
+    the solved expression's result will be on that stack. 
+    We need to get that last value out of there before returning it to the user. This is why we pattern match over <code>[Res]</code> and only return <var>Res</var>.</p>
+    
+<p>Được rồi giờ hãy tới phần khó hơn. hàm <code>rpn/2</code> sẽ được dùng để  xử  lí từ stack với tất cả các giá trị được đẩy vào nó.
+    Tiêu đê của hàm có thể sẽ có dạng sau <code>rpn(Op,Stack)</code> và giá trị trả về  của nó lên là  <code>[NewVal|Stack]</code>.
+    Khi ta nhận bất cứ chữ số  nàò, hoat động sẽ được thục hiện như:
+    
+    will need to handle the stack for all values passed to it. The head of the function will probably look like <code>rpn(Op,Stack)</code> and its return value like 
+    <code>[NewVal|Stack]</code>. When we get regular numbers, the operation will be:</p>
 
 <pre class="brush:erl">
 rpn(X, Stack) -&gt; [read(X)|Stack].
 </pre>
 
-<p>Here, <code>read/1</code> is a function that converts a string to an integer or floating point value. Sadly, there is no built-in function to do this in Erlang (only one or the other). We'll add it ourselves:</p>
+<p>Trong đó hàm <code>read/1</code> là hàm có chức năng chuyển đổi kiểu dư liệu chuỗi sang kiểu dữ liệu số  nguyên hay số  phức.
+    Buòn thay là không có một hàm xây dựng sẵn nào để  làm việc này với cả hai kiểu dữ liệu số  trong Erlang cả. vì vậy chúng ta sẽ phải viết:</p>
 
 <pre class="brush:erl">
 read(N) -&gt;
@@ -122,16 +208,25 @@ read(N) -&gt;
     end.
 </pre>
 
-<p>Where <code><a class="docs" href="http://erldocs.com/18.0/stdlib/string.html#to_float/1" title="NO! don't click this! I explain it in this very sentence!">string:to_float/1</a></code> does the conversion from a string such as <samp>"13.37"</samp> to its numeric equivalent. However, if there is no way to read a floating point value, it returns <code>{error,no_float}</code>. When that happens, we need to call <code>list_to_integer/1</code> instead.</p>
+<p>Trong đó hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/string.html#to_float/1" title="NO! don't click this! I explain it in this very sentence!">string:to_float/1</a>
+</code> sẽ chuyển từ kiểu dũ liệu dạng chuối vd như <samp>"13.37"</samp> sang kiểu số  thích hợp . 
+        Tuy vậy, trong trường hợp nếu nó không phải là kiểu dữ liệu số  phúc thì ngay lập tức nó sẽ trả về một lỗi ngoại lệ <code>{error,no_float}</code>,
+        và trong trường hợp nếu nó xảy ra , chúng ta sẽ gọi tơi hàm <code>list_to_integer/1</code> để chuyển sang số nguyên.</p>
 
-<p>Now back to <code>rpn/2</code>. The numbers we encounter all get added to the stack. However, because our pattern matches on anything (see <a class="chapter local" href="syntax-in-functions.html#pattern-matching">Pattern Matching</a>), operators will also get pushed on the stack. To avoid this, we'll put them all in preceding clauses. The first one we'll try this with is the addition:</p>
+<p>Quay trở lại hàm <code>rpn/2</code>. 
+    Như đã nó lúc trước tất cả những ký tự là chữ số chúng ta sẽ đặt vào bên trong stack. 
+    Tuy nhiên, trường hợp mặc đinh bởi vì mẫu của chúng ta sẽ khớp với tất cả (xem lại chương <a class="chapter local" href="syntax-in-functions.html#pattern-matching">Pattern Matching</a>),
+    do đó các toán tử  cũng sẽ được đẩy vào stack. để tránh xảy ra, chúng ta sẽ đăt tất cả các trường hợp mẫu càn khớp lên phía truóc.
+    Chúng ta sẽ thử  với phép cộng trước tiên:</p>
 
 <pre class="brush:erl">
 rpn("+", [N1,N2|S]) -&gt; [N2+N1|S];
 rpn(X, Stack) -&gt; [read(X)|Stack].
 </pre>
 
-<p>We can see that whenever we encounter the <code>"+"</code> string, we take two numbers from the top of the stack (<var>N1</var>,<var>N2</var>) and add them before pushing the result back onto that stack. This is exactly the same logic we applied when solving the problem by hand. Trying the program we can see that it works:</p>
+<p>Cps thể  dễ  dàng nhìn thấy , bất cứ khi nào nhận được chuỗi <code>"+"</code>, 
+    chúng ta se cần hai phần tử  thuộc kiểu số  từ stack ( quy ước là <var>N1</var>,<var>N2</var>) và tính tổng chúng lại, được kết quả 
+    thì đảy chúng lạ vào stack. Điều này cũng chính xác với logic mà chúng ta đã đưa ra bằng phương pháp thủ công. Hãy thử  chạy chương trình xem nó có hoạt động không :</p>
 
 <pre class="brush:eshell">
 1&gt; c(calc).
@@ -142,7 +237,7 @@ rpn(X, Stack) -&gt; [read(X)|Stack].
 15
 </pre>
 
-<p>The rest is trivial, as you just need to add all the other operators:</p>
+<p>Oh! chính xác, như vậy tất cả những gì còn lại là bạn thêm những mẫu như vậy cho các toán tử  còn lại:</p>
 
 <pre class="brush:erl">
 rpn("+", [N1,N2|S]) -&gt; [N2+N1|S];
@@ -155,9 +250,22 @@ rpn("log10", [N|S]) -&gt; [math:log10(N)|S];
 rpn(X, Stack) -&gt; [read(X)|Stack].
 </pre>
 
-<p>Note that functions that take only one argument such as logarithms only need to pop one element from the stack. It is left as an exercise to the reader to add functions such as 'sum' or 'prod' which return the sum of all the elements read so far or the products of them all. To help you out, they are implemented in my version of <code><a class="source" href="static/erlang/calc.erl.html">calc.erl</a></code> already.</p>
+<p>Lưu ý một điều là với những hàm mà chỉ yêu cầu nhận 1 tham số  đầu vào như hàm logarithms sẽ chỉ cần đẩy một phần tư khỏi stack.
+    
+    Note that functions that take only one argument such as logarithms only need to pop one element from the stack. 
+    phần còn lại như một cách để luyện tập hơn, độc giả có thể  thêm một số  hàm vd như 'sum' hay 'prod' để trả về tổng hay tích của tât cả các phần tử .
+    Nếu bạn có thắc mắc gì hay chưa giải quyết được , bạn có tham khảo tại <code><a class="source" href="static/erlang/calc.erl.html">calc.erl</a></code>, chúng đã được tôi thực hiện
+    tuy nhiên bạn có thể  thực hiện hay chỉnh sửa theo ý của bạn.  
+    It is left as an exercise to the reader to add functions such as 'sum' or 'prod' which return the sum of all the elements read so far or the products of them all. 
+    To help you out, they are implemented in my version of <code><a class="source" href="static/erlang/calc.erl.html">calc.erl</a></code> already.</p>
 
-<p>To make sure this all works fine, we'll write very simple unit tests. Erlang's <code>=</code> operator can act as an <em>assertion</em> function. Assertions should crash whenever they encounter unexpected values, which is exactly what we need. Of course, there are more advanced testing frameworks for Erlang, including <a class="docs" href="http://erlang.org/doc/apps/common_test/write_test_chapter.html" title="Common Test's user guide">Common Test</a> and <a class="docs" href="http://erlang.org/doc/apps/eunit/chapter.html" title="EUnit's user guide">EUnit</a>. We'll check them out later, but for now the basic <code>=</code> will do the job:</p>
+<p>Và để  chắc chắn tất cả các hàm mà chúng ta viết trước đó hoạt động chính xác như mong đợi của chúng ta, hãy viết các đoạn mã kiểm thử  ( unittest ) đơn giản. 
+    Trong Erlang toán tử  <code>=</code> cũng có thể  xử dụng thay thế  cho hàm <em>assertion</em>. 
+    Assertions lên lập tức crash ngay khi các kết quả giá trị của nó không khớp với các giá trị mà chúng ta muốn.
+    Đó chính xác là những gì chúng ta cần khi áp dụng unittest. Tất nhiên trong Erlang cũng có rất nhiều các công cụ kiểm thử  khác vd như 
+    <a class="docs" href="http://erlang.org/doc/apps/common_test/write_test_chapter.html" title="Common Test's user guide">Common Test</a>,
+     <a class="docs" href="http://erlang.org/doc/apps/eunit/chapter.html" title="EUnit's user guide">EUnit</a>. '
+    Và chúng ta xem tìm hiểu chúng trong các phần sau, còn hiện tại hãy đơn giản mọi thứ, và toán tử <code>=</code> là đủ rồi:</p>
 
 <pre class="brush:erl">
 rpn_test() -&gt;
@@ -181,7 +289,13 @@ rpn_test() -&gt;
     ok.
 </pre>
 
-<p>The test function tries all operations; if there's no exception raised, the tests are considered successful. The first four tests check that the basic arithmetic functions work right. The fifth test specifies behaviour I have not explained yet. The <code>try ... catch</code> expects a badmatch error to be thrown because the expression can't work:</p>
+<p>các hàm kiểm thử  lên kiểm tra tất cả các hoạt động của hàm đó , 
+    và nếu như không có bất kỳ mội ngoại lệ nào xảy ra, thì chúng đó rằng hàm mà chúng ta viết hay logic của chúng ta hoạt động chính xác.
+
+    The test function tries all operations; if there's no exception raised, the tests are considered successful. 
+    The first four tests check that the basic arithmetic functions work right. 
+    The fifth test specifies behaviour I have not explained yet. The <code>try ... catch</code> 
+    expects a badmatch error to be thrown because the expression can't work:</p>
 
 <pre class="expand">
 90 34 12 33 55 66 + * - +

@@ -290,8 +290,12 @@ rpn_test() -&gt;
 </pre>
 
 <p>các hàm kiểm thử  lên kiểm tra tất cả các hoạt động của hàm đó , 
-    và nếu như không có bất kỳ mội ngoại lệ nào xảy ra, thì chúng đó rằng hàm mà chúng ta viết hay logic của chúng ta hoạt động chính xác.
-
+    và nếu như không có bất kỳ mội ngoại lệ nào xảy ra, thì chứng tỏ rằng hàm mà chúng ta viết hay logic của chúng ta hoạt động chính xác.
+    Giờ chúng ta sẽ đi xét các thành phần bên trong hàm kiểm thử này.
+    4 dòng đầu tiên là 4 biểu thứ đê kiểm tra chức năng số  học cơ bản và nó hoạt động chính xác,
+    ở dong thứ 5 là một trường hợp kiểm tra mà tôi chưa nhắc tới, trong trường hợp biểu thức hoạt động không chính xác 
+    với nhưng gì ta mong muốn, chúng ta sẽ sử  dụng mẫu <code>try ... catch</code> để  dự kiến rằng sẽ 
+    có một lỗi được ném ra.
     The test function tries all operations; if there's no exception raised, the tests are considered successful. 
     The first four tests check that the basic arithmetic functions work right. 
     The fifth test specifies behaviour I have not explained yet. The <code>try ... catch</code> 
@@ -302,11 +306,24 @@ rpn_test() -&gt;
 90 (34 (12 (33 (55 66 +) *) -) +)
 </pre>
 
-<p>At the end of <code>rpn/1</code>, the values <samp>-3947</samp> and <samp>90</samp> are left on the stack because there is no operator to work on the <samp>90</samp> that hangs there. Two ways to handle this problem are possible: either ignore it and only take the value on top of the stack (which would be the last result calculated) or crash because the arithmetic is wrong. Given Erlang's policy is to let it crash, it's what was chosen here. The part that actually crashes is the <code>[Res]</code> in <code>rpn/1</code>. That one makes sure only one element, the result, is left in the stack.</p>
+<p>trước khi kết thúc hoạt động trong hàm <code>rpn/1</code>, hai giá trị, toán hạng <samp>-3947</samp> và <samp>90</samp> vẫn còn trong stack 
+    và không còn bất kỳ toán tử  nào để  thực hiện với toán hạng <samp>90</samp> nũa lên. 
+    Khi đó để  giải quyết vấn đề  này ta có 2 phương án lựa chọn: phương án đầu tiên đó là bỏ qua và chỉ lấy giá trị ở đỉnh của stack ( đây sẽ được coi là kết quả
+    cuối cùng sau khi đã thực hiện phép tính) hoặc phương án hai dó là đưa ra lỗi để  crash chương trình vì các phép toán số  học này sai.
+    một phần do Erlang cho phép crash chương trình ( let it crash ) do đó trong truòng hợp này chúng ta sẽ phải lựa chọn một phương án.
+    Phân tích đoạn bạn bạn sẽ thấy thanh phần gây lên crash ở đây là đoạn <code>[Res]</code> trong hàm <code>rpn/1</code>, ở đoạn mã này 
+    yêu cầu đảm bảo là chỉ còn duy nhất một phần tử  còn lại trong stack để  khớp và gán với biến, đó chính là kết quả cuối cùng sau khi được tính.
+    either ignore it and only take the value on top of the stack (which would be the last result calculated) or crash because the arithmetic is wrong. 
+    Given Erlang's policy is to let it crash, it's what was chosen here. The part that actually crashes is the <code>[Res]</code> in <code>rpn/1</code>. 
+    That one makes sure only one element, the result, is left in the stack.</p>
 
-<p>The few tests that are of the form <code>true = FunctionCall1 == FunctionCall2</code> are there because you can't have a function call on the left hand side of <code>=</code>. It still works like an assert because we compare the comparison's result to <samp>true</samp>.</p>
+<p>Tiếp đó ở các dòng tiếp theo, một số  đoạn kiểm tra có dạng <code>true = FunctionCall1 == FunctionCall2</code> 
+    , xét theo độ ưu tiên toán tử  <code>==</code> cao hơn toán <code>=</code> do đó phái bên phải toán tử  <code>=</code> 
+    sẽ thục hiện truóc tiên, ngoài ra phía bên trái ta cần một kết quả mong muốn thay vì một lời gọi hàm. 
+    cấu trúc này vẫn sẽ hoạt động như một assert bình thường bởi vì kết quả cuối cùng chúng ta so sánh cuối cùng là <samp>true</samp>.</p>
 
-<p>I've also added the test cases for the sum and prod operators so you can exercise yourselves implementing them. If all tests are successful, you should see the following:</p>
+<p>Ngoài ra tôi cũng sẽ thêm một số  trường hợp kiểm thử  nữa cho phép tính tổng và tích để bạn có thể  luyện tập và thực hiện chúng.
+    Nếu tất cả các trường hợp đều đúng bạn sẽ thấy điều sau:</p>
 
 <pre class="brush:eshell">
 1&gt; c(calc).
@@ -317,20 +334,31 @@ ok
 28.0
 </pre>
 
-<p>Where <samp>28</samp> is indeed equal to <code>sum(1² + 2² + 3² + 4²) - 2</code>. Try as many of them as you wish.</p>
+<p>Như bạn thấy <samp>28</samp> bằng với kết quả của phép tính <code>sum(1² + 2² + 3² + 4²) - 2</code></p>
 
-<p>One thing that could be done to make our calculator better would be to make sure it raises <code>badarith</code> errors when it crashes because of unknown operators or values left on the stack, rather than our current <code>badmatch</code> error. It would certainly make debugging easier for the user of the calc module.</p>
+<p>Trong trường hợp lỗi xảy ra do do các toán tử , biểu thức không rõ ràng, cuối hàm tính mà vẫn còn nhiều giá trị trong stack, 
+    sẽ tốt hơn khi máy tính ( module calc của chúng ta ) lên đưa một ngoại lệ rõ ràng vd như <code>badarith</code>
+    errors hơn là chỉ đưa ra lỗi chung chung như <code>badmatch</code>. Điều này chắc chắn sẽ giúp bạn gỡ lỗi dễ  ràng hơn. 
+    It would certainly make debugging easier for the user of the calc module.</p>
 
 
 <h3><a class="section" name="heathrow-to-london">Heathrow to London</a></h3>
 
-<p>Our next problem is also taken from <a class="external" href="http://learnyouahaskell.com/functionally-solving-problems#heathrow-to-london">Learn You a Haskell</a>. You're on a plane due to land at Heathrow airport in the next hours. You have to get to London as fast as possible; your rich uncle is dying and you want to be the first there to claim dibs on his estate.</p>
+<p>Tiếp theo chúng ta sẽ đi xét một ví dụ được lấy từ <a class="external" href="http://learnyouahaskell.com/functionally-solving-problems#heathrow-to-london">Learn You a Haskell</a>. 
+    Gải thiêt sẽ đặt ra cho bạn như sau: Bạn đang trên một chuyến bay và nó sẽ đáp cánh tại sân bay Heathrow trong một vài giời tới, sau khi đáp cánh bạn muốn tới London nhanh nhất có thể 
+    vì người chú giàu có của bạn sắp mất, và bạn muốn là người đầu tiên có mặt để  được hưởng tài sản của chú mình.</p>
 
-<p>There are two roads going from Heathrow to London and a bunch of smaller streets linking them together. Because of speed limits and usual traffic, some parts of the roads and smaller streets take longer to drive on than others. Before you land, you decide to maximize your chances by finding the optimal path to his house. Here's the map you've found on your laptop:</p>
+<p>Để  di chuyển từ Heathrow tới London, bạn có thể  chọn một trong hai con đường, và chúng đều được thông với nhau ( 
+    có  một số  đoạn rẽ , phố  nhỏ để  bạn có thể  di chuyển qua lại giữa hai con đường này). Tuy nhiên bởi vị giới hạn tốc độ cho phép khi di chuyển và ách tắc giao thông 
+    lên một số  đường hay phố  nếu di chuyển sẽ mất nhiều thời gian hơn. Để chắc chắn rằng bạn sẽ tơi sớm nhất có thể , lên trước khi máy bay hạ cánh, 
+    bạn quyết định tìm ra đường đi tốt nhất để có thể nhanh chóng tới nhà chú mình được. Dưới dây là sơ đồ  minh họa trên máy tính xác tay của bạn:</p>
 
-<img class="center explanation" src="static/img/road1.png" width="494" height="172" alt="A little map with a main road 'A' with 4 segments of length 50, 5, 40 and 10, B with 4 segments of length 10, 90, 2 and 8, where each of these segments are joined by paths 'X' of length 30, 20, 25 and 0." />
+<img class="center explanation" src="static/img/road1.png" width="494" height="172" alt="A little map with a main road 'A' with 4 segments of length 50, 5, 40 and 10, B with 4 
+segments of length 10, 90, 2 and 8, where each of these segments are joined by paths 'X' of length 30, 20, 25 and 0." />
 
-<p>Having become a huge fan of Erlang after reading online books, you decide to solve the problem using that language. To make it easier to work with the map, you enter data the following way in a file named <a class="source" href="static/erlang/road.txt">road.txt</a>:</p>
+<p>Từ lúc trở thánh một fan của Erlang sau khi đọc một số  sách trực tuyến, chắc chắn bạn sẽ quuêts định giải 
+    quyết các vấn đề  bằng Erlang. Và để  dễ  dàng hơn cho vd mà ta làm cùng với bản đồ , bạn có thể  tạo một file và đặt tên nó là <a class="source" href="static/erlang/road.txt">road.txt</a> và 
+    nhập các dữ liệu càn thiết vào:</p>
 
 <pre class="expand">
 50
@@ -347,47 +375,100 @@ ok
 0
 </pre>
 
-<p>The road is laid in the pattern: <code>A1, B1, X1, A2, B2, X2, ..., An, Bn, Xn</code>, where <var>X</var> is one of the roads joining the A side to the B side of the map. We insert a <samp>0</samp> as the last <var>X</var> segment, because no matter what we do we're at our destination already. Data can probably be organized in tuples of 3 elements (triples) of the form <code>{A,B,X}</code>.</p>
+<p>Thông tin về  đường và phố  được đặt theo mẫu: <code>A1, B1, X1, A2, B2, X2, ..., An, Bn, Xn</code>, 
+    Trong đó <var>X</var> là một trong những con đường nối giữa A và B. Chúng ta sẽ quy ước giá trị <samp>0</samp> ở phân đoạn cuối cùng của <var>X</var>,
+    bởi vì ở điểm đích khi đó việc di chuyển giữa các con đường không có ý nghĩa gì nữa cả. Dữ liệu sẽ được tổ  chức trong một bộ gồm 3 phần tủe có dạng nhu sau  <code>{A,B,X}</code>.</p>
 
-<p>The next thing you realize is that it's worth nothing to try to solve this problem in Erlang when you don't know how to solve it by hand to begin with. In order to do this, we'll use what recursion taught us.</p>
+<p>Tiếp đó bạn nhận ra rằng nếu bạn không biết làm thế  nào để giải quyết vấn đề  này bằng cách thủ công thì 
+    thật sự không có giá trị gì khi cố gắng giải quyết nó bằng Erlang cả.
+    Do đó để  phân tích vấn đề này, chúng ta sẽ sử  dụng đệ quy với những gì đã được học về  nó.  
+    The next thing you realize is that it's worth nothing to try to solve this problem in Erlang 
+    when you don't know how to solve it by hand to begin with. 
+    In order to do this, we'll use what recursion taught us.</p>
 
-<p>When writing a recursive function, the first thing to do is to find our base case. For our problem at hand, this would be if we had only one tuple to analyze, that is, if we only had to choose between <var>A</var>, <var>B</var> (and crossing <var>X</var>, which in this case is useless because we're at destination):</p>
+<p>Khi viết một hàm đệ quy, điều đầu tiên bạn phải làm là chỉ ra được điều kiện dừng ( base case ) của nó. 
+    với bài toán này thì việc tìm điểm dừng sẽ bắt đâu từ việc phân tích một bộ. 
+    Vì thế  chúng ta sẽ đi xet một trường hợp đơn giản trước đã.
+    Đầu tiên nếu chúng ta phải chọn lựa giữa <var>A</var>, <var>B</var> ( trong trường hợp băng qua <var>X</var> 
+    tại thời điểm này là ko có nhiều ý nghĩa vì chúng ta đang xét tại thời điểm xuất phát):</p>
 
 <img class="center explanation" src="static/img/road2.png" width="244" height="130" alt="Only two paths A and B: A of length 10 and B of length 15." />
 
-<p>Then the choice is only between picking which of path A or path B is the shortest. If you've learned your recursion right, you know that we ought to try and converge towards the base case. This means that on each step we'll take, we'll want to reduce the problem to choosing between A and B for the next step.</p>
+<p>Do đó giờ việc làm của bạn lúc này chỉ đơn giản là chọn lựa ra con đường ngắn nhất để  đi từ A hay B. 
+    Nếu bạn có kiến thức tốt về  đệ quy, bạn chắc cũng biết việc chúng ta phải làm là tập trung về  trường hợp cơ sở. Tức là sau mỗi bước chúng ta sẽ giảm việc lựa chọn giữa A
+    và B cho bước tiếp theo. 
+    If you've learned your recursion right, you know that we ought to try and converge towards the base case. This means that on each step we'll take, 
+    we'll want to reduce the problem to choosing between A and B for the next step.</p>
 
-<p>Let's extend our map and start over:</p>
+<p>Nào giờ chúng ta sẽ mở rộng bản đồ  hơn và bắt đầu lại:</p>
 
 <img class="center explanation" src="static/img/road3.png" width="290" height="123" alt="Path A: 5, 10. Path B: 1, 15. Crossover path X: 3." title="No idea why you'd need to switch paths in a bathroom." />
 
-<p>Ah! It gets interesting! How can we reduce the triple <code>{5,1,3}</code> to a strict choice between A and B? Let's see how many options are possible for A. To get to the intersection of <var>A1</var> and <var>A2</var> (I'll call this the <em>point</em> <var>A1</var>), I can either take road <var>A1</var> directly (<samp>5</samp>), or come from <var>B1</var> (<samp>1</samp>) and then cross over <var>X1</var> (<samp>3</samp>). In this case, The first option (<samp>5</samp>) is longer than the second one (<samp>4</samp>). For the option A, the shortest path is <code>[B, X]</code>. So what are the options for B? You can either proceed from <var>A1</var> (<samp>5</samp>) then cross over <var>X1</var> (<samp>3</samp>), or strictly take the path <var>B1</var> (<samp>1</samp>).</p>
+<p>Ah! Thật thú vị ! Vậy làm cách nào để  chúng ta có thể  giảm lựa chọn <code>{5,1,3}</code> tới việc chỉ còn chọn lựa giữa A và B.
+    Hãy xác định xem có bao nhiều cách để  chọn A. Để  xác định điềm giao cắt giữa  <var>A1</var> và <var>A2</var> ( Tôi sẽ tạm gọi là <em>điểm</em> <var>A1</var> ),
+    Tôi thể  đi trực tiếp từ đường <var>A1</var> (<samp>5</samp>) hoăc đi từ đường <var>B1</var> và sau đó băng qua đường <var>X1</var> (<samp>3</samp>). Để  ý xem trong trường hợp này mặc dù 
+    ban phải rườm rà hơn khi đi từ đường <var>B1</var> (<samp>1</samp>) và sau đó băng qua <var>X1</var> (<samp>3</samp>) nhưng rõ ràng viêc đi vậy vậy sẽ nhanh hơn là xuất phát từ 
+    <var>A1</var> ( <samp>5</samp>) vì rõ ràng (<samp>5</samp>) thì dài hơn (<samp>4</samp>).
+    do đó quãng đường ngắn nhất cho tùy chọn A là <code>[B, X]</code>. Vậỵ còn lựa chọn B ? tương tự ban cũng có thể  xuất phát từ <var>A1</var> (<samp>5</samp>) sau đó băng qua 
+    <var>X1</var> (<samp>3</samp>) hay đi trức tiếp từ <var>B1</var> (<samp>1</samp>).</p>
 
-<p>Alright! What we've got is a length <samp>4</samp> with the path <code>[B, X]</code> towards the first intersection A and a length <samp>1</samp> with the path <code>[B]</code> towards the intersection of <var>B1</var> and <var>B2</var>. We then have to decide what to pick between going to the second point A (the intersection of <var>A2</var> and the endpoint or <var>X2</var>) and the second point B (intersection of <var>B2</var> and <var>X2</var>). To make a decision, I suggest we do the same as before. Now you don't have much choice but to obey, given I'm the guy writing this text. Here we go!</p>
+<p>Thật tốt! Như vậy ta đã có lựa chọn đâu điên với quãng đường dài <samp>4</samp> đến giao điểm đầu tiên của A ( điểm A1 ) với việc chọn con đường <code>[B, X]</code> 
+    và quãng đường có độ dài là <samp>1</samp> từ ví trí <code>[B]</code> đến điểm B1 ( giao điểm của <var>B1</var> và <var>B2</var> ).
+    Tiếp theo chúng ta sẽ tiếp tục di chuyển để  điểm A2 ( điểm thứ 2 của A hay điểm giao giữa A2 và điểm đích hoặc <var>X2</var>) và điểm B2 ( giao giữa <var>B2</var> và <var>X2</var>).
+    Để đưa ra quyết định, tôi đề  nghị chúng ta sẽ làm giống trước đó. Rõ ràng là bạn không có nhiều lựa chọn khi tôi là người viết hướng dẫn này, vì thế chúng ta sẽ tiếp tục.</p>
 
-<p>All possible paths to take in this case can be found in the same way as the previous one. We can get to the next point A by either taking the path <var>A2</var> from <code>[B, X]</code>, which gives us a length of <samp>14</samp> (<code>14 = 4 + 10</code>), or by taking <var>B2</var> then <var>X2</var> from <code>[B]</code>, which gives us a length of <samp>16</samp> (<code>16 = 1 + 15 + 0</code>). In this case, the path <code>[B, X, A]</code> is better than <code>[B, B, X]</code>.</p>
+<p>Tất cả các cách để  lựa chon đường đi trong trường hợp này tương tự như cách mà chúng ta làm lúc trước 
+    . Chúng ta sẽ lại bắt đầu từ điểm A hay chính xac là từ ví trí bắt đầu của A2 ( sau khi lựa chọn quang đường <code>[B, X]</code>),
+    tương tự chúng ta tơi điểm A2 bằng cách đi trục tiếp từ A2, do đó quãng đường chúng ta có được lúc này là <samp>14</samp> (<code>14 = 4 + 10</code>) hoặc 
+    đi tới <var>B2</var> sau đó tói <var>X2</var> từ  <code>[B]</code>, khi đó tổng quãng đường của lựa chọn này là   <samp>16</samp> (<code>16 = 1 + 15 + 0</code>),
+    rõ ràng nhìn vào kết quả bạn thấy đoạn đường <code>[B, X, A]</code> thì gần hơn so với  <code>[B, B, X]</code>.</p>
 
 <img class="center explanation" src="static/img/road3.2.png" width="364" height="149" alt="Same drawing as the one above, but with the paths drawn over." />
 
-<p>We can also get to the next point B by either taking the path <var>A2</var> from <code>[B, X]</code> and then crossing over <var>X2</var> for a length of <samp>14</samp> (<code>14 = 4 + 10 + 0</code>), or by taking the road <var>B2</var> from <code>[B]</code> for a length of <samp>16</samp> (<code>16 = 1 + 15</code>). Here, the best path is to pick the first option, <code>[B, X, A, X]</code>.</p>
+<p>Hay cũng có thể  đi tới điểm tiếp nối của B bằng cách đi tới <var>A2</var> từ <code>[B, X]</code> rồi sau đó băng quang <var>X2</var> , tổng quáng đường sẽ là  
+    <samp>14</samp> (<code>14 = 4 + 10 + 0</code>), hoặc đi trực tiêp tới điểm <var>B2</var> từ <code>[B]</code> với tổng quãng đường là <samp>16</samp> (<code>16 = 1 + 15</code>). 
+    chúng ta có quãng đường tốt nhất cho lưạ chọn đầu tiên là <code>[B, X, A, X]</code>.</p>
 
-<p>So when this whole process is done, we're left with two paths, A or B, both of length <samp>14</samp>. Either of them is the right one. The last selection will always have two paths of the same length, given the last X segment has a length 0. By solving our problem recursively, we've made sure to always get the shortest path at the end. Not too bad, eh?</p>
+<p>Vậy là việc chọn đường đã xử lí xong, cuối cùng chúng ta còn lại hai tuyến A hoặc B với độ dài quãng đường của cả hai là <samp>14</samp>. 
+    Chọn bất kỳ một trong hai tuyến nào cũng đều được. Sự lựa chọn cuồi cùng sẽ luôn là hai quãng đường có cùng chiều dài và chiều dài của X ở cuối phần đoạn luôn là 0 
+    . Bằng cách giải quyết bằng đệ quy, chúng ta sẽ luôn đảm bảo tìm đường quãng đường ngăn nhất. Không tệ phải không ?</p>
 
-<p>Subtly enough, we've given ourselves the basic logical parts we need to build a recursive function. You can implement it if you want, but I promised we would have very few recursive functions to write ourselves. We'll use a fold.</p>
+<p>Subtly enough, Chúng ta đã đưa ra những logic cơ bản trong việc xây dụng một hàm đệ quy. Bạn có thể  thực hiện logic trên nếu muốn nhưng tôi đã 
+    từng nói rằng chúng ta sẽ không phải tự viết, định nghĩa quá nhiều hàm đệ quy, do đó lần này chúng ta sẽ sử  dụng hàm 'fold'.</p>    
+    we've given ourselves the basic logical parts we need to build a recursive function. You can implement it if you want, 
+    but I promised we would have very few recursive functions to write ourselves. We'll use a fold.</p>
 
 <div class="note">
-<p><strong>Note:</strong> while I have shown folds being used and constructed with lists, folds represent a broader concept of iterating over a data structure with an accumulator. As such, folds can be implemented over trees, dictionaries, arrays, database tables, etc.</p>
+<p><strong>Lưu ý:</strong> Trong các chương trước mặc dù tôi đã chỉ ra cách sử  dụng hàm 'fold' với kiểu dũ liệu danh sách,
+    tuy nhiên chúng ta chưa tìm hiểu hết, hàm 'fold' còn biểu hiện cho một khái niệm rộng hơn của việc lặp dữ liệu có cấu trúc cùng với một bộ lưu trữ.
+    đơn cử  như fold còn có thể  làm việc được với cấu trúc dữ liệu cây, từ điển (dictionary) , mảng ( array ) , bảng ( database table), etc.</p>
 
-<p>It is sometimes useful when experimenting to use abstractions like maps and folds; they make it easier to later change the data structure you use to work with your own logic.</p>
+<p>It is sometimes useful when experimenting to use abstractions like maps and folds; 
+    they make it easier to later change the data structure you use to work with your own logic.</p>
 </div>
 
-<p>So where were we? Ah, yes! We had the file we're going to feed as input ready. To do file manipulations, the <a class="docs" href="http://erldocs.com/18.0/kernel/file.html">file module</a> is our best tool. It contains many functions common to many programming languages in order to deal with files themselves (setting permissions, moving files around, renaming and deleting them, etc.)</p>
+<p>Vậy hiện giờ chúng ta đang ở đâu? Ah, vâng! Chúng ta đang ở bước chuẩn bị một file dùng làm đầu vào cho chương trình. 
+    Dĩ liên để  thao tác được với file chúng ta cần công, và trong Erlang <a class="docs" href="http://erldocs.com/18.0/kernel/file.html">file module</a> là công cụ tốt nhất thao tác với file
+    . trong module này chưa rất nhiều các hàm thông dụng để  thao tác với file (cài cặt quyền ( setting permissions ), di chuyển flle, đổi tên hay xóa file , etc.)</p>
 
-<p>It also contains the usual functions to read and/or write from files such as: <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#open/2" title="Oh, look! another link cloud!">file:open/2</a></code> and <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#close/1" title="Man I wonder what I can say on that one">file:close/1</a></code> to do as their names say (opening and closing files!), <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#read/2" title="probably something like 'official link to unofficial doc'">file:read/2</a></code> to get the content a file (either as string or a binary), <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#read_line/1" title="It's boring but true...">file:read_line/1</a></code> to read a single line, <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#position/3" title="Is this what we call reading between the lines?">file:position/3</a></code> to move the pointer of an open file to a given position, etc.</p>
+<p>Tất nhiên nó cũng có các hàm thông dụng cho việc đoc/ghi file như: <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#open/2" title="Oh, look! another link cloud!">
+    file:open/2</a></code> và <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#close/1" title="Man I wonder what I can say on that one">file:close/1</a></code> 
+    để  mở và đóng file, <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#read/2" title="probably something like 'official link to unofficial doc'">
+    file:read/2</a></code> để  đọc, lấy nội dung của một file ( bao gồm cả kiểu chuỗi hoặc nhị phân ), 
+    <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#read_line/1" title="It's boring but true...">file:read_line/1</a></code> để  đoc một dòng trong file ,
+    <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#position/3" title="Is this what we call reading between the lines?">file:position/3</a></code> để  di chuyển con trỏ, nhaỷ tới ví trị 
+    cần tìm khi mở một file, etc.</p>
 
-<p>There's a bunch of shortcut functions in there too, such as <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#read_file/1" title="Maybe it is a subliminal message?">file:read_file/1</a></code> (opens and reads the contents as a binary), <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#consult/1" title="JOIN THE NAVY">file:consult/1</a></code> (opens and parses a file as Erlang terms) or <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#pread/2" title="And 5 cents added to my bank account">file:pread/2</a></code> (changes a position and then reads) and <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#pwrite/2" title="Finally, this is over. I'm so sorry.">pwrite/2</a></code> (changes the position and writes content).</p>
+<p>Ngoài ra, Có một số  các hàm rút gọn hơn cho vấn để  đọc ghi như 
+    <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#read_file/1" title="Maybe it is a subliminal message?">file:read_file/1</a></code> 
+    (mở và đọc nội dung ở dạng nhị phân opens and reads the contents as a binary), 
+    <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#consult/1" title="JOIN THE NAVY">file:consult/1</a>
+    </code> (mở và phân tích file dạng Erlang terms) or <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#pread/2" 
+        title="And 5 cents added to my bank account">file:pread/2</a></code> (thay đổi vị trí con trỏ hiện tại trong file) and <code><a class="docs" 
+            href="http://erldocs.com/18.0/kernel/file.html#pwrite/2" title="Finally, this is over. I'm so sorry.">pwrite/2</a></code> (thay đổi ví trí trong file và ghi dũe liệu vào file).</p>
 
-<p>With all these choices available, it's going to be easy to find a function to read our <a class="source" href="static/erlang/road.txt">road.txt</a> file. Because we know our road is relatively small, we're going to call <code>file:read_file("road.txt").'</code>:</p>
+<p>Với tất cả các lựa chọn sẵn có nhưng vậy , bạn có thể  dễ  dàng tìm kiếm các hàm để  đọc file <a class="source" href="static/erlang/road.txt">road.txt</a>. 
+    Trong ví dụ này vì quãng đường của chúng ta tương đối nhỏ và không có nhiều dữ liêu cho lên chúng ta sẽ gọi hàm <code>file:read_file("road.txt").'</code> cho việc đọc file:</p>
 
 <pre class="brush:eshell">
 1&gt; {ok, Binary} = file:read_file("road.txt").
@@ -396,14 +477,17 @@ ok
 ["50","10","30","5","90","20","40","2","25","10","8","0"]
 </pre>
 
-<p>Note that in this case, I added a space (<code>" "</code>) and a tab (<code>"\t"</code>) to the valid tokens so the file could have been written in the form <samp>"50 10 30 5 90 20 40 2 25 10 8 0"</samp> too. Given that list, we'll need to transform the strings into integers. We'll use a similar manner to what we used in our RPN calculator:</p>
+<p>Chủ ý rằng trong trường hợp này tôi đã thêm một ký tự cách (<code>" "</code>) và ký tự tab (<code>"\t"</code>) 
+    để  file có thể  viêt được dưới dạng <samp>"50 10 30 5 90 20 40 2 25 10 8 0"</samp>. 
+    dựa trên một danh sách mà chúng ta đã chuyển hóa từ chuỗi trong file, chúng ta sẽ cần phải chuyển các phần tử  dạng chuối sang kiểu dữ liệu số nguyện. Do đo 
+    chúng ta sẽ làm tương tự những gì mà chúng ta đã làm với ví dụ RPN calculator ở phần trước:</p>
 
 <pre class="brush:eshell">
 3&gt; [list_to_integer(X) || X &lt;- S].
 [50,10,30,5,90,20,40,2,25,10,8,0]
 </pre>
 
-<p>Let's start a new module called <a class="source" href="static/erlang/road.erl.html">road.erl</a> and write this logic down:</p>
+<p>Hãy tạo ra một module mới và đặt tên nó là <a class="source" href="static/erlang/road.erl.html">road.erl</a> và thêm đoạn logic sau:</p>
 
 <pre class="brush:erl">
 -module(road).
@@ -420,9 +504,19 @@ parse_map(Str) when is_list(Str) -&gt;
     [list_to_integer(X) || X &lt;- string:tokens(Str,"\r\n\t ")].
 </pre>
 
-<p>The function <code>main/0</code> is here responsible for reading the content of the file and passing it on to <code>parse_map/1</code>. Because we use the function <code>file:read_file/1</code> to get the contents out of <a class="source" href="static/erlang/road.txt">road.txt</a>, the result we obtain is a binary. For this reason, I've made the function <code>parse_map/1</code> match on both lists and binaries. In the case of a binary, we just call the function again with the string being converted to a list (our function to split the string works on lists only.)</p>
+<p>mặc dù trong Erlang không có hàm <code>main</code> như một số ngôn ngữ khác tuy nhiên chúng ta có thể  
+    quy ước việc sử  dụng hàm <code>main/0</code> như một entrypoint, trong ví dụ này chúng ta sẽ sử  dụng nó cho việc đọc nội dung của file 
+    và truyền dữ liệu đã đọc được vào cho hàm <code>parse_map/1</code> để  phân tích. 
+    bởi vì hàm <code>file:read_file/1</code> sẽ lấy nội dung từ <a class="source" href="static/erlang/road.txt">road.txt</a>, 
+    cho lên kết quả mà chúng ta nhận được sẽ là dạng nhị phân. 
+    Do đó để  giải quyết trường hợp này, chúng ta sẽ tạo ra một hàm <code>parse_map/1</code> trong đó nó sẽ kiểm tra để  khớp với cả trường hợp dữ liệu truyền vào là 
+    kiểu danh sách hay kiểu nhị phân. Trong trường hợp kiểu dữ liệu là nhị phân, chúng ta sẽ chỉ cần chuyển đổi nó sang kiểu danh sách và sau đó gọi lại hàm 
+    <code>parse_map/1</code> cùng với đầu vào là dữ liệu đã được chuyển từ nhị phân sang kiểu danh sách.</p>
 
-<p>The next step in parsing the map would be to regroup the data into the <code>{A,B,X}</code> form described earlier. Sadly, there's no simple generic way to pull elements from a list 3 at a time, so we'll have to pattern match our way in a recursive function in order to do it:</p>
+<p>Bước tiếp theo chúng ta cần phải phân tích để  chuyển dữ liệu vào trong các tập con có dạng <code>{A,B,X}</code>. 
+    trong các ngôn ngữ lập trình hàm khác có một số  hàm có chức năng tách, chọn từng cụm phần tử  của một danh sách 
+    vào một tập con , tuy vậy đáng tiếc thay là Erlang không hỗ  trợ việc này, do dó không có cách nào để  lấy từng phần 3 phần tử  của một danh sách cả ,
+    do đó chúng ta sẽ phải tự xây dựng hàm để  xử  lí việc này, vì thao tác với kiểu dữ liệu danh sách cho lên chúng ta sẽ sử  dụng đệ quy cùng khớp mẫu để  viêt hàm này:</p>
 
 <pre class="brush:erl">
 group_vals([], Acc) -&gt;
@@ -431,7 +525,7 @@ group_vals([A,B,X|Rest], Acc) -&gt;
     group_vals(Rest, [{A,B,X} | Acc]).
 </pre>
 
-<p>That function works in a standard tail-recursive manner; there's nothing too complex going on here. We'll just need to call it by modifying <code>parse_map/1</code> a bit:</p>
+<p>Như bạn thấy chúng ta thực hiện hàm <code>group_vals</code> cùng với đệ quy đuôi, tiếp đó chúng ta chỉ cần điều chỉnh lại một chút hàm <code>parse_map/1</code>:</p>
 
 <pre class="brush:erl">
 parse_map(Bin) when is_binary(Bin) -&gt;
@@ -441,7 +535,7 @@ parse_map(Str) when is_list(Str) -&gt;
     group_vals(Values, []).
 </pre>
 
-<p>If we try and compile it all, we should now have a road that makes sense:</p>
+<p>Nêú chúng ta biện dịch tất cả lại với nhau , chúng ta sẽ có được một con đường như sau:</p>
 
 <pre class="brush:eshell">
 1&gt; c(road).
@@ -450,21 +544,44 @@ parse_map(Str) when is_list(Str) -&gt;
 [{50,10,30},{5,90,20},{40,2,25},{10,8,0}]
 </pre>
 
-<p>Ah yes, that looks right. We get the blocks we need to write our function that will then fit in a fold. For this to work, finding a good accumulator is necessary.</p>
+<p>Tuyệt, trông có về  chính xác những gì mà chúng ta mong đợi rồi đó. 
+    Ah yes, that looks right. We get the blocks we need to write our function that will then fit in a fold. For this to work, finding a good accumulator is necessary.</p>
 
-<p>To decide what to use as an accumulator, the method I find the easiest to use is to imagine myself in the middle of the algorithm while it runs. For this specific problem, I'll imagine that I'm currently trying to find the shortest path of the second triple (<code>{5,90,20}</code>). To decide on which path is the best, I need to have the result from the previous triple. Luckily, we know how to do it, because we don't need an accumulator and we got all that logic out already. So for A:</p>
+<p>Để  chọn ra một biến lưu trữ ( accumulator ), cách tôt nhất là tưởng tượng rằng bản thân chúng ta đang 
+    ở giữa thuật toán đạng chạy. Áp dụng với bài toán nay, chúng ta sẽ coi rằng chúng ta đang cố tìm ra con 
+    dường ngắn nhất giữa cho bộ ba ở vị trí thứ hai trong danh sách (<code>{5,90,20}</code>). Để  quyết định xem con đường nào là tốt nhất,
+    tôi sẽ phải cần kết quả từ bộ ba trước đó. May mắn thay là cách giải quyết vấn đề  này chúng ta thực hiện trước đó rồi, 
+    bởi vì chúng ta không cần một biến lưu trữ ( accumulator ) và đã biết được các logic trước đó ròi, do đó trong trường hợp với điểm A:
+     the method I find the easiest to use is to imagine myself in the middle of the algorithm while it runs. For this specific problem, 
+     I'll imagine that I'm currently trying to find the shortest path of the second triple (<code>{5,90,20}</code>).
+      To decide on which path is the best, I need to have the result from the previous triple. Luckily, we know how to do it, 
+      because we don't need an accumulator and we got all that logic out already. So for A:</p>
 
 <img class="center explanation" src="static/img/road1.2.png" width="506" height="249" alt="Visual re-explanation of how to find the shortest path" title="biggest image on this site (except the squid) yet!" />
 
-<p>And take the shortest of these two paths. For B, it was similar:</p>
+<p>và đường đi ngẵng nhất với B là:</p>
 
 <img class="center explanation" src="static/img/road1.3.png" width="506" height="236" alt="Visual re-explanation of how to find the shortest path" title="I do love copy/pasting." />
 
-<p>So now we know that the current best path coming from A is <code>[B, X]</code>. We also know it has a length of 40. For B, the path is simply <code>[B]</code> and the length is 10. We can use this information to find the next best paths for A and B by reapplying the same logic, but counting the previous ones in the expression. The other data we need is the path traveled so we can show it to the user. Given we need two paths (one for A and one for B) and two accumulated lengths, our accumulator can take the form <code>{{DistanceA, PathA}, {DistanceB, PathB}}</code>. That way, each iteration of the fold has access to all the state and we build it up to show it to the user in the end.</p>
+<p>Dựa vào cách giải quyết mà ta suy luận lúc trước, thì đoạn đường tốt nhất có thể  chọn tử  ví trí xuất phát A là <code>[B, X]</code>. 
+    Độ dài quãng đường khi đó là 40. Còn từ B, quãng đường chỉ đơn giản là <code>[B]</code> với độ dài là 10. 
+    sau khi đã lựa chọn được bước đàu tiên, và dựa trên quyết định trước đó chúng ra có thể  sử  dụng 
+    kết quả đó đẻ tìm ra tuyến đường tốt nhất cho A và B bằng cách lặp lại logic trước đó. Chúng ta cũng cần cách để 
+    hiển thị dữ liệu tuyến đường cho người dùng. Vì có hay tuyến đương chung ta cần hiển thị ( một cho tuyến A và một cho tuyến B ) và tổng độ dài 
+    tính được của mỗi tuyến, vì vậy chúng ta có thể biểu diễn tổng độ dài đó dưới dạng <code>{{DistanceA, PathA}, {DistanceB, PathB}}</code>.
+    Bằng cách này, mỗi lần lặp trong hàm 'fold' sẽ có quyền truy cập vào tât cả các trạng thái và xây dựng két quả ở bước cuối cho người dùng   
+     
+    We can use this information to find the next best paths for A and B by reapplying the same logic, 
+    but counting the previous ones in the expression. 
+    The other data we need is the path traveled so we can show it to the user.
+     Given we need two paths (one for A and one for B) and two accumulated lengths, our accumulator can take the form <code>{{DistanceA, PathA}, {DistanceB, PathB}}</code>. 
+     That way, each iteration of the fold has access to all the state and we build it up to show it to the user in the end.</p>
 
-<p>This gives us all the parameters our function will need: the <code>{A,B,X}</code> triples and an accumulator of the form <code>{{DistanceA,PathA}, {DistanceB,PathB}}</code>.</p>
+<p>Giở hàm của chúng ta đã có tât các tham số  cân thiết cho bài toán này rồi: một bộ ba phân tử  <code>{A,B,X}</code> và một biến lưu trữ có dạng 
+    <code>{{DistanceA,PathA}, {DistanceB,PathB}}</code>.</p>
 
-<p>Putting this into code in order to get our accumulator can be done the following way:</p>
+<p>Hãy chuyển chúng vào trong hàm mà ta sẽ viết và nhận được kết quả 
+    Putting this into code in order to get our accumulator can be done the following way:</p>
 
 <pre class="brush:erl">
 shortest_step({A,B,X}, {{DistA,PathA}, {DistB,PathB}}) -&gt;
@@ -475,13 +592,32 @@ shortest_step({A,B,X}, {{DistA,PathA}, {DistB,PathB}}) -&gt;
     {erlang:min(OptA1, OptA2), erlang:min(OptB1, OptB2)}.
 </pre>
 
-<p>Here, <var>OptA1</var> gets the first option for A (going through <var>A</var>), <var>OptA2</var> the second one (going through <var>B</var> then <var>X</var>). The variables <var>OptB1</var> and <var>OptB2</var> get the similar treatment for point B. Finally, we return the accumulator with the paths obtained.</p>
+<p>Ở đây biến <var>OptA1</var> sẽ biến đầu tiến cho tuyến A  (bắt đầu từ <var>A</var>) và biến <var>OptA2</var>
+    như một lựa chọn thứ hai ( bắt đầu từ <var>B</var> và bằng qua <var>X</var> ).
+    điều tương tự các biến <var>OptB1</var> và <var>OptB2</var> cho tuyến B.
+    sau khi tính toán kết quả cuối cùng chúng ta sẽ trả về  tổng độ dài các tuyến đường đã chọn cùng với các lựa chọn di chuyển, 
+    
+    gets the first option for A (going through <var>A</var>), <var>OptA2</var> the second one (going through <var>B</var> then <var>X</var>). 
+    The variables <var>OptB1</var> and <var>OptB2</var> get the similar treatment for point B. Finally, we return the accumulator with the paths obtained.</p>
 
-<p>About the paths saved in the code above, note that I decided to use the form <code>[{x,X}]</code> rather than <code>[x]</code> for the simple reason that it might be nice for the user to know the length of each segment. The other thing I'm doing is that I'm accumulating the paths backwards (<code>{x,X}</code> comes before <code>{b,B}</code>.) This is because we're in a fold, which is tail recursive: the whole list is reversed, so it is necessary to put the last one traversed before the others.</p>
+<p>Đối với vấn đề  lưu trữ các kết quả con đường mà chọn ở đoạn mã trên, chú ý là tôi quyết định sử  dụng mẫu <code>[{x,X}]</code>  thay vì sủ dụng  <code>[x]</code>, lí giải cho việc làm này 
+    là nhìn vào mẫu mới mà tôi sử  dụng, người dùng có thể  nhìn ra được độ dài quãng đường của mỗi quãng.
+    Một điều nữa là việc hiển thị các tuyến đường đa chọn sẽ theo thứ tự ngượi lại ( (<code>{x,X}</code> sẽ đặt trước <code>{b,B}</code> )
+    , đó là bởi vì chúng ta đang sử  dụng 'fold', đây là một phép đệ quy đuôi so đó các kết quả khi sử  dụng với kiểu dữ liệu danh sách phải nghịch đảo lại.
+    About the paths saved in the code above, note that I decided to use the form <code>[{x,X}]</code> rather than <code>[x]</code> for the simple reason that
+     it might be nice for the user to know the length of each segment. 
+     The other thing I'm doing is that I'm accumulating the paths backwards (<code>{x,X}</code> comes before <code>{b,B}</code>.) 
+     This is because we're in a fold, which is tail recursive: the whole list is reversed, 
+     so it is necessary to put the last one traversed before the others.</p>
 
-<p>Finally, I use <code>erlang:min/2</code> to find the shortest path. It might sound weird to use such a comparison function on tuples, but remember that every Erlang term can be compared to any other! Because the length is the first element of the tuple, we can sort them that way.</p>
+<p>Cuối cùng, tôi sử  dụng hàm <code>erlang:min/2</code> để  tìm ra tuyến đường ngắn nhất giữa các kết quả các tuyến. 
+    Việc áp dụng hàm so sanh này cho kiểu dữ liệu bộ có vẻ khó hiểu, nhưng hay nhìn lại chương về  các kiểu dữ liệu chúng ta đã học trước đó thì bạn sẽ thấy
+     trong Erlang mọi kiểu dữ liệu đều có thể so sánh được với nhau! Trong trường hợp này , vì phần tử đầu tiên của bộ là độ dài tổng quáng đương, do đó chúng ta sẽ 
+     sắp xếp dựa trên phần tử  này.
+    It might sound weird to use such a comparison function on tuples, but remember that every Erlang term can be compared to any other! 
+    Because the length is the first element of the tuple, we can sort them that way.</p>
 
-<p>What's left to do is to stick that function into a fold:</p>
+<p>Giờ những gì còn lại là chúng ta áp dụng chúng với hàm 'fold':</p>
 
 <pre class="brush:erl">
 optimal_path(Map) -&gt;
@@ -492,7 +628,13 @@ optimal_path(Map) -&gt;
     lists:reverse(Path).
 </pre>
 
-<p>At the end of the fold, both paths should end up having the same distance, except one's going through the final <code>{x,0}</code> segment. The <code>if</code> looks at the last visited element of both paths and returns the one that doesn't go through <code>{x,0}</code>. Picking the path with the fewest steps (compare with <code>length/1</code>) would also work. Once the shortest one has been selected, it is reversed (it was built in a tail-recursive manner; you <strong>must</strong> reverse it). You can then display it to the world, or keep it secret and get your rich uncle's estate. To do that, you have to modify the main function to call <code>optimal_path/1</code>. Then it can be compiled.</p>
+<p>cuối cùng sau khi chạy xong hàm 'fold', kết quả mà nhận nhận được cho tuyến A và B lên giống nhau, ngoại trừ kết quả của quãng đường cuói cùng <code>{x,0}</code>.
+   chúng ta sẽ sử  dụng biểu thức <code>if</code> để  tìm kiếm phần tử  hay con đường đã chọn cuối cùng của cả hai tuyến đường  
+    At the end of the fold, both paths should end up having the same distance, except one's going through the final <code>{x,0}</code> segment.
+     The <code>if</code> looks at the last visited element of both paths and returns the one that doesn't go through <code>{x,0}</code>. 
+     Picking the path with the fewest steps (compare with <code>length/1</code>) would also work. Once the shortest one has been selected, 
+     it is reversed (it was built in a tail-recursive manner; you <strong>must</strong> reverse it). You can then display it to the world,
+      or keep it secret and get your rich uncle's estate. To do that, you have to modify the main function to call <code>optimal_path/1</code>. Then it can be compiled.</p>
 
 <pre class="brush:erl">
 main() -&gt;
@@ -501,7 +643,7 @@ main() -&gt;
     optimal_path(parse_map(Bin)).
 </pre>
 
-<p>Oh, look! We've got the right answer! Great Job!</p>
+<p>Oh, nhìn xem! Thật chính xác những gì chúng ta mong muốn!</p>
 
 <pre class="brush:eshell">
 1&gt; c(road).
@@ -510,11 +652,12 @@ main() -&gt;
 [{b,10},{x,30},{a,5},{x,20},{b,2},{b,8}]
 </pre>
 
-<p>Or, to put it in a visual way:</p>
+<p>Hay nhìn một cách trực quan hơn với hình vẽ</p>
 
 <img class="center explanation" src="static/img/road1.4.png" width="426" height="157" alt="The shortest path, going through [b,x,a,x,b,b]" />
 
-<p>But you know what would be really useful? Being able to run our program from outside the Erlang shell. We'll need to change our main function again:</p>
+<p>Tuy vậy việc chạy chương trình thật sư bất tiện, mỗi lần chúng ta lại phải vô shell biện dịch và gọi hàm cần chạy, 
+    Vì vậy có một cách thực sự hữu ích hơn để  chạy chương trình mà không phải truy cập vào shell. để  thực hiện nó chúng ta sẽ cần thay đỏi lại hàm main một chút:</p>
 
 <pre class="brush:erl">
 main([FileName]) -&gt;
@@ -524,9 +667,14 @@ main([FileName]) -&gt;
     erlang:halt().
 </pre>
 
-<p>The main function now has an arity of 1, needed to receive parameters from the command line. I've also added the function <code><a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#halt/0" title="Unofficial and pretty Erlang documentation">erlang:halt/0</a></code>, which will shut down the Erlang VM after being called. I've also wrapped the call to <code>optimal_path/1</code> into <code>io:format/2</code> because that's the only way to have the text visible outside the Erlang shell.</p>
+<p>Như bạn thấy chúng ta sẽ cật nhập thêm một tham số  cho hàm main để  nó có thể  nhận các tham số  từ dòng lệnh, 
+    đồng thời ở cuối hàm main chúng ta sẽ thêm một dòng lệnh gọi tới hàm <code><a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#halt/0" 
+        title="Unofficial and pretty Erlang documentation">erlang:halt/0</a></code>, việc làm này là để  thống báo cho máy ảo Erlang biết chương trình của chúng ta 
+        sẽ chấm dứt sau khi thực hiên xong các công việc cần làm. Tiếp nữa tôi cũng chuyển lời gọi hàm  <code>optimal_path/1</code> vào bên trong hàm <code>io:format/2</code> 
+        để  có thể  hiển thị được thông điệp ra ngoài ngoài màn hình dòng lệnh thay vì chỉ hiển thị trong shell.
+    because that's the only way to have the text visible outside the Erlang shell.</p>
 
-<p>With all of this, your <a class="source" href="static/erlang/road.erl.html">road.erl</a> file should now look like this (minus comments):</p>
+<p>Tất cả những gì chúng ta đã làm trước đó tôi đã tổng hợp lại tại file <a class="source" href="static/erlang/road.erl.html">road.erl</a> (minus comments):</p>
 
 <pre class="brush:erl">
 -module(road).
@@ -578,9 +726,13 @@ $ erl -noshell -run road main road.txt
 [{b,10},{x,30},{a,5},{x,20},{b,2},{b,8}]
 </pre>
 
-<p>And yep, it's right! It's pretty much all you need to do to get things to work. You could make yourself a bash/batch file to wrap the line into a single executable, or you could check out <a class="docs" href="http://erlang.org/doc/man/escript.html">escript</a> to get similar results.</p>
+<p>And yep, it's right! It's pretty much all you need to do to get things to work. 
+    You could make yourself a bash/batch file to wrap the line into a single executable, or you could check out
+     <a class="docs" href="http://erlang.org/doc/man/escript.html">escript</a> to get similar results.</p>
 
-<p>As we've seen with these two exercises, solving problems is much easier when you break them off in small parts that you can solve individually before piecing everything together. It's also not worth much to go ahead and program something without understanding it. Finally, a few tests are always appreciated. They'll let you make sure everything works fine and will let you change the code without changing the results at the end.</p>
+<p>As we've seen with these two exercises, solving problems is much easier when you break them off in small parts that you can solve individually 
+    before piecing everything together. It's also not worth much to go ahead and program something without understanding it. 
+    Finally, a few tests are always appreciated. They'll let you make sure everything works fine and will let you change the code without changing the results at the end.</p>
 				<ul class="navigation">
 											<li><a href="errors-and-exceptions.html" title="Previous chapter">&lt; Previous</a></li>
 										

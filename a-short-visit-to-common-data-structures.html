@@ -37,17 +37,39 @@
 
 <h3><a class="section" name="wont-be-too-long">Won't be too long, promised!</a></h3>
 
-<p>Chances are you now understand the functional subset of Erlang pretty well and could read many programs without a problem. However, I could bet it's still a bit hard to think about how to build a real useful program even though the last chapter was about solving problems in a functional manner. I'm saying this because it's how I felt like at about that point in my learning, but if you're doing better, congratulations!</p>
+<p>May mắn là giờ bạn đã hiểu được tương đối các thành phần ( functional subset ) của Erlang rồi và chắc hẳn sẽ không gặp bất cứ khó khăn nào khi đọc các chương trình viết bằng Erlang.
+	Tuy nhiên, có một điều tôi cá với bạn là việc bạn có thể  tư duy làm thế  nào để  xây dưng một chương trình có thể  áp dụng được thực tiễn vẫn khá khó, ngay cả khi 
+	ở chương trước chúng ta đã tìm hiểu về  cách giải quyết các vấn đề  theo hướng hám rồi. Tôi muốn nhấn mạnh đó là bởi vì bản thân tôi trong quá trình học cũng cảm thấy tương tự
+	điều này, tuy nhiên có thể  do kinh nghiệm, yếu tố  của từng người, vì vậy nếu bạn không cảm thấy mình đã làm được điều đó rồi thì tôi thật sự chúc mừng bạn.     
+	Chances are you now understand the functional subset of Erlang pretty well and could read many programs without a problem. 
+	However, I could bet it's still a bit hard to think about how to build a real useful program even though the last chapter was about solving problems in a functional manner. 
+	I'm saying this because it's how I felt like at about that point in my learning, but if you're doing better, congratulations!</p>
 
-<p>Anyway, the point I'm coming to is that we've seen a bunch of things: most basic data types, the shell, how to write modules and functions (with recursion), different ways to compile, control the flow of the program, handle exceptions, abstract away some common operations, etc. We've also seen how to store data with tuples, lists and an incomplete implementation of a binary search tree. What we haven't seen is the other data structures provided to the programmer in the Erlang standard library.</p>
+<p>Dù sao, theo quan điểm của tôi, chúng ta lên nhìn nhận một số  vấn đề  sau: phần lớn các kiểu dữ liệu cơ bản, shell, cách viết module and hàm ( đê quy ), 
+	các cách biên dịch, điểu khiển luồng, xử lí ngoại lệ, một số  hoạt động trừu tượng ,etc.
+	Chúng ta cũng đã biết được cách để  lưu trữ dữ liệu vào bên trong bộ, danh sách và đã thực hiện một phần của cấu trúc cây nhị phân rồi.
+	nhưng ngoài những thứ trên ra chúng ta vẫn chưa thấy được các cấu trúc dữ liệu khác trong bộ thư viên chuẩn của Erlang để  cung cấp cho lập trình viên.
+    Vì vây trong chương này chúng ta sẽ đi tìm hiểu chi tiết hơn các các loại dữ liệu khác và nó cũng quan trong không kém như danh sách hay bộ.
+	Anyway, the point I'm coming to is that we've seen a bunch of things: most basic data types, the shell, how to write modules and functions (with recursion), 
+	different ways to compile, control the flow of the program, handle exceptions, abstract away some common operations, etc. 
+	We've also seen how to store data with tuples, lists and an incomplete implementation of a binary search tree. 
+	What we haven't seen is the other data structures provided to the programmer in the Erlang standard library.</p>
 
 <img class="right" src="static/img/record-player.png" width="149" height="213" alt="a phonograph" title="tee hee, broken records" />
 
 <h3><a class="section" name="records">Records</a></h3>
 
-<p>Records are, first of all, a hack. They are more or less an afterthought to the language and can have their share of inconveniences. I'll cover that later. They're still pretty useful whenever you have a small data structure where you want to access the attributes by name directly. As such, Erlang records are a lot like structs in C (if you know C.)</p>
+<p>Cấu trúc dữ liệu đầu tiên mà chúng ta sẽ tìm hiểu đó là bản ghi ( Record ).
+    
+	Về  vấn đề  này tôi giá nói sau, trước tiên records khá hữu ích trong trường hơn bạn cần cấu trúc dữ liệu nhỏ mà cho phép 
+	bạn truy cập trực tiếp vào các thuộc tính thông qua tên, nếu bạn đã học các ngôn ngữ mệnh lệnh khác như C thì sẽ thấy 
+	records khá giống với với struct trong C.  
+	They are more or less an afterthought to the language and can have their share of inconveniences. 
+	I'll cover that later. 
+	They're still pretty useful whenever you have a small data structure where you want to access the attributes by name directly. 
+	As such, Erlang records are a lot like structs in C (if you know C.)</p>
 
-<p>They're declared as module attributes in the following manner:</p>
+<p>Records trong Erlang sẽ được khai báo như một thuộc tính của module như sau:</p>
 
 <pre class="brush:erl">
 -module(records).
@@ -59,7 +81,10 @@
                 details=[]}).
 </pre>
 
-<p>So here we have a record representing robots with 4 fields: name, type, hobbies and details. There is also a default value for type and details, <code>industrial</code> and <code>[]</code>, respectively. Here's how to declare a record in the module <a class="source" href="static/erlang/records.erl.html">records</a>:</p>
+<p>Ở đây chúng ta đã tạo ra một record có tên là 'robot', trong record này chứ 4 trường: name, type, hobbies và details.
+	trong record cho phép bạn gán giá trị mặc định cho các trường, ở đây chúng ta sẽ gán giá trị mặc định cho các trường type và details với hai giá trị là <code>industrial</code> và <code>[]</code>/
+	Đây là cách bạn định nghĩa một record , giờ hãy tạo một file module đặt tên là <a class="source" href="static/erlang/records.erl.html">records</a> và 
+	và đặt đoạn mã trên vào trong file module này:</p>
 
 <pre class="brush:erl">
 first_robot() -&gt;
@@ -68,7 +93,7 @@ first_robot() -&gt;
            details=["Moved by a small man inside"]}.
 </pre>
 
-<p>And running the code:</p>
+<p>giờ ta sẽ biên dịch và kiểm tra những gì ta vừa viết:</p>
 
 <pre class="brush:eshell">
 1&gt; c(records).
@@ -78,7 +103,10 @@ first_robot() -&gt;
        ["Moved by a small man inside"]}
 </pre>
 
-<p>Woops! Here comes the hack! Erlang records are just syntactic sugar on top of tuples. Fortunately, there's a way to make it better. The Erlang shell has a command <code>rr(Module)</code> that lets you load record definitions from <var>Module</var>:</p>
+<p>Woops! Điều này phải chăng là hack! 
+	Cú pháp của Erlang records chỉ là một cách viết ngọt ngào của bộ. Vậy thì thực sự sao ta không dùng bộ thay vì mất công viết kiểu này. 
+	Thật may mắn là có một cách để  viết record một cách đẽ nhìn hơn.
+	Trong Erlang shell hỗ trợ một lệnh  <code>rr(Module)</code>, lệnh này cho phép bạn nạp record đã định nghĩa từ <var>Module</var> vào trong shell:</p>
 
 <pre class="brush:eshell">
 3&gt; rr(records).
@@ -89,16 +117,18 @@ first_robot() -&gt;
        details = ["Moved by a small man inside"]}
 </pre>
 
-<p>Ah there! This makes it much easier to work with records that way. You'll notice that in <code>first_robot/0</code>, we had not defined the <code>hobbies</code> field and it had no default value in its declaration. Erlang, by defaults, sets the value to <samp>undefined</samp> for you.</p>
+<p>Đó! trông cách này có vẻ dễ  dàng, dễ  nhìn hơn không. Có thể  bạn để  ý rằng trong hàm <code>first_robot/0</code>, chúng ta đã không định nghĩa trường <code>hobbies</code> cùng với giá trị mặc định
+    Mặc dù vậy, trong Erlang nếu bạn không đinh nghĩa giá trị mặc đinh thì nếu không xác định giá trị khi tạo một record thì Erlang sẽ tự động đặt giá trị là <samp>undefined</samp>.</p>
 
-<p>To see the behavior of the defaults we set in the <code>robot</code> definition, let's compile the following function:</p>
+<p>Để  thấy rõ được hành vi mặc đinh được tạo trong record, hãy biên dịch hàm sau đây: 
+	To see the behavior of the defaults we set in the <code>robot</code> definition, let's compile the following function:</p>
 
 <pre class="brush:erl">
 car_factory(CorpName) -&gt;
     #robot{name=CorpName, hobbies="building cars"}.
 </pre>
 
-<p>And run it:</p>
+<p>Và kiểm tra nó trong shell:</p>
 
 <pre class="brush:eshell">
 5&gt; c(records).
@@ -108,19 +138,27 @@ car_factory(CorpName) -&gt;
        hobbies = "building cars",details = []}
 </pre>
 
-<p>And we have an industrial robot that likes to spend time building cars.</p>
+<p>Xem ra chúng ta đã có một con robot thích danh thời giam để  lắp ráp những chiếc xe oto phải ko nhỉ.</p>
 
 <div class="note">
-    <p><strong>Note:</strong> The function <code>rr()</code> can take more than a module name: it can take a wildcard (like <code>rr("*")</code>) and also a list as a second argument to specify which records to load.</p>
+	<p><strong>Lưu ý:</strong> hàm <code>rr()</code> có thể  nhận nhiều hơn một module, nó cũng chấp nhận việc sử  dụng wildcard (vd: <code>rr("*")</code> ) và 
+		chấp nhận một danh sách như một tham số thứ hai đối với những record cần nạp vào.
+		Trong shell vẫn con một vài hàm nữa để  thao tác với record: như hàm <code>rd(Name, Definition)</code>, hàm này cho phép bạn định nghĩa một record tương tự như viẹc bạn định nghĩa record 
+		trong thuộc tính <code>-record(Name, Definition)</code> ở trong file module. hàm <code>rf()</code> để  loại bỏ việc nạp ( 'unload' ) các record trước đó, hoặc nếu bạn chỉ muốn loại bỏ các 
+		record cụ thể, bạn có thể  sử  dụng  <code>rf(Name)</code> hay <code>rf([Names])</code>.</p>
 
-    <p>There are a few other functions to deal with records in the shell: <code>rd(Name, Definition)</code> lets you define a record in a manner similar to the <code>-record(Name, Definition)</code> used in our module. You can use <code>rf()</code> to 'unload' all records, or <code>rf(Name)</code> or <code>rf([Names])</code> to get rid of specific definitions.</p>
+	<p>Hàm <code>rl()</code> được dùng để  liệt kê ra tất cả các record mà bạn đã định nghĩa thích hợp và  
+		sao chép (copy-paste) chúng vào trong module hoặc sử  dụng rl(Name) hay <code>rl([Names])</code> để  xác định các record cụ thể .
+		to print all record definitions in a way you could copy-paste into the module or use <code>rl(Name)</code> or <code>rl([Names])</code> to restrict it to specific records.</p>
 
-    <p>You can use <code>rl()</code> to print all record definitions in a way you could copy-paste into the module or use <code>rl(Name)</code> or <code>rl([Names])</code> to restrict it to specific records.</p>
-
-    <p>Finally, <code>rp(Term)</code> lets you convert a tuple to a record (given the definition exists).</p>
+	<p>Cuối cùng , hàm <code>rp(Term)</code> cho phép bạn chuyển từ một bộ sang một record (trong trường hợp record đó đã được định nghĩa ) 
+		lets you convert a tuple to a record (given the definition exists).</p>
 </div>
 
-<p>Writing records alone won't do much. We need a way to extract values from them. There are basically two ways to do this. The first one is with a special 'dot syntax'. Assuming you have the record definition for robots loaded:</p>
+<p>Bạn phải biết rằng nếu chỉ viết một record không thì không có ý nghĩa gì nhiều.
+	Thay vào đó chúng ta cần một phương pháp để  lấý các giá trị bên trong record đó ra.
+	Thông thường có hai cách để làm điều này, cách đầu tiên đó là xử  dụng ký tự '.' ( 'dot syntax' ).
+	Đặt giả thiết rằng bạn đinh nghĩa một record cho robot như sau:</p>
 
 <pre class="brush:eshell">
 5&gt; Crusher = #robot{name="Crusher", hobbies=["Crushing people","petting cats"]}. 
@@ -131,7 +169,13 @@ car_factory(CorpName) -&gt;
 ["Crushing people","petting cats"]
 </pre>
 
-<p>Ugh, not a pretty syntax. This is due to the nature of records as tuples. Because they're just some kind of compiler trick, you have to keep keywords around defining what record goes with what variable, hence the <code>#robot</code> part of <code>Crusher#robot.hobbies</code>. It's sad, but there's no way out of it. Worse than that, nested records get pretty ugly:</p>
+<p>Ugh, thật sự đây không phải là một cú pháp gọn gàng. 
+	Một phần là do bản chất của record vẫn là bộ và trình biên dịch chỉ nhìn nhận nó như một mẹo để  dịch sang bộ mà thôi.
+	do đó bạn phải lưu trữ các từ khóa của record và xác định biến đó ứng với giá trị nào, đó là lí do vì sao <code>#robot</code>
+	là một phần của <code>Crusher#robot.hobbies</code>. Thật đáng thất vọng phai nó rằng không có một cách nào để biểu diễn gọn gàng hơn. Thậm chí nó còn tồi tề  hơn khi 
+	bạn làm viẹc với các record lồng nhau. 
+	This is due to the nature of records as tuples. Because they're just some kind of compiler trick, you have to keep keywords around defining what record goes with what variable, 
+	hence the <code>#robot</code> part of <code>Crusher#robot.hobbies</code>. It's sad, but there's no way out of it. Worse than that, nested records get pretty ugly:</p>
 
 <pre class="brush:eshell">
 7&gt; NestedBot = #robot{details=#robot{name="erNest"}}.
@@ -143,23 +187,28 @@ car_factory(CorpName) -&gt;
 "erNest"
 </pre>
 
-<p>And yes, the parentheses are mandatory.</p>
+<p>Trong một record lồng nhau, bắt buộc phải có dấu ngoặc.</p> 
 
 <div class="note update">
-    <p><strong>Update:</strong><br />
-    Starting with revision R14A, it is now possible to nest records without the parentheses. The <var>NestedBot</var> example above could also be written as <code>NestedRobot#robot.details#robot.name</code> and work the same.</p>
+	<p><strong>Cật nhập bổ  sung:</strong><br />
+	Kể  từ phiên bản R14A, bạn đã có thể  không cần dấu ngoặc trong các record lồng nhau.
+	biến <var>NestedBot</var> ở ví dụ trên có thể viết lại thành <code>NestedRobot#robot.details#robot.name</code>.</p>
 </div>
 
-<p>To further show the dependence of records on tuples, see the following:</p>
+<p>Để  hiển thì thêm mức độ phụ thuộc của record đối với bộ, hay nhìn ví dụ sau đây:</p>
 
 <pre class="brush:eshell">
 9&gt; #robot.type.
 3
 </pre>
 
-<p>What this outputs is which element of the underlying tuple it is.</p>
+<p>Vậy kết quả trên là phần tử  nào trong bộ ? 
+	What this outputs is which element of the underlying tuple it is.</p>
 
-<p>One saving feature of records is the possibility to use them in function heads to pattern match and also in guards. Declare a new record as follows on top of the file, and then add the functions under:</p>
+<p>Một trong những tính nằng của bộ đó là việc kết hợp chúng với khớp mẫu và chốt canh cho đầu vào của hàm 
+	. Vd hay khai báo một record ở đầu file và sau đó thêm các hàm sau đây:
+	One saving feature of records is the possibility to use them in function heads to pattern match and also in guards. 
+	Declare a new record as follows on top of the file, and then add the functions under:</p>
 
 <pre class="brush:erl">
 -record(user, {id, name, group, age}).
@@ -179,7 +228,14 @@ adult_section(_) -&gt;
     forbidden.
 </pre>
 
-<p>The syntax to bind a variable to any field of a record is demonstrated in the <code>admin_panel/1</code> function (it's possible to bind variables to more than one field). An important thing to note about the <code>adult_section/1</code> function is that you need to do <code>SomeVar = #some_record{}</code> in order to bind the whole record to a variable. Then we do the compiling as usual:</p>
+<p>Trong cú pháp trên, nó sẽ khớp để  gán ( bind ) một biến tới bất kỳ trường nào của record trong hàm ( nó cũng cho phép bind các biến tới 
+	nhiều trường), bạn có thể  nhìn vào hàm <code>admin_panel/1</code> để  thấy.
+	Một lưu ý là như ví dụ trong hàm <code>adult_section/1</code> , để  bind môt biến vào toàn bộ record bạn sẽ phải viết <code>SomeVar = #some_record{}</code>.
+	Nào như thường lệ hãy biên dịch đoạn mã và chạy trong shell: 
+	The syntax to bind a variable to any field of a record is demonstrated in the <code>admin_panel/1</code> function 
+	(it's possible to bind variables to more than one field). An important thing to note about the <code>adult_section/1</code> 
+	function is that you need to do <code>SomeVar = #some_record{}</code> 
+	in order to bind the whole record to a variable. Then we do the compiling as usual:</p>
 
 <pre class="brush:eshell">
 10&gt; c(records).
@@ -196,9 +252,20 @@ allowed
 forbidden
 </pre>
 
-<p>What this lets us see is how it is not necessary to match on all parts of the tuple or even know how many there are when writing the function: we can only match on the age or the group if that's what's needed and forget about all the rest of the structure. If we were to use a normal tuple, the function definition might need to look a bit like <code>function({record, _, _, ICareAboutThis, _, _}) -&gt; ...</code>. Then, whenever someone decides to add an element to the tuple, someone else (probably angry about it all) would need to go around and update all functions where that tuple is used.</p>
+<p>Bạn có thể  thấy rõ ở ví dụ trên, chúng ta không nhất thiết phải khớp với tât cả thành phần có trong bộ hay nói một cách khác là chúng ta không cần quan tâm tới 
+	có bao nhiêu các trường trong bộ cần biết khi viết hàm. Thay vào đó chúng ta chỉ cần quan tâm tới những phần cần so sánh, vd như ở hàm <code>adult_section/1</code>
+	chúng ta có thể  chỉ cần quan tâm tới trường 'age' hay 'group' và khớp chúng nếu chúng thật sự cần còn những trường còn lại có thể  bỏ qua không cần phải 
+	khớp với tât cả nhưng phần còn lại của cấu trúc. Nếu chúng ta sư dụng kiểu bộ , định nghĩa hàm sẽ có dạng <code>function({record, _, _, ICareAboutThis, _, _}) -&gt; ...</code>.
+	Trường hợp nếu ai đó muốn thêm một phân tử  vào bộ thì họ ( chắc chắn sẽ không hài lòng về  việc làm này ) sẽ phải tìm kiếm xung quanh 
+	để  sửa lại tât cả các bộ bên trong các hàm đã viết trước đó.
+	    
+	What this lets us see is how it is not necessary to match on all parts of the tuple or even know how many there are when writing the function: 
+	we can only match on the age or the group if that's what's needed and forget about all the rest of the structure. 
+	If we were to use a normal tuple, the function definition might need to look a bit like <code>function({record, _, _, ICareAboutThis, _, _}) -&gt; ...</code>.
+	 Then, whenever someone decides to add an element to the tuple, 
+	 someone else (probably angry about it all) would need to go around and update all functions where that tuple is used.</p>
 
-<p>The following function illustrates how to update a record (they wouldn't be very useful otherwise):</p>
+<p>Các vi dụ hàm tiếp theo đây sẽ chỉ ra cách để  cật nhật một record The following function illustrates how to update a record (they wouldn't be very useful otherwise):</p>
 
 <pre class="brush:erl">
 repairman(Rob) -&gt;
@@ -207,7 +274,7 @@ repairman(Rob) -&gt;
     {repaired, NewRob}.
 </pre>
 
-<p>And then:</p>
+<p>Sau đó:</p>
 
 <pre class="brush:eshell">
 16&gt; c(records).
@@ -218,9 +285,22 @@ repairman(Rob) -&gt;
                  details = ["Repaired by repairman"]}}
 </pre>
 
-<p>And you can see my robot has been repaired. The syntax to update records is a bit special here. It looks like we're updating the record in place (<code>Rob#robot{Field=NewValue}</code>) but it's all compiler trickery to call the underlying <code><a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#setelement/3" title="some other link to non-official doc">erlang:setelement/3</a></code> function.</p>
+<p>Có vẻ như robot của tôi đã được sửa rồi. Như bạn thây cú pháp để  cập nhật một record có chút khác biệt.
+	Nó trông như chúng ta cập nhật (<code>Rob#robot{Field=NewValue}</code>) nhưng thực sự thì đó chỉ là một cơ ( mẹo )
+	để  trình biên dịch gọi tới hàm  <code><a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#setelement/3" title="some other link to non-official doc">erlang:setelement/3</a></code>.
+	And you can see my robot has been repaired. The syntax to update records is a bit special here. It looks like we're updating 
+	the record in place (<code>Rob#robot{Field=NewValue}</code>) but it's all compiler trickery to call the underlying 
+	<code><a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#setelement/3" title="some other link to non-official doc">erlang:setelement/3</a></code> function.</p>
 
-<p>One last thing about records. Because they're pretty useful and code duplication is annoying, Erlang programmers frequently share records across modules with the help of <em>header files</em>. Erlang header files are pretty similar to their C counter-part: they're nothing but a snippet of code that gets added to the module as if it were written there in the first place. Create a file named <a class="source" href="static/erlang/records.hrl.html">records.hrl</a> with the following content:</p>
+<p>Điều cuối cùng tôi muón nói về  record. Chúng thật sự rất hữu ích nhưng việc thường xuyên phải lặp lại các đoạn mã record như vậy thực sự khó chịu.
+	Có thể  bạn ko biét rằng các Lập trình viên Erlang thường xuyên phải chia sẻ các record giữa các module cùng với sự trợ giúp từ <em>header files</em>,
+	Erlang header files khá giống với C counter-part, cả hai chỉ là những đoạn mã được thêm vào trong module.
+	bạn có thể  tạo ra một file đặt tên là <a class="source" href="static/erlang/records.hrl.html">records.hrl</a> và thêm đoạn mã sau:
+	 One last thing about records. Because they're pretty useful and code duplication is annoying, 
+	 Erlang programmers frequently share records across modules with the help of <em>header files</em>. 
+	 Erlang header files are pretty similar to their C counter-part: they're nothing but a snippet of code that gets 
+	 added to the module as if it were written there in the first place. Create a file named <a class="source" href="static/erlang/records.hrl.html">records.hrl</a> 
+	 with the following content:</p>
 
 <pre class="brush:erl">
 %% this is a .hrl (header) file.
@@ -229,19 +309,19 @@ repairman(Rob) -&gt;
                    unimaginative_name}).
 </pre>
 
-<p>To include it in <a class="source" href="static/erlang/records.erl.html">records.erl</a>, just add the following line to the module:</p>
+<p>Sau đó, để  sử dụng record từ file này <a class="source" href="static/erlang/records.erl.html">records.erl</a>, đơn giản chỉ cần thêm dòng sau vào trong file module:</p>
 
 <pre class="brush:erl">
 -include("records.hrl").
 </pre>
 
-<p>And then the following function to try it:</p>
+<p>Và hãy thử  hàm sau:</p>
 
 <pre class="brush:erl">
 included() -&gt; #included{some_field="Some value"}.
 </pre>
 
-<p>Now, try it as usual:</p>
+<p>Giờ như thường lệ mở shell lên và:</p>
 
 <pre class="brush:eshell">
 18&gt; c(records).
@@ -253,79 +333,344 @@ included() -&gt; #included{some_field="Some value"}.
           unimaginative_name = undefined}
 </pre>
 
-<p>Hooray! That's about it for records; they're ugly but useful. Their syntax is not pretty, they're not much but a hack, but they're relatively important for the maintainability of your code.</p>
+<p>Hooray! Đó là tất cả những gì về  record mà tôi muôn nói. Trông chúng thật rối nhưng lại rất hữu ích.
+	Mặc dù cú pháp của chúng không thực sự gọn gàng, ưa nhìn nhưng chúng thực sự quan trọng cho việc bảo trì các đoạn mã của bạn.
+	That's about it for records; they're ugly but useful. Their syntax is not pretty, they're not much but a hack, 
+	but they're relatively important for the maintainability of your code.</p>
 
 <div class="note">
-    <p><strong>Note:</strong> You will often see open source software using the method shown here of having a project-wide <code>.hrl</code> file for records that are shared across all modules. While I felt obligated to document this use, I strongly recommend that you keep all record definitions local, within one module. If you want some other module to look at a record's innards, write functions to access its fields and keep its details as private as possible. This helps prevent name clashes, avoids problems when upgrading code, and just generally improves the readability and maintainability of your code.</p>
+	<p><strong>Lưy ý :</strong> Trong các dự án mã nguồn mở, bạn chắc chắn sẽ thương xuyên nhin thấy file <code>.hrl</code> trong các thư mục, nhất là đối với các dự án lớn  
+		. file này sẽ được sử dụng để  chia sẻ record giữa các module. Mặc dù tôi cảm thấy rõ rằng ta lên có tài liệu về  vấn đề  này,
+		tôi đề  nghị bạn chỉ lên sử  dụng các record được định nghĩa cục bộ thì chỉ lên sử  dụng bên trong module đó. 
+		Trong trường hợp bạn muốn một môt module khác tìm kiếm một record hãy viết
+		các hàm để  truy cập vào các trường của chúng và cố  gắng bảo mật thông tin ở chế  độ riêng tư nhiều nhất có thể.
+		Việc làm này sẽ giúp bạn tránh một số  lôi xung đột trùng tên hay một số vấn đề  phát sinh khi nâng cấp chương trình, 
+		đồng thời nó cung giúp bạn cải thiện khả năng đọc và bảo trì đối với đoạn mã mà bạn viết.  
+		using the method shown here of having a project-wide <code>.hrl</code> 
+		file for records that are shared across all modules. While I felt obligated to document this use, 
+		I strongly recommend that you keep all record definitions local, within one module. If you want some other module to look at a record's innards, 
+		write functions to access its fields and keep its details as private as possible. This helps prevent name clashes, avoids problems when upgrading code, 
+		and just generally improves the readability and maintainability of your code.</p>
 </div> 
 
 <h3><a class="section" name="key-value-stores">Key-Value Stores</a></h3>
 
 <img class="right" src="static/img/key.png" width="134" height="59" alt="key and keyhole, another terrible pun" />
 
-<p>I've had you build a tree back a few chapters, and the use was to use it as a key-value store for an address book. That book sucked: we couldn't delete or convert it to anything useful. It was a good demonstration of recursion, but not much more. Now is the time to introduce you to a bunch of useful data structures and modules to store data under a certain key. I won't define what every function does nor go through all the modules. I will simply link to the doc pages. Consider me as someone responsible about 'raising awareness about key-value stores in Erlang' or something. Sounds like a good title. I just need one of these ribbons.</p>
+<p>Trong các chương trước , tôi đã chỉ cho bạn cách để  xây dụng một cấu trúc cây rồi, 
+	đồng thời trong cấu trúc cũng sử  dụng nó như một dạng cặp khóa-giá trị ( key-value ) cho sổ  địa chỉ.
+	Tuy nhiên các địa chỉ đó thật sự tê, chúng ta không thể  làm gì với chúng được cả, không thể  xóa hay chuyển đổi được gì hết.
+	Ngoài việc áp dụng nó với đệ quy ra chúng ta không thể  làm được nhiều cả. Vì vậy đã đến lúc tôi sẽ giới thiệu cho bạn một 
+	vài cấu trúc dữ liệu và module hữu ích giúp chúng ta trong việc lưu trữ dữ liệu liên quan tới từ khóa cụ thể  rồi.
+	bởi vì thông tin rất nhiều, cho lên tôi sẽ không đi sâu vào chi tiết định nghĩa của mỗi hàm sẽ làm gì hay đánh giá toàn bộ module   
+	mà thay vào đó tôi sẽ chỉ đơn giản đính kèm một liên kết tới tài liệu hướng dẫn thôi. 
+    
+	
+	I've had you build a tree back a few chapters, and the use was to use it as a key-value store for an address book. 
+	That book sucked: we couldn't delete or convert it to anything useful. It was a good demonstration of recursion, but not much more. 
+	Now is the time to introduce you to a bunch of useful data structures and modules to store data under a certain key.
+	 I won't define what every function does nor go through all the modules. I will simply link to the doc pages. 
+	 Consider me as someone responsible about 'raising awareness about key-value stores in Erlang' or something. Sounds like a good title. I just need one of these ribbons.</p>
 
-<p>For small amounts of data, there are basically two data structures that can be used. The first one is called a <em>proplist</em>. A proplist is any list of tuples of the form <code>[{Key,Value}]</code>. They're a weird kind of structure because there is no other rule than that. In fact the rules are so relaxed that the list can also contain boolean values, integers and whatever you want. We're rather interested by the idea of a tuple with a key and a value in a list here, though. To work with proplists, you can use the <a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html">proplists</a> module. It contains functions such as <code><a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html#delete/2" title="I'll have trouble finding more 'title' ideas">proplists:delete/2</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html#get_value/2" title="do you 'get' the 'value' of these titles?">proplists:get_value/2</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html#get_all_values/2" title="Really, all of them?">proplists:get_all_values/2</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html#lookup/2" title="I'm proud of you">proplists:lookup/2</a></code> and <code><a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html#lookup_all/2" title="All of you!">proplists:lookup_all/2</a></code>.</p>
+<p>Để  lưu trực một lượng dữ liệu không lớn, bạn có thể  sử  dụng hai loại cấu trúc dữ liệu cơ bản, cấu trúc đâu tiên là <em>proplist</em>,
+	đây là cấu trúc của bất kỳ kiểu dữ liệu bộ danh sách được viét dưới dạng <code>[{Key,Value}]</code>
+	Có thể  bạn sẽ thấy ngạc nhiên vì loại cấu trúc kỳ lạ này tuy nhiên thực sự thì không có một nguyên tác nào cho điều đó cả.
+	thực tế  quy tắc đối với proplist không bị ràng buộc vì thế  nó cũng có thể  chứa các giá trị boolean, số nguyên hay bất cứ kiểu dũ liệu nào mà bạn muốn.
+	mặc dù vậy trong trong chương này chúng ta chỉ quan tâm tới danh sách cùng cặp giá trị bộ dạng key-value thôi. Để  thao tác cùng proplists chúng ta sẽ sử 
+	dụng module <a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html">proplists</a> sẵn có trong Erlang, module có rất nhiều hàm giúp cho việc 
+	giao tiếp với proplíst một cách thuận tiện như  <code><a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html#delete/2" title="I'll have trouble finding more 'title' ideas">proplists:delete/2</a></code>, 
+	<code><a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html#get_value/2" title="do you 'get' the 'value' of these titles?">proplists:get_value/2</a></code>, 
+	<code><a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html#get_all_values/2" title="Really, all of them?">proplists:get_all_values/2</a></code>, <code>
+		<a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html#lookup/2" title="I'm proud of you">proplists:lookup/2</a></code> và <code><a class="docs" 
+			href="http://erldocs.com/18.0/stdlib/proplists.html#lookup_all/2" title="All of you!">proplists:lookup_all/2</a></code>.
 
-<p>You'll notice there is no function to add or update an element of the list. This shows how loosely defined proplists are as a data structure. To get these functionalities, you must cons your element manually (<code>[NewElement|OldList]</code>) and use functions such as <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#keyreplace/4" title="It's a replacement for a real replacement function">lists:keyreplace/4</a></code>. Using two modules for one small data structure is not the cleanest thing, but because proplists are so loosely defined, they're often used to deal with configuration lists, and general description of a given item. Proplists are not exactly complete data structures. They're more of a common pattern that appears when using lists and tuples to represent some object or item; the proplists module is a bit of a toolbox over such a pattern.</p>
+	For small amounts of data, there are basically two data structures that can be used. The first one is called a <em>proplist</em>. 
+	A proplist is any list of tuples of the form <code>[{Key,Value}]</code>. They're a weird kind of structure because there is no other rule than that. 
+	In fact the rules are so relaxed that the list can also contain boolean values, integers and whatever you want. 
+	We're rather interested by the idea of a tuple with a key and a value in a list here, though. To work with proplists, 
+	you can use the <a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html">proplists</a> module. It contains functions such as 
+	<code><a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html#delete/2" title="I'll have trouble finding more 'title' ideas">proplists:delete/2</a></code>, 
+	<code><a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html#get_value/2" title="do you 'get' the 'value' of these titles?">proplists:get_value/2</a></code>, 
+	<code><a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html#get_all_values/2" title="Really, all of them?">proplists:get_all_values/2</a></code>, <code>
+		<a class="docs" href="http://erldocs.com/18.0/stdlib/proplists.html#lookup/2" title="I'm proud of you">proplists:lookup/2</a></code> and <code><a class="docs" 
+			href="http://erldocs.com/18.0/stdlib/proplists.html#lookup_all/2" title="All of you!">proplists:lookup_all/2</a></code>.</p>
 
-<p>If you do want a more complete key-value store for small amounts of data, the <a class="docs" href="http://erldocs.com/18.0/stdlib/orddict.html">orddict</a> module is what you need. Orddicts (ordered dictionaries) are proplists with a taste for formality. Each key can be there once, the whole list is sorted for faster average lookup, etc. Common functions for the <acronym title="Create Read Update Delete">CRUD</acronym> usage include <code><a class="docs" href="http://erldocs.com/18.0/stdlib/orddict.html#store/3" title="a store when you can order dictionaries? not quite.">orddict:store/3</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/orddict.html#find/2" title="But you can find terrible puns there!">orddict:find/2</a></code> (when you do not know whether the key is in the dictionaries), <code><a class="docs" href="http://erldocs.com/18.0/stdlib/orddict.html#fetch/2" title="I won't do anything this time.">orddict:fetch/2</a></code> (when you know it is there or that it <strong>must</strong> be there) and <code><a class="docs" href="http://erldocs.com/18.0/stdlib/orddict.html#erase/2" title="Nevermore.">orddict:erase/2</a></code>.</p>
+<p>Đọc qua module, chắc hẳn bạn sẽ thấy ngạc nhiên là không có một hàm nào để  thêm hay sửa một phần tử 
+	trong dánh sách. Điều này không phải là thiêú sot mà có chủ ý, về  cơ bản chúng ta vẫn thao tác trên một kiểu dữ liệu danh sách
+	và hình dung proplist như một câu trúc. Và để  thêm hay sửa môth phần tử  trong cấu trúc này chúng ta làm tương tự như khi thao tác với 
+	danh sách bàng việc sử  dụng toán tử  cons ( | ), như vậy ta sẽ có <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#keyreplace/4" 
+		title="It's a replacement for a real replacement function">lists:keyreplace/4</a></code>.
+	hoặc sử  dụng hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#keyreplace/4" 
+		title="It's a replacement for a real replacement function">lists:keyreplace/4</a></code> cho việc sửa đổi phần từ dữ liệu.
+	Thông thường trong một chương trình làm việc với một lượng dữ liệu không lớn nhưng sử  dụng một  bộ danh sách, để  làm việc được bạn sẽ phải sử 
+	dụng tới hai hay nhiều module để  thao tác với hai kiểu dữ liệu này, điều này thực sự hơi phức tạp và rối, tuy nhiên 
+	nhờ vào định nghĩa không rõ ràng của proplist, cho lên nó thường xuyên được dùng để  thao tác với  configuration lists và mô tả chùng cho một đôí tượng cụ thể  nào.
+	Lưu ý là Proplist không phải là một cấu trúc dữ liệu hoàn chỉnh, thay vào đó nó có thể  coi như một mẫu chung cho một đôi tượng hay vật để  sử  dụng thao tác với danh sách và bộ.
+	module proplists cũng được coi là một loại công cụ cho mẫu này.</p>  
+
+	 trong You'll notice there is no function to add or update an element of the list. 
+	 This shows how loosely defined proplists are as a data structure. 
+	 To get these functionalities, 
+	 you must cons your element manually (<code>[NewElement|OldList]</code>) 
+	 and use functions such as <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#keyreplace/4" 
+		title="It's a replacement for a real replacement function">lists:keyreplace/4</a></code>. 
+		Using two modules for one small data structure is not the cleanest thing, but because proplists are so loosely defined, 
+		they're often used to deal with configuration lists, and general description of a given item. 
+		Proplists are not exactly complete data structures. They're more of a common pattern that appears when using lists and tuples to represent some object or item; 
+		the proplists module is a bit of a toolbox over such a pattern.</p>
+
+<p>Trong trường hợp bạn muốn sử  dụng một cấu trúc key-value hoàn chỉnh cho việc lưu trữ một lượng nhỏ dữ liệu.
+	module <a class="docs" href="http://erldocs.com/18.0/stdlib/orddict.html">orddict</a> sẽ là thứ mà bạn cần.
+	Orddicts ( ordered dictionaries) có thể  coi là một hình thức khác của proplists. Ở cấu trúc dũ liệu này mỗi khóa sẽ chỉ cho phép lưu trữ duy nhất một lần và 
+	danh sách trong cấu trúc này sẽ được sắp xếp để  cải thiện cho việc tìm kiếm, etc. Sau đây là một số  hàm phổ  biến được dùng để  thêm, sủa, xóa ( <acronym title="Create Read Update Delete">CRUD</acronym> )
+	các phần tử khi thao tác với kiểu dứ liệu này  <code><a class="docs" href="http://erldocs.com/18.0/stdlib/orddict.html#store/3" 
+		title="a store when you can order dictionaries? not quite.">orddict:store/3</a></code>, <code><a class="docs" 
+			href="http://erldocs.com/18.0/stdlib/orddict.html#find/2" title="But you can find terrible puns there!">orddict:find/2</a></code> 
+			(Trong trường hợp bạn không chắc từ khóa bạn tìm có tồn tại hay không), <code><a class="docs" href="http://erldocs.com/18.0/stdlib/orddict.html#fetch/2" 
+				title="I won't do anything this time.">orddict:fetch/2</a></code> (trong trường hợp bạn <strong>chắc chắn</strong> từ khóa có tồn tại) and <code>
+					<a class="docs" href="http://erldocs.com/18.0/stdlib/orddict.html#erase/2" title="Nevermore.">orddict:erase/2</a></code>.</p>
+
+	If you do want a more complete key-value store for small amounts of data, the <a class="docs" href="http://erldocs.com/18.0/stdlib/orddict.html">orddict</a> module is what you need.
+	Orddicts (ordered dictionaries) are proplists with a taste for formality. Each key can be there once, the whole list is sorted for faster average lookup, etc. 
+	Common functions for the <acronym title="Create Read Update Delete">CRUD</acronym> usage include <code><a class="docs" href="http://erldocs.com/18.0/stdlib/orddict.html#store/3" 
+		title="a store when you can order dictionaries? not quite.">orddict:store/3</a></code>, <code><a class="docs" 
+			href="http://erldocs.com/18.0/stdlib/orddict.html#find/2" title="But you can find terrible puns there!">orddict:find/2</a></code> 
+			(when you do not know whether the key is in the dictionaries), <code><a class="docs" href="http://erldocs.com/18.0/stdlib/orddict.html#fetch/2" 
+				title="I won't do anything this time.">orddict:fetch/2</a></code> (when you know it is there or that it <strong>must</strong> be there) and <code>
+					<a class="docs" href="http://erldocs.com/18.0/stdlib/orddict.html#erase/2" title="Nevermore.">orddict:erase/2</a></code>.</p>
 
 <img class="left" src="static/img/dict.png" width="320" height="195" alt="A dictionary with the definition of 'Awesome' being 'it's you!'" title="Dictionary says: Awesome -- it's you!" />
 
-<p>Orddicts are a generally good compromise between complexity and efficiency up to about 75 elements (see <a class="source" href="static/erlang/keyval_benchmark.erl.html">my benchmark</a>). After that amount, you should switch to different key-value stores.</p>
+<p>Orddict là cấu trúc được sử  dụng như một sự cân bằng giữa tính phức tạp và hiệu suất với điều kiện là ̃số  lượng phàn tử  hoạt động là khoảng 75 phần tử (bạn có thể  xem kết quả 
+	<a class="source" href="static/erlang/keyval_benchmark.erl.html">thử  nghiệm</a> của tôi ). Trong trường hợp nếu số  lương phần vượt qúa thì bạn lên lựa chọn một cấu trúc 
+	key-value khác cho việc lưu trữ để  đảm bảo hiệu suất tốt hơn.
+	 Orddicts are a generally good compromise between complexity and efficiency up to about 75 elements (see <a class="source" href="static/erlang/keyval_benchmark.erl.html">\ơ
+		my benchmark</a>). After that amount, you should switch to different key-value stores.</p>
 
-<p>There are basically two key-value structures/modules to deal with larger amounts of data: <a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html">dicts</a> and <a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html">gb_trees</a>. Dictionaries have the same interface as orddicts: <code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#store/3" title="I can't hold any non-pun promise">dict:store/3</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#find/2" title="I am but a man">dict:find/2</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#fetch/2" title="Although technically I'm a website">dict:fetch/2</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#erase/2" title="And I am also text.">dict:erase/2</a></code> and every other function, such as <code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#map/2" title="I was pretty tired at the time of this integration to html">dict:map/2</a></code> and <code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#fold/2" title="if only I could write/program myself a bed!">dict:fold/2</a></code> (pretty useful to work on the whole data structure!) Dicts are thus very good choices to scale orddicts up whenever it is needed.</p>
+<p>Ngoài ra chúng ta cũng có hai cấu trúc/module key-value cho việc xử  lí với lượng lớn dũ liệu: đó là <a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html">dicts</a> 
+	và <a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html">gb_trees</a>.
 
-<p>General Balanced Trees, on the other hand, have a bunch more functions leaving you more direct control over how the structure is to be used. There are basically two modes for gb_trees: the mode where you know your structure in and out (I call this the 'smart mode'), and the mode where you can't assume much about it (I call this one the 'naive mode'). In naive mode, the functions are <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#enter/3" title="I'm writing garbage in these titles">gb_trees:enter/3</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#lookup/2" title="not like there's much non-repetitive titles to have">gb_trees:lookup/2</a></code> and <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#delete_any/2" title="This is like reading between the lines">gb_trees:delete_any/2</a></code>. The related smart functions are <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#insert/3" title="Oh do I love vim macros">gb_trees:insert/3</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#get/2" title="they're saving me so much time!">gb_trees:get/2</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#update/3" title="Emacs couldn't do that.">gb_trees:update/3</a></code> and <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#delete/2" title="Of course it could. Did you get trolled?">gb_trees:delete/2</a></code>. There is also <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#map/2" title="This and the unit tests are the worst part of this.">gb_trees:map/2</a></code>, which is always a nice thing when you need it.</p>
+    Với các kiểu dữ liệu từ điển ( Dictionaries ) này , các lớp giao tiếp của chúng tương tư như kiẻu orddicts: <code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#store/3" title="I can't hold any non-pun promise">dict:store/3</a></code>, 
+	<code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#find/2" title="I am but a man">dict:find/2</a></code>, 
+	<code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#fetch/2" title="Although technically I'm a website">dict:fetch/2</a></code>,
+	 <code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#erase/2" title="And I am also text.">dict:erase/2</a></code>, ngoài ra 
+	 các hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#map/2" title="I was pretty tired at the time of this integration to html">dict:map/2</a></code>
+	There are basically two key-value structures/modules to deal with larger amounts of data: <a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html">dicts</a> ,
+	<code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#fold/2" title="if only I could write/program myself a bed!">dict:fold/2</a></code>  là lựa chọn rất tốt trong 
+	vấn đề  mở rộng orddicts khi cần.
+	and <a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html">gb_trees</a>. Dictionaries have the same interface as orddicts: 
+	<code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#store/3" title="I can't hold any non-pun promise">dict:store/3</a></code>, 
+	<code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#find/2" title="I am but a man">dict:find/2</a></code>, 
+	<code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#fetch/2" title="Although technically I'm a website">dict:fetch/2</a></code>,
+	 <code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#erase/2" title="And I am also text.">dict:erase/2</a></code> and every other function, 
+	 such as <code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#map/2" title="I was pretty tired at the time of this integration to html">dict:map/2</a></code> 
+	 and <code><a class="docs" href="http://erldocs.com/18.0/stdlib/dict.html#fold/2" title="if only I could write/program myself a bed!">dict:fold/2</a></code> 
+	 (pretty useful to work on the whole data structure!) Dicts are thus very good choices to scale orddicts up whenever it is needed.</p>
 
-<p>The disadvantage of 'naive' functions over 'smart' ones is that because gb_trees are balanced trees, whenever you insert a new element (or delete a bunch), it might be possible that the tree will need to balance itself. This can take time and memory (even in useless checks just to make sure). The 'smart' function all assume that the key is present in the tree: this lets you skip all the safety checks and results in faster times.</p>
+<p>Đôi với gb_trees ( General Balanced Trees ) , hay chính xác chúng là một cụm các hàm hơh là một dạng cấu trúc.
+	Trong cấu trúc này cần phân biệt giữa 2 mode: 
+	mode đầu tiên, ở mode này bạn nhân thức rõ ràng được cấu trúc ( tôi gọi chế  đọ ày là 'smart mode'),
+	và mode thứ hai, mode mà bạn không nhận thực dược nhiều về  cáu trúc ( tội gõ là 'naive mode').
+	trong naive mode, bao gồm các hàm  <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#enter/3" title="I'm writing garbage in these titles">gb_trees:enter/3</a
+		></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#lookup/2" title="not like there's much non-repetitive titles to have">gb_trees:lookup/2</a>
+		</code> and <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#delete_any/2" title="This is like reading between the lines">gb_trees:delete_any/2</a></code>.
+        các hàm thông minh: <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#insert/3" title="Oh do I love vim macros">gb_trees:insert/3</a></code>, 
+		 <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#get/2" title="they're saving me so much time!">gb_trees:get/2</a></code>, <code><a class="docs" 
+			href="http://erldocs.com/18.0/stdlib/gb_trees.html#update/3" title="Emacs couldn't do that.">gb_trees:update/3</a></code> and <code><a class="docs" 
+				href="http://erldocs.com/18.0/stdlib/gb_trees.html#delete/2" title="Of course it could. Did you get trolled?">gb_trees:delete/2</a></code>.
+		Nó cung có hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#map/2" title="This and the unit tests are the worst part of this.">gb_trees:map/2</a>
+			khi bạn cần.
+	 on the other hand, have a bunch more functions leaving you more direct control over how the structure is to be used. There are basically two modes for gb_trees: 
+	 the mode where you know your structure in and out (I call this the 'smart mode'), 
+	 and the mode where you can't assume much about it (I call this one the 'naive mode'). 
+	 In naive mode, the functions are <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#enter/3" title="I'm writing garbage in these titles">gb_trees:enter/3</a
+		></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#lookup/2" title="not like there's much non-repetitive titles to have">gb_trees:lookup/2</a>
+		</code> and <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#delete_any/2" title="This is like reading between the lines">gb_trees:delete_any/2</a></code>.
+		 The related smart functions are <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#insert/3" title="Oh do I love vim macros">gb_trees:insert/3</a></code>, 
+		 <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#get/2" title="they're saving me so much time!">gb_trees:get/2</a></code>, <code><a class="docs" 
+			href="http://erldocs.com/18.0/stdlib/gb_trees.html#update/3" title="Emacs couldn't do that.">gb_trees:update/3</a></code> and <code><a class="docs" 
+				href="http://erldocs.com/18.0/stdlib/gb_trees.html#delete/2" title="Of course it could. Did you get trolled?">gb_trees:delete/2</a></code>. 
+				There is also <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#map/2" title="This and the unit tests are the worst part of this.">gb_trees:map/2</a>
+				</code>, which is always a nice thing when you need it.</p>
 
-<p>When should you use gb_trees over dicts? Well, it's not a clear decision. As the <a class="source" href="static/erlang/keyval_benchmark.erl.html">benchmark module</a> I have written will show, gb_trees and dicts have somewhat similar performances in many respects. However, the benchmark demonstrates that dicts have the best read speeds while the gb_trees tend to be a little quicker on other operations. You can judge based on your own needs which one would be the best.</p>
+<p>vì gb_trees là cấu trúc dữ liệu mang tính cân bằng do đó nhược điểm của 'naive' so với 'smart' đó là bất cứ khi nào bạn chèn thêm một phần tử mới ( hay xóa một cụm các phần tử), nó sẽ cân phải tự chinh lại 
+	các phần tử  để  thỏa mãn tính chất cân bằng. Việc làm này sẽ tiêu tốn thời gian tài nguyên bộ nhớ ( thậm chí một số  trường hợp chỉ kiểm tra mà không thay đổi gì cả ).
+	Tuy nhiên trong hàm của chế  độ 'smart' luôn giả đinh rằng tât các các khóa đã tồn tại trong cây , do đó nó cho phép bạn bỏ qua tất cả các kiểm tra 
+	và giảm thời gian thực hiện.
+	
+	
+	The disadvantage of 'naive' functions over 'smart' ones is that because gb_trees are balanced trees, whenever you insert a new element (or delete a bunch), 
+	it might be possible that the tree will need to balance itself. 
+	This can take time and memory (even in useless checks just to make sure). The 'smart' function all assume that the key is present in the tree: 
+	this lets you skip all the safety checks and results in faster times.</p>
 
-<p>Oh and also note that while dicts have a fold function, gb_trees don't: they instead have an <em>iterator</em> function, which returns a bit of the tree on which you can call <code>gb_trees:next(Iterator)</code> to get the following values in order. What this means is that you need to write your own recursive functions on top of gb_trees rather than use a generic fold. On the other hand, gb_trees let you have quick access to the smallest and largest elements of the structure with <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#smallest/1" title="I hope you don't mind me distracting myself with this">gb_trees:smallest/1</a></code> and <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#largest/1" title="I'm also tanking search engine relevancy here!">gb_trees:largest/1</a></code>.</p>
+<p>Vậy trong trường hợp nao bạn lên sử  dụng gb_trees thay vì sử  dụng dicts ? 
+	Thật lòng mà nói thực sự không rõ ràng để  quyết định lên sử  dụng cáu trúc nào. Dựa trên kết quả 
+	kiểm tra  <a class="source" href="static/erlang/keyval_benchmark.erl.html">benchmark module</a> của tôi so sánh hiệu suất giữa 
+	gb_trees và dicts, trong nhiều trường kết quả hiệu suất giữa chúng không thực sự sai biệt nhau lắm.
+	Tuy vậy, nhìn vào kết quả kiểm tra này nó chứng mình được khả năng đọc của cấu trúc dicts tương đối nhanh trong khi 
+	các hoạt động khác trong gb_trees lại nhỉnh hơn chút. vì vậy tùy theo tùy cầu của bạn trong việc giải quyết bài toán, công việc mà quyết định chọn 
+	xem cấu trúc nào thích hợp nhất.
 
-<p>I would therefore say that your application's needs is what should govern which key-value store to choose. Different factors such as how much data you've got to store, what you need to do with it and whatnot all have their importance. Measure, profile and benchmark to make sure.</p>
+	When should you use gb_trees over dicts? Well, it's not a clear decision. 
+	As the <a class="source" href="static/erlang/keyval_benchmark.erl.html">benchmark module</a> I have written will show, 
+	gb_trees and dicts have somewhat similar performances in many respects. 
+	However, the benchmark demonstrates that dicts have the best read speeds while the gb_trees tend to be a little quicker on other operations. 
+	You can judge based on your own needs which one would be the best.</p>
+
+<p>Ngoài ra cũng lưu ý là cấu trúc dicts có hỗ  trợ hàm 'fold' trong khi gb_treé thì không, mặc dù gb_trees vẫn có hàm để  lặp <em>iterator</em>
+	, nhưng nó sẽ trả về  một phần của cây và gọi hàm <code>gb_trees:next(Iterator)</code> để  
+	lấy giá tri các phàn khác theo thứ tự. Đó là lí do vì sao bạn cần viêt các hàm đệ quy của riêng mình dựa trên những tiện ích cung cấp 
+	từ cấu trúc gb_trees hơn là sử  dụng hàm fold. Một điều nữa là gb_trees cho hỗ  trợ bạn truy cập nhanh chóng tới các phần tử  nhỏ nhất và lớn nhất của nó 
+	thông qua hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#smallest/1" title="I hope you don't mind me distracting myself with this">gb_trees:smallest/1</a></code> 
+	và <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#largest/1" title="I'm also tanking search engine relevancy here!">gb_trees:largest/1</a></code>.</p>
+	
+
+	Oh and also note that while dicts have a fold function, gb_trees don't: they instead have an <em>iterator</em> function, 
+	
+	which returns a bit of the tree on which you can call <code>gb_trees:next(Iterator)</code> to get the following values in order. 
+	What this means is that you need to write your own recursive functions on top of gb_trees rather than use a generic fold. On the other hand, 
+	gb_trees let you have quick access to the smallest and largest elements of the structure with 
+	<code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#smallest/1" title="I hope you don't mind me distracting myself with this">gb_trees:smallest/1</a></code> 
+	and <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gb_trees.html#largest/1" title="I'm also tanking search engine relevancy here!">gb_trees:largest/1</a></code>.</p>
+
+<p>Cuối cùng tôi chỉ muốn nhắc là tùy theo nhu cấu ứng dụng của bạn mà hãy quyết định chọn cấu trúc key-value phù hợp. 
+	Các quyết định có thể  phụ thuôc vào nhiều yêu tố  khác nhau vd như số  lượng dữ liệu bạn cần lưu trữ, 
+	các hoạt động cần thiết để  thao tác với dữ liệu, etc.
+	Và để  chắc chắn trước quyết định của mình bạn có thể  tiến hành các phép đo lường , kiểm tra hiệu suất.      
+	I would therefore say that your application's needs is what should govern which key-value store to choose. Different factors such as how much data you've got to store, 
+	what you need to do with it and whatnot all have their importance. Measure, profile and benchmark to make sure.</p>
 
 <div class="note">
-    <p><strong>Note:</strong> some special key-value stores exist to deal with resources of different size. Such stores are <a class="docs" href="http://erldocs.com/18.0/stdlib/ets.html" title="ETS tables are pretty neat!">ETS tables</a>, <a class="docs" href="http://erldocs.com/18.0/stdlib/dets.html" title="so are these, but size limits make me sad!">DETS tables</a> and the <a class="docs" href="http://erldocs.com/18.0/mnesia/mnesia.html?search=mnesia&amp;i=0" title="this rules too, kind of.">mnesia database</a>. However, their use is strongly related to the concepts of multiple processes and distribution. Because of this, they'll only be approached later on. I'm leaving this as a reference to pique your curiosity and for those interested.</p>
+	<p><strong>Lưu ý:</strong> Ngoài các cấu trúc đã tìm hiểu ở phần này ra, còn có một số 
+		cấu trúc key-value đặc biệt được dùng để  thao tác với các dữ liệu có kích cỡ khác nhau. Vd như
+		<a class="docs" href="http://erldocs.com/18.0/stdlib/ets.html" title="ETS tables are pretty neat!">ETS tables</a>, 
+		<a class="docs" href="http://erldocs.com/18.0/stdlib/dets.html" title="so are these, but size limits make me sad!">DETS tables</a> và 
+		<a class="docs" href="http://erldocs.com/18.0/mnesia/mnesia.html?search=mnesia&amp;i=0" title="this rules too, kind of.">mnesia database</a>. 
+		Tuy nhiên, tôi sẽ không đề  cập chi tiết trong chương này vì chúng có liên quan chặt chẽ tới khái niệm đa tiến trình và phân tán.
+	    thay vào đó chúng ta sẽ tìm hiểu chúng ở các chương tiếp theo. Ở đây tôi chỉ giới thiệu qua chúng để  gợi sự tò mò của bạn và những người quan tâm tới mà thôi.
+		However, their use is strongly related to the concepts of multiple processes and distribution. 
+		Because of this, they'll only be approached later on. I'm leaving this as a reference to pique your curiosity and for those interested.</p>
 </div>
 
 <div class="note update">
-    <p><strong>Update:</strong><br />
-    Starting with version 17.0, the language supports a new native key-value data type, described in <a class="chapter" href="maps.html">Postscript: Maps</a>. They should be the new de-facto replacement for <code>dict</code>s.</p>
+    <p><strong>Bổ sung:</strong><br />
+	Từ phiên bản 17.0 trở đi, các nhà phát triển ngôn ngữ đã bổ  sung thêm kiểu dữ liệu native key-value mới như một sự thay thế  cho <code>dict</code>s, bạn có hể  tìm hiểu 
+	tại <a class="chapter" href="maps.html">Postscript: Maps</a>.</p>
 </div>
 
 <h3><a class="section" name="arrays">Arrays</a></h3>
 
-<p>But what about code that requires data structures with nothing but numeric keys? Well for that, there are <a class="docs" href="http://erldocs.com/18.0/stdlib/array.html">arrays</a>. They allow you to access elements with numerical indices and to fold over the whole structure while possibly ignoring undefined slots.</p>
+<p>Trong các bài học trước đến này những gì chúng ta thấy đó là các cấu trúc dữ liệu trong Erlang có thể  hoạt động với hầu hết tất cả các kiểu dữ liệu,
+	Tuy nhiên trong trường hợp chúng ta cần một kiểu cấu trúc để  hoạt động hiêu quả hơn với kiểu số  thì sao ?
+	Thật may mắn, trong Erlang cung cấp cho chúng ta một kiểu cấu trúc như vậy. Trong phần này chúng ta sẽ tìm hiểu về 
+	<a class="docs" href="http://erldocs.com/18.0/stdlib/array.html">arrays</a>,
+	đây là cấu trúc được tối ưu cho việc thao tác với kiểu số, bạn có thể  truy cập vào các phần tử  thông qua chỉ mục 
+	và áp dụng 'fold' cho toàn bộ cấu trúc, ngoài ra trong quá trình lặp bạn có thể  bỏ qua các phần tử  không xác đinh rõ ràng giá trị.  
+
+
+	But what about code that requires data structures with nothing but numeric keys? 
+	Well for that, there are <a class="docs" href="http://erldocs.com/18.0/stdlib/array.html">arrays</a>. 
+	They allow you to access elements with numerical indices and to fold over the whole structure while possibly ignoring undefined slots.</p>
 
 <div class="note koolaid">
 	<p><strong>Don't drink too much kool-aid:</strong><br />
-	 Erlang arrays, at the opposite of their imperative counterparts, are not able to have such things as constant-time insertion or lookup. Because they're usually slower than those in languages which support destructive assignment and that the style of programming done with Erlang doesn't necessary lend itself too well to arrays and matrices, they are rarely used in practice.</p>
+	Người với các imperative counterpart
+	arrays không thể  tìm kiếm hay chèn dữ liệu liệu vào trong một khoảng thời gian nhất định.
+	chúng ra cũng ít khi sử  dụng chúng trong nhiêu ngôn ngữ 
+	bởi vì hiệu suất xử  lí của chúng khá chậm, chậm hơn so với các kiểu khác ( đặc biệt là so với danh sách)
 
-    <p>Generally, Erlang programmers who need to do matrix manipulations and other uses requiring arrays tend to use concepts called <a class="docs" href="http://www.erlang.org/doc/tutorial/c_port.html">Ports</a> to let other languages do the heavy lifting, or <a class="docs" href="http://www.erlang.org/doc/tutorial/cnode.html">C-Nodes</a>, <a class="docs" href="http://www.erlang.org/doc/tutorial/c_portdriver.html" title="also named 'Port drivers'">Linked in drivers</a> and <a class="docs" href="http://erldocs.com/18.0/erts/erl_nif.html" title="Natively Implemented Functions">NIFs</a> (Experimental, R13B03+).</p>
+	Erlang arrays, at the opposite of their imperative counterparts, are not able to have such things as constant-time insertion or lookup. 
+	Because they're usually slower than those in languages which support destructive assignment and that the style of programming done with Erlang doesn't necessary lend itself 
+	too well to arrays and matrices, they are rarely used in practice.</p>
 
-    <p>Arrays are also weird in the sense that they're one of the few data structures to be 0-indexed (at the opposite of tuples or lists), along with indexing in the <a class="docs" href="http://erldocs.com/18.0/stdlib/re.html">regular expressions module</a>. Be careful with them.</p>
+    <p>Thông thường, arrays sẽ được sử  dụng trong các bài toán cần tới tính toán ma trận cùng với một só khái niệm như 
+		Erlang programmers who need to do matrix manipulations and other uses requiring arrays tend to use concepts called 
+		<a class="docs" href="http://www.erlang.org/doc/tutorial/c_port.html">Ports</a> ( với sự hỗ  trợ của công cụ này, việc thực hiện các hoạt động đòi hỏi tính xử  lí 
+		cao sẽ được chuyển sang cho một ngôn ngữ khác, cụ thể  là C để  xử lí ) 
+		hay <a class="docs" href="http://www.erlang.org/doc/tutorial/cnode.html">C-Nodes</a>, 
+		<a class="docs" href="http://www.erlang.org/doc/tutorial/c_portdriver.html" title="also named 'Port drivers'">Linked in drivers</a> và 
+		<a class="docs" href="http://erldocs.com/18.0/erts/erl_nif.html" title="Natively Implemented Functions">NIFs</a> (Experimental, R13B03+).</p>
+
+    <p>Điểm khác biệt nữa so với các cấu trúc khác đó là Arrays là một trong số  ít cấu trúc sử  dụng chỉ mục bắt đầu từ 0 ( đối nghịch với bộ và danh sách)
+		, bên cạnh đó có module <a class="docs" href="http://erldocs.com/18.0/stdlib/re.html">regular expressions module</a> cũng sử  dụng chỉ mục tương tự, do đó hãy 
+		cẩn thân nhầm nhẫn giũa chúng.
+		Arrays are also weird in the sense that they're one of the few data structures to be 0-indexed (at the opposite of tuples or lists), 
+		along with indexing in the <a class="docs" href="http://erldocs.com/18.0/stdlib/re.html">regular expressions module</a>. Be careful with them.</p>
 </div>
 
 <h3><a class="section" name="set-of-sets">A Set of Sets</a></h3>
 
 <img class="right" src="static/img/swingset.png" width="318" height="238" alt="a swingSET" title="Sometimes I lie awake in my bed at night. Then I think about the puns I make. And I cry with shame" />
 
-<p>If you've ever studied set theory in whatever mathematics class you have an idea about what sets can do. If you haven't, you might want to skip over this. However, I'll just say that sets are groups of unique elements that you can compare and operate on: find which elements are in two groups, in none of them, only in one or the other, etc. There are more advanced operations letting you define relations and operate on these relations and much more. I'm not going to dive into the theory (again, it's out of the scope of this book) so I'll just describe them as it is.</p>
+<p>Nếu bạn đã từng nghiên cứu về  lý thuyết tập hợp ( set ) trong toán học, chắc hẳn bạn sẽ có một vài y tưởng về  set để  làm điều gì đó.
+	còn nếu không phải, bạn có thể  quên những gì tôi nói.
+	Tuy vậy tôi vẫn sẽ nói tăng set là một tập hợp các phần tử  duy nhất và có thể  so sánh hay thực hiện các thao tác trên chúng, 
+	vd như tìm những phần các phần tử  cùng thuộc hai nhóm,
+	hoặc không thuộc bất kỳ nhóm nào hoặc chỉ thuộc về  một nhóm. Ngoài ra còn một số  thao tác phức tạp hơn cho phép bạn xác định mối quan 
+	hệ giữa các nhóm và thực hiện các hành vi dựa trên các quan hệ đó. Trong phạm vi của cuốn sách này tôi sẽ chỉ đưa ra các khái niệm cơ bản 
+	và cách sử  dụng thôi và tôi sẽ không đi chi tiết về  lí thuyết tập, nếu bạn tò mò muốn tìm hiểu bạn có thể  tìm kiếm thông tin trong các cuốn sách 
+	về toán học hay các bài trên mạng.
 
-<p>There are 4 main modules to deal with sets in Erlang. This is a bit weird at first, but it makes more sense once you realize that it's because it was agreed by implementers that there was no 'best' way to build a set. The four modules are <a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html">ordsets</a>, <a class="docs" href="http://erldocs.com/18.0/stdlib/sets.html">sets</a>, <a class="docs" href="http://erldocs.com/18.0/stdlib/gb_sets.html">gb_sets</a> and <a class="docs" href="http://erldocs.com/18.0/stdlib/sofs.html">sofs</a> (sets of sets):</p>
+	If you've ever studied set theory in whatever mathematics class you have an idea about what sets can do. If you haven't, you might want to skip over this. 
+	However, I'll just say that sets are groups of unique elements that you can compare and operate on: find which elements are in two groups, 
+	in none of them, only in one or the other, etc. There are more advanced operations letting you define relations and operate on these relations and much more. 
+	I'm not going to dive into the theory (again, it's out of the scope of this book) so I'll just describe them as it is.</p>
+
+<p>Trong Erlang có tất tât cả 4 module được xây dựng sẵn để  thao tác với sets.
+	Nghe có vẻ kỳ lạ nhưng đây là kết quả đồng thuận chung từ những người thực hiện Erlang, và sau khi tìm hiểu được hơn về  sets chắc chắc bạn 
+	cùng đồng ý với ý kiến này bởi vì không có một cách nào 'tốt nhất' cho việc xây dưng set cả.
+	4 module đó là  <a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html">ordsets</a>, 
+	<a class="docs" href="http://erldocs.com/18.0/stdlib/sets.html">sets</a>, 
+	<a class="docs" href="http://erldocs.com/18.0/stdlib/gb_sets.html">gb_sets</a> and 
+	<a class="docs" href="http://erldocs.com/18.0/stdlib/sofs.html">sofs</a> (sets of sets):</p>
+
+	There are 4 main modules to deal with sets in Erlang. This is a bit weird at first, 
+	but it makes more sense once you realize that it's because it was agreed by implementers that there was no 'best' way to build a set. 
+	The four modules are <a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html">ordsets</a>, 
+	<a class="docs" href="http://erldocs.com/18.0/stdlib/sets.html">sets</a>, 
+	<a class="docs" href="http://erldocs.com/18.0/stdlib/gb_sets.html">gb_sets</a> and 
+	<a class="docs" href="http://erldocs.com/18.0/stdlib/sofs.html">sofs</a> (sets of sets):</p>
 
 <dl>
     <dt>ordsets</dt>
-    <dd>Ordsets are implemented as a sorted list. They're mainly useful for small sets, are the slowest kind of set, but they have the simplest and most readable representation of all sets. There are standard functions for them such as <code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#new/0" title="I hope at least someone reads these">ordsets:new/0</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#is_element/2" title="or maybe I'm like the tooth fairy of html titles">ordsets:is_element/2</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#add_element/2" title="You never see me, but here I am!">ordsets:add_element/2</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#del_element/2" title="Have you noticed once you realize you can blink your eyes">ordsets:del_element/2</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#union/1" title="then you can't stop thinking about how you blink them">ordsets:union/1</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#intersection/1" title="blink... blink... blick...">ordsets:intersection/1</a></code>, and a bunch more.</dd>
+    <dd>Ordsets về  bản chất là một danh sách có thứ tự. Đây là kiểu dữ liệu có tốc độ chậm nhất trong cá loại dũ liệu set, chúng thường được sử  dụng để  làm việc với 
+		các tập dữ liệu không lớn. Tuy vậy chúng khá đơn giản và dễ  đọc. sau đây là một số  hàm tiêu chuẩn cho chúng: 
+		<code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#new/0" title="I hope at least someone reads these">ordsets:new/0</a></code>, 
+		<code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#is_element/2" title="or maybe I'm like the tooth fairy of html titles">ordsets:is_element/2</a></code>, 
+		<code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#add_element/2" title="You never see me, but here I am!">ordsets:add_element/2</a></code>, 
+		<code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#del_element/2" title="Have you noticed once you realize you can blink your eyes">ordsets:del_element/2</a>
+		</code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#union/1" title="then you can't stop thinking about how you blink them">ordsets:union/1</a></code>, 
+		<code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#intersection/1" title="blink... blink... blick...">ordsets:intersection/1</a></code>, 
+		and a bunch more.</dd>
+		
+		are implemented as a sorted list. They're mainly useful for small sets, are the slowest kind of set, 
+		but they have the simplest and most readable representation of all sets. There are standard functions for them such as 
+		<code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#new/0" title="I hope at least someone reads these">ordsets:new/0</a></code>, 
+		<code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#is_element/2" title="or maybe I'm like the tooth fairy of html titles">ordsets:is_element/2</a></code>, 
+		<code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#add_element/2" title="You never see me, but here I am!">ordsets:add_element/2</a></code>, 
+		<code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#del_element/2" title="Have you noticed once you realize you can blink your eyes">ordsets:del_element/2</a>
+		</code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#union/1" title="then you can't stop thinking about how you blink them">ordsets:union/1</a></code>, 
+		<code><a class="docs" href="http://erldocs.com/18.0/stdlib/ordsets.html#intersection/1" title="blink... blink... blick...">ordsets:intersection/1</a></code>, 
+		and a bunch more.</dd>
 
 <dt>sets</dt>
-<dd>Sets (the module) is implemented on top of a structure really similar to the one used in <code>dict</code>. They implement the same interface as ordsets, but they're going to scale much better. Like dictionaries, they're especially good for read-intensive manipulations, like checking whether some element is part of the set or not.</dd>
+<dd>Sets (the module) có cấu trúc khá giống với cấu trúc của kiểu dữ liệu <code>dict</code> mà trước đó ta đã tìm hiểu.
+    Chúng có có những giao tiếp hàm giống với ordsets, nhưng khác với ordsets, hiệu suất và khả năng làm việc của sets tốt hơn nhiều.
+	tương tự kiểu từ điển , chúng rất hữu ích cho các vấn đề  liên quan tới các hoạt động đòi hỏi một lượng lớn đọc dữ liệu. vd như việc kiểm
+	tra một phân tử  có nằm trong tập hợp hay không. 
+
+	is implemented on top of a structure really similar to the one used in <code>dict</code>. They implement the same interface as ordsets, 
+	but they're going to scale much better. Like dictionaries, they're especially good for read-intensive manipulations, 
+	like checking whether some element is part of the set or not.</dd>
 
 <dt>gb_sets</dt>
-<dd>Gb_sets themselves are constructed above a General Balanced Tree structure similar to the one used in the gb_trees module. gb_sets are to sets what gb_tree is to dict; an implementation that is faster when considering operations different than reading, leaving you with more control. While gb_sets implement the same interface as sets and ordsets, they also add more functions. Like gb_trees, you have smart vs. naive functions, iterators, quick access to the smallest and largest values, etc.</dd>
+<dd>Gb_sets,  tương tự cấu trúc này được xây dựng dựa trên cấu trúc cây cân bằng ( General Balanced Tree ) và structure similar to the one used in the gb_trees module. 
+	gb_sets are to sets what gb_tree is to dict; 
+	an implementation that is faster when considering operations different than reading, 
+	leaving you with more control. 
+	While gb_sets implement the same interface as sets and ordsets, they also add more functions. 
+	Like gb_trees, you have smart vs. naive functions, iterators, quick access to the smallest and largest values, etc.</dd>
 
 <dt>sofs</dt>
 <dd>Sets of sets (sofs) are implemented with sorted lists, stuck inside a tuple with some metadata. They're the module to use if you want to have full control over relationships between sets, families, enforce set types, etc. They're really what you want if you need mathematics concept rather than 'just' groups of unique elements.</dd>

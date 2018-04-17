@@ -35,71 +35,262 @@
             <div class="noscript"><noscript>Hey there, it appears your Javascript is disabled. That's fine, the site works without it. However, you might prefer reading it with syntax highlighting, which requires Javascript!</noscript></div>
 <h2>The Hitchhiker's Guide to Concurrency</h2>
 
-<p>Far out in the uncharted backwaters of the unfashionable beginning of the 21st century lies a small subset of human knowledge.</p>
+<p>Nằm xa trong vũng nước đọng chưa ai thám hiểm của thế  kỷ 21 có một lượng nhỏ tri thức. 
+	Far out in the uncharted backwaters of the unfashionable beginning of the 21st century lies a small subset of human knowledge.</p>
 
-<p>Within this subset of human knowledge is an utterly insignificant little discipline whose Von Neumann-descended architecture is so amazingly primitive that it is still thought that RPN calculators are a pretty neat idea.</p>
+<p>cùng với tập con tri thức là một sự rèn luyện nhỏ bé không có nghĩa lí gì mà ở đó kiến trức Von Neumann-descended ngạc nhiên  
+	khi vẫn nghĩ ràng máy tính RPN là một ý tưởng gọn gàng.
+	Within this subset of human knowledge is an utterly insignificant little discipline whose Von Neumann-descended architecture 
+	is so amazingly primitive that it is still thought that RPN calculators are a pretty neat idea.</p>
 
-<p>This discipline has &mdash; or rather had &mdash; a problem, which was this: most of the people studying it were unhappy for pretty much of the time when trying to write parallel software. Many solutions were suggested for this problem, but most of these were largely concerned with the handling of little pieces of logic called locks and mutexes and whatnot, which is odd because on the whole it wasn't the small pieces of logic that needed parallelism.</p>
+<p>sự rèn luyện này có , nói chính xác hơn là đã có một vấn đề  đó là hầu hết những người học nó đều cảm thấy không vui vẻ gì, họ mất quá nhiều 
+	thời gian đối với việc viết một phần mềm song song. Rất nhiều giải pháp đã được đặt ra, nhưng hầu hết trong số  chúng đều liên quan nhiều tới việc xử lí các đoạn logic nhỏ được gọi là 
+	locks và mutexes. Việc làm này thật thừa thãi vì những đoạn logic đó hầu hết không cần cho việc xử  lí song song`. 
 
-<p>And so the problem remained; lots of people were mean, and most of them were miserable, even those with RPN calculators.</p>
+	This discipline has &mdash; or rather had &mdash; a problem, which was this: most of the people studying it were unhappy 
+	for pretty much of the time when trying to write parallel software. Many solutions were suggested for this problem, 
+	but most of these were largely concerned with the handling of little pieces of logic called locks and mutexes and whatnot, 
+	which is odd because on the whole it wasn't the small pieces of logic that needed parallelism.</p>
 
-<p>Many were increasingly of the opinion that they'd all made a big mistake in trying to add parallelism to their programming languages, and that no program should have ever left its initial thread.</p>
+<p>Vì thế  vấn đề  này vẫn còn tồn động, chưa được giải quyết, rất nhiều người khó chịu và đã số họ khổ sở , thậm chi là cả RPN calculators.
+	nhưng rồi hầu hét trong số  họ cũng đều And so the problem remained; lots of people were mean, and most of them were miserable, even those with RPN calculators.</p>
+
+<p>Càng ngày càng có nhiều người cho rằng họ đã sai khi cố  gắng 
+	thêm tính song song vào ngôn ngữ lập trình của họ và họ cho rằng không có chương trình nào có thể  rời khỏi 
+	thread ban đầu cả.
+	Many were increasingly of the opinion that they'd all made a big mistake in trying to add parallelism to their programming languages, 
+	and that no program should have ever left its initial thread.</p>
 
 <div class="note">
-	<p><strong>Note:</strong> parodying The Hitchhiker's Guide to the Galaxy is fun. Read the book if you haven't already. It's good!</p>
+	<p><strong>Lưu ý:</strong>Đoạn này được viết như là một parody của The Hitchhiker's Guide to the Galaxy. Hãy đọc nó nếu bạn chưa đọc. Nó rât tuyệt!   
+		Read the book if you haven't already. It's good!</p>
 </div>
 
 <h3><a class="section" name="dont-panic">Don't Panic</a></h3>
 
-<p>Hi. Today (or whatever day you are reading this, even tomorrow), I'm going to tell you about concurrent Erlang. Chances are you've read about or dealt with concurrency before. <img class="left" src="static/img/fat-guy.png" width="230" height="204" alt="A fat guy at the computer" /> You might also be curious about the emergence of multi-core programming. Anyway, the probabilities are high that you're reading this book because of all this talk about concurrency going on these days.</p>
+<p>Xin chào, Ngày hôm nay ( hay chính xác là bắt đầu từ bây giờ ), tối sẽ bắt đầu nói với bạn về  concurrent trong Erlang.
+	Có thể  bạn đã từng tìm hiểu và làm việc với concurrency trước đó. <img class="left" src="static/img/fat-guy.png" width="230" height="204" alt="A fat guy at the computer" />
+	Có lẽ bạn cũng quan tâm tới sự xuất hiện của các chương trinh đa lõi ( multi-core ).
+    Dù sao đi liệu thì bạn đang đọc cuốn sách này và tất cả những điều đang nói ở đây sẽ là về  concurrency.
 
-<p>A warning though; this chapter is mostly theoric. If you have a headache, a distaste for programming language history or just want to program, you might be better off skipping to the <a class="chapter" href="the-hitchhikers-guide-to-concurrency.html#thanks-for-all-the-fish">end of the chapter</a> or skip to the next one (where more practical knowledge is shown.)</p>
+	 Today (or whatever day you are reading this, even tomorrow), I'm going to tell you about concurrent Erlang. 
+	 Chances are you've read about or dealt with concurrency before. 
+	 <img class="left" src="static/img/fat-guy.png" width="230" height="204" alt="A fat guy at the computer" /> 
+	 You might also be curious about the emergence of multi-core programming. 
+	 Anyway, the probabilities are high that you're reading this book because of all this talk about concurrency going on these days.</p>
 
-<p>I've already explained in the book's intro that Erlang's concurrency was based on message passing and the actor model, with the example of people communicating with nothing but letters. I'll explain it more in details again later, but first of all, I believe it is important to define the difference between <em>concurrency</em> and <em>parallelism</em>.</p>
+<p>Tuy nhiện, tôi có một lời cảnh báo với bạn trước khi đọc chương này, chương này sẽ chủ yếu nặng vê lý thuyết do đó nếu 
+	bạn đang stress, đâu đâu hoặc không thích tìm hiểu đối lịch sử  của ngôn ngữ lập trình và chủ yếu chủ muốn lập trình thôi 
+	thì bạn có thể  bỏ qua và đi thẳng tới cuối chương để  sang chương sau này nơi mà có lẽ bạn sẽ tìm thấy nhiều ví dụ luyện tạp hơn.
+	  
+	A warning though; this chapter is mostly theoric. If you have a headache, a distaste for programming language history or just want to program, 
+	you might be better off skipping to the <a class="chapter" href="the-hitchhikers-guide-to-concurrency.html#thanks-for-all-the-fish">end of the chapter</a> 
+	or skip to the next one (where more practical knowledge is shown.)</p>
 
-<p>In many places both words refer to the same concept. They are often used as two different ideas in the context of Erlang. For many Erlangers, concurrency refers to the idea of having many actors running independently, but not necessarily all at the same time. Parallelism is having actors running exactly at the same time. I will say that there doesn't seem to be any consensus on such definitions around various areas of computer science, but I will use them in this manner in this text. Don't be surprised if other sources or people use the same terms to mean different things.</p>
+<p>Như tôi đã nói trước nói trong phần giới thiẹu cuốn sách, bản chất concurrency trong Erlang là truyền thông điệp ( message passing ) qua lại giữa các actor model,
+	và tôi cũng lấy một ví dụ minh họa thông qua việc con người giao tiếp qua lại với nhau thông qua những bức thư.  
+	Một lát nữa tôi sẽ giải thích chi tiết hơn, còn giờ có một đièu rất quan trọng mà tôi tin rằng bạn cần phải hiểu đó là khái niệm và sự khác nhau giữa  
+	<em>concurrency</em> và <em>parallelism</em>.</p>
 
-<p>This is to say Erlang had concurrency from the beginning, even when everything was done on a single core processor in the '80s. Each Erlang process would have its own slice of time to run, much like desktop applications did before multi-core systems.</p>
+<p>Có thể  bạn đã từng tìm hiểu thông qua một số  sách hay hướng dẫn, và có thể  rất nhiều trong số  chúng đều hướng tới sự tương đồng về  khái niệm của hai tính chất này.
+	Tuy nhiên trong Erlang chúng hoàn toàn là hai khái niệm khác nhau. Với những người lập trình Erlang, concurrency hướng tới một ý tưởng về  số  lượng 
+	các actor chạy độc lập với nhau, và không bắt buộc tất cả chúng phải chạy trong cùng một thời điểm. Trong khí đó Parallelism thì lại hướng tới 
+	việc các actor chạy song song cùng trong một thời điểm cụ thể. Tại sao có sự khác nhạu, một phần là bởi không có một sự đồng thuận nào 
+	rõ ràng về  các đinh nghĩa trong các lính vực khác nhau của khoa học máy tính. Do đó bạn không cần phải ngạc nhiên nếu trong một số  tài liệu, nguồn khác
+	một số  người sử  dụng các thuật ngữ này với nghĩa khác nhau và trong cuốn sách này tôi sẽ chỉ sử  dụng khái niệm mà tôi vừa nêu ra.
 
-<p>Parallelism was still possible back then; all you needed to do was to have a second computer running the code and communicating with the first one. Even then, only two actors could be run in parallel in this setup. Nowadays, multi-core systems allows for parallelism on a single computer (with some industrial chips having many dozens of cores) and Erlang takes full advantage of this possibility.</p>
+	In many places both words refer to the same concept. They are often used as two different ideas in the context of Erlang. For many Erlangers, 
+	concurrency refers to the idea of having many actrs running independently, but not necessarily all at the same time. 
+	Parallelism is having actors running exactly at the same time. 
+	I will say that there doesn't seem to be any consensus on such definitions around various areas of computer science, 
+	but I will use them in this manner in this text. Don't be surprised if other sources or people use the same terms to mean different things.</p>
+
+<p>Có thể  nói chính xác răng ngày từ lúc bắt đầu xây dưng Erlang, nó đã hỗ  trợ concurrency rồi, thậm chí ngay cả từ những thập niên ́80's khi mà máy tính chỉ phổ  biến với lõi đơn 
+	. mỗi tiến trình trong Erlang đều có từng khỏng thời gian riền để  chạy, tương tự như những gì mà các ứng dụng desktop đã làm trước đó với 
+	hệ thống đa lõi. 
+	 This is to say Erlang had concurrency from the beginning, even when everything was done on a single core processor in the '80s. 
+	 Each Erlang process would have its own slice of time to run, much like desktop applications did before multi-core systems.</p>
+
+<p>tại thời điểm đó parallelism vẫn có thể  được thực hiện; nhưng để  làm dược điều này bạn sẽ cần thêm một máy tính khác để  giao tiếp cùng máy tính hiện tại.
+	Dù vậy , với Erlang bạn vẫn có thể  thực hiện chạy song song chỉ với hai actor trên một máy.
+	Ngày nay, các hệ thống đa lõi đều cho phép bạn chạy song song trên cùng một máy tính 
+	( một số  cpu của máy tính còn có thể  chứa hàng chục lỗi ) và điều này giúp Erlang có thể  tận dụng tối đã được khả năng này.
+
+	các cpu của máy tính hầu hết đều hỗ  trợ đa lõi do đó cács cho phép bạn chạy song song trên một máy tính    
+	all you needed to do was to have a second computer running the code and communicating with the first one. 
+	Even then, only two actors could be run in parallel in this setup. Nowadays, multi-core systems allows for parallelism on a single computer 
+	(with some industrial chips having many dozens of cores) and Erlang takes full advantage of this possibility.</p>
 
 <div class="note koolaid">
 	<p><strong>Don't drink too much Kool-Aid:</strong><br />
-	The distinction between concurrency and parallelism is important to make, because many programmers hold the belief that Erlang was ready for multi-core computers years before it actually was. Erlang was only adapted to true <a class="external" href="http://en.wikipedia.org/wiki/Symmetric_multiprocessing">symmetric multiprocessing</a> in the mid 2000s and only got most of the implementation right with the R13B release of the language in 2009. Before that, <acronym title="Symetric Multiprocessing">SMP</acronym> often had to be disabled to avoid performance losses. To get parallelism on a multicore computer without SMP, you'd start many instances of the VM instead.</p>
+	Điều quan trọng là phải hiểu được sự khác nhau giữa concurrency và parallelism,
+	Nhiều lập trình viên tin rằng Erlang đã hỗ  trợ sẵn trên các máy tính đa lõi tù trước nhưng thực tế  là giữa những năm 2000 khi đó Erlang mới chỉ áp dụng 
+	<a class="external" href="http://en.wikipedia.org/wiki/Symmetric_multiprocessing">symmetric multiprocessing</a>, phải tới năm 2009 sau khi bản R13B
+	được phát hành nó mới hỗ  trợ hoàn chỉnh. Một điều nữa là trước đó tính năng <acronym title="Symetric Multiprocessing">SMP</acronym>
+	trong Erlang thường bị vô hiệu hóa để  tránh ảnh hưởng tới hiệu suất. Trong trường hợp máy tính của bạn không hỗ  trợ SMP, 
+	bạn có thể  thực hiện nó bằng cách chạy nhiều máy ảo cùng lúc.
 
-	<p>An interesting fact is that because Erlang concurrency is all about isolated processes, it took no conceptual change at the language level to bring true parallelism to the language. All the changes were transparently done in the VM, away from the eyes of the programmers.</p>
+	The distinction between concurrency and parallelism is important to make, 
+	because many programmers hold the belief that Erlang was ready for multi-core computers years before it actually was. 
+	Erlang was only adapted to true <a class="external" href="http://en.wikipedia.org/wiki/Symmetric_multiprocessing">symmetric multiprocessing</a> 
+	in the mid 2000s and only got most of the implementation right with the R13B release of the language in 2009. 
+	Before that, <acronym title="Symetric Multiprocessing">SMP</acronym> often had to be disabled to avoid performance losses. 
+	To get parallelism on a multicore computer without SMP, you'd start many instances of the VM instead.</p>
+
+	<p>Một đièu thú vị nữa concurrency trong Erlang được xây dựng bởi các tiến trình chạy độc lập nhau do đó nó không có bất kỳ một khái niệm nào dể  thay đổi cấp độ của ngôn ngữ hòng mang lại 
+        parallelism thật sự. Tất cả các thay dổi được thực hiện bên trong máy ảo, nơi mà lập trình viên không thể  thấy được.
+		
+		là An interesting fact is that because Erlang concurrency is all about isolated processes, it took no conceptual 
+		change at the language level to bring true parallelism to the language. All the changes were transparently done in the VM, away from the eyes of the programmers.</p>
 </div>
 
 <h3><a class="section" name="concepts-of-concurrency">Concepts of Concurrency</a></h3>
 
 <img class="right" src="static/img/erlang-the-movie.png" width="305" height="276" alt="Joe Armstrong, as in 'Erlang - The Movie" title="Erlang, the movie!" />
 
-<p>Back in the day, Erlang's development as a language was extremely quick with frequent feedback from engineers working on telephone switches in Erlang itself. These interactions proved processes-based concurrency and asynchronous message passing to be a good way to model the problems they faced. Moreover, the telephony world already had a certain culture going towards concurrency before Erlang came to be. This was inherited from PLEX, a language created earlier at Ericsson, and AXE, a switch developed with it. Erlang followed this tendency and attempted to improve on previous tools available.</p>
+<p>Trở lại thời trước đó, 
+	Erlang được phát triển vô cùng nhanh chóng, nó thường xuyện nhận được rất nhiều hỗ  trợ và phản hồi từ những kỹ sư đã viết phần mêm cho Erlang trong 
+	các thiết bị chuyển mạch điện thoại ( telephone switch ). Chính những việc tương tác này đã chứng mình việc sử  dụng 
+	processes-based concurrency và asynchronous message passing là một cách chính xác để  giải quyết những vấn đề  mà họ gặp phải.
+	Hơn nữa, Trước khi Erlang xuất hiện, ngành công nghiệp điện thoại trên thế  giới đã có một nền văn hóa thống nhất đói việc concurrency rồi.
 
-<p>Erlang had a few requirements to satisfy before being considered good. The main ones were being able to scale up and support many thousands of users across many switches, and then to achieve high reliability&mdash;to the point of never stopping the code.</p>
+	Back in the day, Erlang's development as a language was extremely quick with frequent feedback from engineers working on telephone switches in Erlang itself.
+	 These interactions proved processes-based concurrency and asynchronous message passing to be a good way to model the problems they faced. 
+	 Erlang thực chất chỉ chỉ kế  thừa những thành quả từ ngỗn ngữ PLEX mà thôi ( một ngữ ngữ đã được công ty Ericssion tạo ra trước đó cho các hệ thống điện thoại của ho)
+	 và AXE ( một thiết bị switch được phát triển trong ngôn ngữ PLEX), cơ bản nó chỉ kế  thừa thành quả và cố  gắng cải tiến từ những công cụ hiện có mà thôi.</p>
+
+<p>Để  Erlang được coi là môt công cụ tốt, thì bắt buộc nó phải đáp ứng được các yêu cầu sau:
+	Phải có khả năng mở rộng ( scale up - đây là yêu cầu quan trọng nhất ) và hỗ  trợ hàng ngàn người dùng trên nhiều thiết bị switch.  
+	và có tính ổn đinh ( reliability ) cao ( tới mức mà chương trình, ứng dụng không bao giờ được phép ngừng hoạt động)
+	The main ones were being able to scale up and support many thousands of users across many switches, 
+	and then to achieve high reliability&mdash;to the point of never stopping the code.</p>
 
 <h4>Scalability</h4>
 
-<p>I'll focus on the scaling first. Some properties were seen as necessary to achieve scalability. Because users would be represented as processes which only reacted upon certain events (i.e.: receiving a call, hanging up, etc.), an ideal system would support processes doing small computations, switching between them very quickly as events came through. To make it efficient, it made sense for processes to be started very quickly, to be destroyed very quickly and to be able to switch them really fast. Having them lightweight was mandatory to achieve this. It was also mandatory because you didn't want to have things like process pools (a fixed amount of processes you split the work between.) Instead, it would be much easier to design programs that could use as many processes as they need.</p>
+<p>Đây là tính năng đâu tiên mà tôi sẽ tập trung vào giải thích. Chúng ta sẽ tìm hiểu một số  các thuộc tính cần thiết để  nhận được tính năng mở rộng này.
+	Như đã biết Erlang trươc đó được sử  dụng trên các thiết bị switch do đó trong Erlang, người dùng sẽ được quy ước bởi các tiến trình và 
+	chúng có nhiệm vụ đợi phản hồi các sự kiện nhất định (ví dụ như: nhận cuộc gọi, chờ máy, kết thúc cuộc gọi, etc...).
+	Một hệ thống lí tưởng là hệ thống sẽ hô trợ việc tiến toán, xử  lí một lượng nhỏ thông tin bởi các tiến trình, 
+	chuyển đổi nhanh chóng giữa chúng khi có một sự kiện xảy ra. Đê tăng tính hiệu quả, các tiến trình được tạo ra và hủy phải rất nhanh, thậm chí việc chuyển 
+	đổi giữa các tiến trình cũng phai nhanh chóng. Đê đảm bảo được điều này thì các tiến trình phải rất nhỏ và nhẹ. Ngoài ra nó cũng phải đảm bảo sao cho 
+	thiêt kế  các chương trình để có thể  sử  dụng được nhiều tiến tiến trình khi cần thay vì sử  dụng các bể tiến trinh ( process pool ) sẵn có ( bể tiến trình là khái niệm sử dụng 
+	một lượng tiến trình đã được đinh sẵn và các công viên có thể  chuyển đổi qua lại giữa các tiến tiến trình trong bể  này).
 
-<p>Another important aspect of scalability is to be able to bypass your hardware's limitations. There are two ways to do this: make the hardware better, or add more hardware. The first option is useful up to a certain point, after which it becomes extremely expensive (i.e.: buying a super computer). The second option is usually cheaper and requires you to add more computers to do the job. This is where distribution can be useful to have as a part of your language.</p>
+	
+	I'll focus on the scaling first. Some properties were seen as necessary to achieve scalability. 
+	Because users would be represented as processes which only reacted upon certain events (i.e.: receiving a call, hanging up, etc.), 
+	an ideal system would support processes doing small computations, switching between them very quickly as events came through. 
+	To make it efficient, it made sense for processes to be started very quickly, to be destroyed very quickly and to be able to switch them really fast. 
+	Having them lightweight was mandatory to achieve this. It was also mandatory because you didn't want to have things like process pools 
+	(a fixed amount of processes you split the work between.) Instead, it would be much easier to design programs that could use as many processes as they need.</p>
 
-<p>Anyway, to get back to small processes, because telephony applications needed a lot of reliability, it was decided that the cleanest way to do things was to forbid processes from sharing memory. Shared memory could leave things in an inconsistent state after some crashes (especially on data shared across different nodes) and had some complications. Instead, processes should communicate by sending messages where all the data is copied. This would risk being slower, but safer.</p>
+<p>một khía cạnh quan trọng khác khác trong tính mở rộng là không phụ thuộc vào giới hạn phần cứng. 
+	Có phương án để  làm được điều này: với cách thứ nhất khá đơn giản đó là chúng ta sử  dụng, nâng cấp tài nguyên phần cứng tốt hơn đơn cử  như tăng số lượng phần cứng lên.
+	Đây là phương án dẽ nhất những nó có giơi hạn là chỉ giải quyết dược tại thời điểm nhất định, sau đó khi lượng tài nguyên lón dân lên, chúng ta lại phải nâng cấp, và chi phí 
+	sẽ càng tăng lên tất nhiều điều đó thật sự quá đắt đỏ ( ví dụ nhừ mua một một cỗ  siêu máy tính). Phương án thứ hai, đây là một phương án thường xuyên được chọn bởi ví 
+	không tón kém quá nhiều chi phí. thay vì bạn phải nâng cấp phần cứng lên thì bạn chỉ cần tăng số lượng máy tính lên đê xử  lí công việc. Và đây là tính năng phân tán ( distribution )
+	,một phần của ngôn ngữ Erlang tỏa sáng.
+	
+	Another important aspect of scalability is to be able to bypass your hardware's limitations. There are two ways to do this: make the hardware better, or add more hardware. 
+	The first option is useful up to a certain point, after which it becomes extremely expensive (i.e.: buying a super computer). 
+	The second option is usually cheaper and requires you to add more computers to do the job. This is where distribution can be useful to have as a part of your language.</p>
+
+<p>Dù sao, chúng ta hay quay lại vấn đề  về  các tiến trình nhỏ lúc trước đã đề  cập tới.
+	trong cách ứng dụng điện thoại lúc bấy giờ, chúng đòi đòi hỏi phải có tính ổn đinh cao. 
+	một trong nhưng nguyễn nhân mà ảnh hưởng tới tinh ổn định đó là việc sử  dụng chung tài nguyên giữa các tiến trình và luồng, vì thế  cách
+	tốt nhất đó là ngăn không cho các tiến trình, luống chia sẽ bất kỳ vùng nhớ nào với nhau.
+	Nếu vẫn cho phép chia sẻ vùng nhớ với nhau chúng ta sẽ phải đối mặt với một số  tình huống không đông nhất trạng thái và dẫn tới crash chương trình, hệ thống ( đặc biệt 
+	chia sẽ dữ liệu giữa các nút, một khi crash có thể  làm ảnh hưởng tới toàn bộ hê thống). Thay vào đó các tiến trình sẽ được chia sẽ , trao đổi thông tin với nhau bằng
+	cách truyền các thông điệp cho nhau ( send messages ) và các dữ liệu chỉ đơn thuẩn là các bản sao. Cách làm này sẽ an toàn và giảm thiểu rủi ro hơn.
+
+	because telephony applications needed a lot of reliability, it was decided that the cleanest way to do things was to forbid processes 
+	from sharing memory. Shared memory could leave things in an inconsistent state after some crashes (especially on data shared across different nodes) and had some complications. 
+	Instead, processes should communicate by sending messages where all the data is copied. This would risk being slower, but safer.</p>
 
 <h4>Fault-tolerance</h4>
 
-<p>This leads us on the second type of requirements for Erlang: reliability. The first writers of Erlang always kept in mind that failure is common. You can try to prevent bugs all you want, but most of the time some of them will still happen. In the eventuality bugs don't happen, nothing can stop hardware failures all the time. The idea is thus to find good ways to handle errors and problems rather than trying to prevent them all.</p>
+<p>tính chất thử  hai cần trong Erlang đó là tính ổn định. Các nhà phát triển đầu tiên của Erlang luôn ghi nhớ rằng lỗi hỏng hóc luôn phổ  biến, xảy ra ở
+	khắp mọi nơi và không thể  tránh khỏi, cho dù bạn có cố  tìm cách dể  tránh những bugs đó thì nó vẫn sẽ xảy ra thôi.
+	thậm chí ngay cả không có bugs thì bạn vẫn không thể  tránh khỏi lỗi phần cứng được. đó đó đề xuất tốt nhất được đưa ra đó là tìm ra phương án cách
+	để  giải quyết và xử lí các lỗi hơn là cố  gắng ngăn chăn, tránh lỗi không xảy ra.
+	
+	This leads us on the second type of requirements for Erlang: reliability. The first writers of Erlang always kept in mind that failure is common. 
+	You can try to prevent bugs all you want, but most of the time some of them will still happen. In the eventuality bugs don't happen, nothing can stop hardware failures all the time.
+	 The idea is thus to find good ways to handle errors and problems rather than trying to prevent them all.</p>
 
-<p>It turns out that taking the design approach of multiple processes with message passing was a good idea, because error handling could be grafted onto it relatively easily. Take lightweight processes (made for quick restarts and shutdowns) as an example. Some studies proved that the main sources of downtime in large scale software systems are intermittent or transient bugs (<a class="external" href="http://dslab.epfl.ch/pubs/crashonly.pdf">source</a>). Then, there's a principle that says that errors which corrupt data should cause the faulty part of the system to die as fast as possible in order to avoid propagating errors and bad data to the rest of the system. Another concept here is that there exist many different ways for a system to terminate, two of which are clean shutdowns and crashes (terminating with an unexpected error).</p>
+<p>Chúng ta sẽ quay trở lại nói một số  vấn đề  đã nói lúc trước, hóa ra cách thiết kế  làm việc với đa tiên trình ( multi proccesses ) và truyền thông điệp ( message passing )  
+	là một ý tưởng tuyệt vời. Nó tương đối dễ  dàng để  tích hợp với việc xử  lí lối.
+	bằng cách sư dụng các tiểu trình ( lightweight processes - chúng được tạo ra, phục hồi và chấm dứt mộc cách nhanh chóng), 
+	một số  nghiên cứu đã chỉ ra rằng các lôi gây downtime trong các mã nguồn, chương trình phần mềm có quy mô lớn thường là các lỗi ít khi xảy ra 
+	như intermittent bugs ( đây là những bug rất khó phát hiện một phần bởi vì nó đặc biệt chỉ xảy ra sau một vài trường hợp hoặc một lần chạy lại một đoạn mã)
+	hoặc transient bugs ( đấy là những đôi xuất hiện đột ngột và cũng tự động biến mất vd như những lõi liên quan tới việc xử  lí 
+	một việc nào đó trong thời gian quá dài gây ra việc timeout hay lỗi khi hệ làm làm việc qua tải ) (<a class="external" 
+	href="http://dslab.epfl.ch/pubs/crashonly.pdf">source</a>). Vì vậy có một số  quy tắc được dung để nói về những lỗi khiến cho dữ liệu bị corrupt
+	mà làm cho một số  bộ phân của hệ thống bị ảnh hưởng ( lỗi hoặc hỏng) lên được chấm dứt nhanh nhất có thể  để  tránh các dư liệu không tôt ( bad data ) và ảnh hưởng 
+	lan rộng tới các bộ phận , hệ thống khác, nguy hiểm là nó có thể  gây sụp đổ  toàn bộ hệ thống.
+	Ngoài ra còn có một khái niệm khác mà theo đó có nhiều cách khác nhau, nhưng trong đó có hai cách phổ  biến để  kết thúc một hệ thống
+	đó làm clean shutdown và crash ( chấm dứt hệ thống cùng với một lỗi không muốn ).
+	It turns out that taking the design approach of multiple processes with message passing was a good idea, 
+	because error handling could be grafted onto it relatively easily. Take lightweight processes (made for quick restarts and shutdowns) as an example. 
+	Some studies proved that the main sources of downtime in large scale software systems are intermittent or transient bugs (<a class="external" 
+	href="http://dslab.epfl.ch/pubs/crashonly.pdf">source</a>). Then, there's a principle that says that errors which corrupt data should cause the faulty part of the system to die as 
+	fast as possible in order to avoid propagating errors and bad data to the rest of the system. 
+	Another concept here is that there exist many different ways for a system to terminate, two of which are clean shutdowns and crashes (terminating with an unexpected error).</p>
 
-<p>Here the worst case is obviously the crash. A safe solution would be to make sure all crashes are the same as clean shutdowns: this can be done through practices such as shared-nothing and single assignment (which isolates a process' memory), avoiding <a class="external" href="http://en.wikipedia.org/wiki/Lock_(computer_science)">locks</a> (a lock could happen to not be unlocked during a crash, keeping other processes from accessing the data or leaving data in an inconsistent state) and other stuff I won't cover more, but were all part of Erlang's design. Your ideal solution in Erlang is thus to kill processes as fast as possible to avoid data corruption and transient bugs. Lightweight processes are a key element in this. Further error handling mechanisms are also part of the language to allow processes to monitor other processes (which are described in the <a class="chapter" href="errors-and-processes.html">Errors and Processes</a> chapter), in order to know when processes die and to decide what to do about it.</p>
+<p>Rõ ràng rằng trường hợp xấu nhất là crash. nhung nếu có một giải pháp đảm bảo an toàn mà khiến tất cả đề  crash mà kết quả lại tương tự như clean shutdown ?
+	Để  làm điều này chúng ta cần phải thực hiện thông qua một số thực tiến như không chua sẻ bất cứ thứ gì , một thứ chỉ được phép gán duy nhất một lần ( ý nghĩa cho việc 
+	các tiến trình độc lập với nhau), không có bất kỳ  <a class="external" href="http://en.wikipedia.org/wiki/Lock_(computer_science)">locks</a>
+	( để tránh việc một việc một tiến trình đang lock xảy ra lỗi và nó sẽ không unlock việc đó khiến cho tất cả các tiến trình khác không thể 
+	truy cập vào được gây deadlock ) và một điều khác nữa nhưng không quan trọng lên tôi sẽ không mô tả chúng nhưng cũng nằm trong các thành phần thiêt kế  của Erlang. 
+	Vì vậy giải pháp lí tưởng cho việc này dó là chấm dứt các tiến trình ( kill processes ) nhanh chóng để  tránh lỗi dữ liệu và ngăn chăn sự xuất hiện các 
+	lỗi transient bugs ảnh hưởng tới hệ thống. Các tiểu trình chính là yêu tốt then chốt đống vai trò quan trọng trong việc này, Hơn nữa các cơ chế  xử  lí lỗi cũng 
+	góp phần trong việc giám sát các tiến trình khác ( chúng ta sẽ đi sâu hơn vào chúng trong chương <a class="chapter" href="errors-and-processes.html">Errors and Processes</a>) 
+	để  biết được tiến trình nào vừa mới chết cũng như quyết dịnh biện pháp xử  lí đối với tiến trình đó. 
+	
+	Here the worst case is obviously the crash. A safe solution would be to make sure all crashes are the same as clean shutdowns: this can be done through practices such as 
+	shared-nothing and single assignment (which isolates a process' memory), avoiding <a class="external" href="http://en.wikipedia.org/wiki/Lock_(computer_science)">locks</a> 
+	(a lock could happen to not be unlocked during a crash, keeping other processes from accessing the data or leaving data in an inconsistent state) and other stuff I won't cover more, 
+	but were all part of Erlang's design. Your ideal solution in Erlang is thus to kill processes as fast as possible to avoid data corruption and transient bugs. 
+	Lightweight processes are a key element in this. Further error handling mechanisms are also part of the language to allow processes to monitor other processes 
+	(which are described in the <a class="chapter" href="errors-and-processes.html">Errors and Processes</a> chapter), in order to know when processes die and 
+	to decide what to do about it.</p>
 
 
-<p>Supposing restarting processes real fast is enough to deal with crashes, the next problem you get is hardware failures. How do you make sure your program keeps running when someone kicks the computer it's running on? <img class="left" src="static/img/cacti-laser.png" width="261" height="237" alt="A server (HAL) protected by cacti and lasers" title="I'm pretty sure this would work" /> Although a fancy defense mechanism comprising laser detection and strategically placed cacti could do the job for a while, it would not last forever. The hint is simply to have your program running on more than one computer at once, something that was needed for scaling anyway. This is another advantage of independent processes with no communication channel outside message passing. You can have them working the same way whether they're local or on a different computer, making fault tolerance through distribution nearly transparent to the programmer.</p>
+<p>Gỉa sử  rằng việc phục hồi nhanh chóng các tiến trình đủ giúp cho việc giải quyết các trường hợp khi crash, 
+	thì chúng ta vẫn con một vấn đề khác nữa dó là lõi xảy ra liên quan tới phần cứng ( hardware failures ).
+	Liệu rằng bạn có đảm bảo rằng một chươn trình vẫn sẽ chạy tốt hay ít nhất đang chạy khi có một ai đó bỗng dưng đạp vào cái máy tính mà chương trình đang hoạt động trên nó ?
+	<img class="left" src="static/img/cacti-laser.png" width="261" height="237" alt="A server (HAL) protected by cacti and lasers" title="I'm pretty sure this would work" />
+	Mặc dù bạn có thể  ngăn chặn điều này bằng cách thiết lập một cơ chế  phòng vệ bằng cách sử  dụng laser để  phát hiện và đặt các chậu xương rồng xung quanh 
+	đó, nhưng như vậy là không đủ. Có một gợi ý đơn giản , dễ  dang đó là bạn có thể  chạy cùng một chương trình trên nhiều máy tính như thế  sẽ đảm nếu một ai đó đá vào thì 
+	vẫn có máy khác chạy chương trình đó và mọi thứ vẫn hoạt động bình thường. với việc sủ dụng hệ thông phần tán và độ lập các tiến trình, 
+	bạn có một lợi thế   khác của các tiến trình độc lập đó là việc giao tiếp giữa chúng chỉ thông qua duy nhất là truyền thông điệp ( message passing ).
+	Dựa vào đó các tiến trình có thể  giao tiếp với nhau tương tự với cả trên cùng máy tính hay trên các máy tính khác nhau, 
+	making fault tolerance through distribution nearly transparent to the programmer.</p>
+	 
+	Supposing restarting processes real fast is enough to deal with crashes, the next problem you get is hardware failures. 
+	How do you make sure your program keeps running when someone kicks the computer it's running on? <img class="left" src="static/img/cacti-laser.png" width="261" 
+	height="237" alt="A server (HAL) protected by cacti and lasers" title="I'm pretty sure this would work" /> Although a fancy defense mechanism comprising laser detection and 
+	strategically placed cacti could do the job for a while, it would not last forever. The hint is simply to have your program running on more than one computer at once, 
+	something that was needed for scaling anyway. This is another advantage of independent processes with no communication channel outside message passing. You can have them working
+	 the same way whether they're local or on a different computer, making fault tolerance through distribution nearly transparent to the programmer.</p>
 
-<p>Being distributed has direct consequences on how processes can communicate with each other. One of the biggest hurdles of distribution is that you can't assume that because a node (a remote computer) was there when you made a function call, it will still be there for the whole transmission of the call or that it will even execute it correctly. Someone tripping over a cable or unplugging the machine would leave your application hanging. Or maybe it would make it crash. Who knows?</p>
+<p>Tuy vậy việc sủ dụng khả năng phân tán trực tiếp cũng có những rào cản nhất định ảnh hưởng quan trọng tới việc các tiến trình có thể  giao tiêp với nhau như thê nào.
+	Một trong những rào cản lớn nhất đó là chúng ta không thể  đảm bảo rằng một node ( hay một máy tính từ xa khác) luôn luôn sẵn sàng hoạt động khi bạn gọi một hàm 
+	tới nó, có thể  nó vẫn hoạt động trong suốt quá trình truyền tải của lời gọi hay lời gọi đó hoàn toàn chính xác.
+	Ai mà biết tại thời điểm đó có một ai đó lỡ chân vấp vào dây cắm điện, tắt nhầm máy tính hay ứng dụng của bạn đạng treo hoặc không hoạt động ?.</p> 
+	
+	Being distributed has direct consequences on how processes can communicate with each other. One of the biggest hurdles of distribution is that you can't assume that because 
+	a node (a remote computer) was there when you made a function call, it will still be there for the whole transmission of the call or that it will even execute it correctly.
+	 Someone tripping over a cable or unplugging the machine would leave your application hanging. Or maybe it would make it crash. Who knows?</p>
 
-<p>Well it turns out the choice of asynchronous message passing was a good design pick there too. Under the processes-with-asynchronous-messages model, messages are sent from one process to a second one and stored in a <em>mailbox</em> inside the receiving process until they are taken out to be read. It's important to mention that messages are sent without even checking if the receiving process exists or not because it would not be useful to do so. As implied in the previous paragraph, it's impossible to know if a process will crash between the time a message is sent and received. And if it's received, it's impossible to know if it will be acted upon or again if the receiving process will die before that. Asynchronous messages allow safe remote function calls because there is no assumption about what will happen; the programmer is the one to know. If you need to have a confirmation of delivery, you have to send a second message as a reply to the original process. This message will have the same safe semantics, and so will any program or library you build on this principle.</p>
+<p>Điều nảy chỉ ra rằng việc lựa chọn xử  lí bất động bộ qua truyền 
+	Well it turns out the choice of asynchronous message passing was a good design pick there too. Under the processes-with-asynchronous-messages model, 
+	messages are sent from one process to a second one and stored in a <em>mailbox</em> inside the receiving process until they are taken out to be read. 
+	It's important to mention that messages are sent without even checking if the receiving process exists or not because it would not be useful to do so. 
+	As implied in the previous paragraph, it's impossible to know if a process will crash between the time a message is sent and received. And if it's received, 
+	it's impossible to know if it will be acted upon or again if the receiving process will die before that. Asynchronous messages allow safe remote function calls 
+	because there is no assumption about what will happen; the programmer is the one to know. If you need to have a confirmation of delivery, you have to send a second
+	 message as a reply to the original process. This message will have the same safe semantics, and so will any program or library you build on this principle.</p>
 
 <h4>Implementation</h4>
 

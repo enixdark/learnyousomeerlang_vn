@@ -502,7 +502,7 @@ ok
     mỗi cá nhân tiến trình theo cách riêng. Cũng lưu ý rằng cùng tương tự như liên kết, 
     có một hàm tự động khởi tạo sinh ( spawn ) ra tiến trình đồng thơi tạo giám sát ( monitoring ) cho tiến trình đó luôn
     <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#spawn_monitor/1" title="">spawn_monitor/1-3</a>. 
-    
+
     Every time a process you monitor goes down, 
     you will receive such a message. 
     The message is <code>{'DOWN', MonitorReference, process, Pid, Reason}</code>. 
@@ -522,7 +522,16 @@ die
 ok
 </pre>
 
-<p>In this case, we demonitored the other process before it crashed and as such we had no trace of it dying. The function <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#demonitor/2" title="I can't seeee youuuuuu">demonitor/2</a> also exists and gives a little bit more information. The second parameter can be a list of options. Only two exist, <code>info</code> and <code>flush</code>:</p>
+<p>Trong trường hợp này, chúng ta đã ngừng giám sát một số  tiến trình trước khi nó crash do đó chúng ta không thể  dò được thông tin về 
+    nguyên nhân gây ra lỗi của nó. tường tự như hàm 'monitor', hàm <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#demonitor/2" title="I can't seeee youuuuuu">demonitor/2</a> 
+    cũng được xây dựng sẵn và cung cấp cho chung ta nhiều thông tin hơn. Tham số  đầu tiên của nó gióng với tham số  trong hàm 
+    <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#demonitor/1" title="I can't seeee youuuuuu">demonitor/1</a>, Còn tham số  thứ thuộc kiểu dữ liệu danh 
+    sách dạng, đây là danh sách các tùy chọn tuy nhiên nó chỉ chấp nhận duy nhất 2 tùy chọn đó là <code>info</code> và <code>flush</code>, trong trường hợp sư dụng cá tùy chọn mà 
+    không nằm trong 2 tùy chọn trên thì nó sẽ bỏ qua.
+
+    In this case, we demonitored the other process before it crashed and as such we had no trace of it dying. 
+    The function <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#demonitor/2" title="I can't seeee youuuuuu">demonitor/2</a> 
+    also exists and gives a little bit more information. The second parameter can be a list of options. Only two exist, <code>info</code> and <code>flush</code>:</p>
 
 <pre class="brush:eshell">
 7&gt; f().
@@ -537,12 +546,21 @@ false
 ok
 </pre>
 
-<p>The <code>info</code> option tells you if a monitor existed or not when you tried to remove it. This is why the expression 10 returned <code>false</code>. Using <code>flush</code> as an option will remove the <code>DOWN</code> message from the mailbox if it existed, resulting in <code>flush()</code> finding nothing in the current process' mailbox.</p>
+<p>sử  dụng tùy chọn <code>info</code> để  cung cấp thông tin về  monitor có tồn tại hay không khi bạn gỡ bỏ nó.
+    đó là lí do vì sao trong ví dụ trên ở biêỷ thứ thứ 10 chúng ta thấy kết quả <code>false</code> được trả.
+    Đối với tùy chọn  <code>flush</code>, đây là tùy chọn sẽ loại bỏ phần từ <code>DOWN</code>  trong nội dung tin nhắc từ hòm thư nếu nội dung đó 
+    tồn tại.   
+    option tells you if a monitor existed or not when you tried to remove it. This is why the expression 10 returned <code>false</code>. Using <code>flush</code> 
+    as an option will remove the <code>DOWN</code> message from the mailbox if it existed, resulting in <code>flush()</code> finding nothing in the current process' mailbox.</p>
 
 
 <h3><a class="section" name="naming-processes">Naming Processes</a></h3>
 
-<p>With links and monitors understood, there is another problem still left to be solved. Let's use the following functions of the <a class="source" href="static/erlang/linkmon.erl.html">linkmon.erl</a> module:</p>
+<p>Như vậy chúng ta đã tìm hiểu về  liên kết ( link ) và monitor rồi, tuy nhiên có một vấn đề  xót lại mà chúng ta đã quên giải quyết.
+    truóc hết chũng ta sẽ quay trở lại ví dụ module <a class="source" href="static/erlang/linkmon.erl.html">linkmon.erl</a> và thêm một vài hàm vào:
+
+    With links and monitors understood, there is another problem still left to be solved. 
+    Let's use the following functions of the <a class="source" href="static/erlang/linkmon.erl.html">linkmon.erl</a> module:</p>
 
 <pre class="brush:erl">
 start_critic() -&gt;
@@ -570,7 +588,11 @@ critic() -&gt;
     critic().
 </pre>
 
-<p>Now we'll just pretend we're going around stores, shopping for music. There are a few albums that sound interesting, but we're never quite sure. You decide to call your friend, the critic.</p>
+<p>Bây giờ hãy tưởng tượng rằng chúng ta đang di dạo quanh các cửa hàng để  mua đĩa hát. Khi bước chân vào cửa hàng bạn phát hiện thấy một vài cuốn album nhạc rất thú vị.
+    Nhừng bạn không có nhiều kiến thức về  âm nhạc lên không chắc chắn sẽ mua. Vì vậy bạn quyết định gọi điện thoại cho bạn của mình, một chuyên gia về  bình phẩm âm nhạc.
+
+    Now we'll just pretend we're going around stores, shopping for music. There are a few albums that sound interesting, but we're never quite sure. You decide to call your friend, 
+    the critic.</p>
 
 <pre class="brush:eshell">
 1&gt; c(linkmon).                         
@@ -581,7 +603,8 @@ critic() -&gt;
 "They are terrible!"
 </pre>
 
-<p>Because of a solar storm (I'm trying to find something realistic here), the connection is dropped:</p>
+<p>Bống dưng một cơn bão mặt trời quét ngang thành phố  gây mất điện hàng loạt, mọi tín hiệu liên lạc đều bị cắt đứt 
+    Because of a solar storm (I'm trying to find something realistic here), the connection is dropped:</p>
 
 <pre class="brush:eshell">
 4&gt; exit(Critic, solar_storm).
@@ -590,7 +613,10 @@ true
 timeout
 </pre>
 
-<p>Annoying. We can no longer get criticism for the albums. To keep the critic alive, we'll write a basic 'supervisor' process whose only role is to restart it when it goes down:</p>
+<p>Thật phiền phức, giờ chúng ta không nhận được bất kỳ lời bình phẩm nào vê  các album nữa. Vì vây chúng ta cần một giải pháp cho vấn đề  này,
+    chúng ta đã quyết dịnh sẽ viết một chức năng giám sát ( supervisor ) chỉ để  phục hồi lại các tiến trình khi nó chết để  đảm bảo luôn nhận được lời binh phẩm khi cần.
+    
+    Annoying. We can no longer get criticism for the albums. To keep the critic alive, we'll write a basic 'supervisor' process whose only role is to restart it when it goes down:</p>
 
 <pre class="brush:erl">
 start_critic2() -&gt;
@@ -609,11 +635,38 @@ restarter() -&gt;
     end.
 </pre>
 
-<p>Here, the restarter will be its own process. It will in turn start the critic's process and if it ever dies of abnormal cause, <code>restarter/0</code> will loop and create a new critic. Note that I added a clause for <code>{'EXIT', Pid, shutdown}</code> as a way to manually kill the critic if we ever need to.</p>
+<p>Ở đây như bạn thấy chúng ta sẽ có một tiến trình riêng cho việc phục hồi. Nó sẽ bắt đầu tạo ra một tiến trình mới cho việc bình phẩm
+    và trong trường hợp nếu nó đột ngột ngừng hoạt động, hàm <code>restarter/0</code> sẽ được gọi lại và tạo ra một tiến trình hay nói cách theo thực tế  là 
+    tạo ra đường dây liên lạc với người bình phẩm ( critic ).
+    Lưu ý là tôi đã thêm mẫu tin nhắn <code>{'EXIT', Pid, shutdown}</code> để  xét cả trường hợp bạn muốn chủ động châm dứt tiến trình một cách thủ công.
 
-<p>The problem with our approach is that there is no way to find the Pid of the critic, and thus we can't call him to have his opinion. One of the solutions Erlang has to solve this is to give names to processes.</p>
+    Here, the restarter will be its own process. It will in turn start the critic's process and if it ever dies of abnormal cause, 
+    <code>restarter/0</code> will loop and create a new critic. Note that I added a clause for <code>{'EXIT', Pid, shutdown}</code> 
+    as a way to manually kill the critic if we ever need to.</p>
 
-<p>The act of giving a name to a process allows you to replace the unpredictable pid by an atom. This atom can then be used exactly as a Pid when sending messages. To give a process a name, the function <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#register/2" title="here be a title. Enjoy">erlang:register/2</a> is used. If the process dies, it will automatically lose its name or you can also use <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#unregister/1" title="hooray for links">unregister/1</a> to do it manually. You can get a list of all registered processes with <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#registered/0" title="gotta list em all">registered/0</a> or a more detailed one with the shell command <code>regs()</code>. Here we can rewrite the <code>restarter/0</code> function as follows:</p>
+<p>Tuy vậy cách tiếp cận trên của chúng ta có một vấn đề  đó là chúng ta không biết được đinh danh của người bình phẩm ( critic ),
+    do đó chúng ta không thể  giao tiếp được và hỏi anh ta về  cho ý kiến về  những cuốn album. Vì thế  một trường nhưng phương án giải quyết đối với vấn đề  này 
+    trong Erlang đó là đặt ra tên cho mỗi người hay mỗi tiến trình. 
+
+    The problem with our approach is that there is no way to find the Pid of the critic, 
+    and thus we can't call him to have his opinion. One of the solutions Erlang has to solve this is to give names to processes.</p>
+
+<p>Bằng cách đặt tên này cho một tiến trình, nó sẽ giúp bạn thay thế  một đinh dạnh không biết trước được bằng một atom.
+    cách sử  dụng atom sẽ tương tự như cách bạn dùng với định danh để  gửi các tin nhắn nhưng dễ  dang hơn.
+    Bạn chỉ cần đặt một cái tên cho một tiến trình thông qua hàm  <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#register/2" title="here be a title. Enjoy">erlang:register/2</a>
+    và sau đó thay thế  tên vào chỗ  đinh danh ( pid ) là đc. Trong trường hợp nếu tiến trình dó ngừng hoạt động,
+    nó sẽ tự động loại bỏ tên đã đăng ký hoặc bạn cũng có thể  chủ động gỡ bỏ bằng cách sử  dụng hàm <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#unregister/1" title="hooray for links">unregister/1</a>.
+    Trong trường hợp bạn không nhớ chính xác các tên mà bạn đã đăng ký, hãy dùng hàm <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#registered/0" title="gotta list em all">registered/0</a>,
+    hoặc trong shell bạn có thể  dùng lệnh <code>regs()</code>, nó sẽ liệt kêt tất cả các tên mà bạn đã đăng ký.
+    Sau dây là hàm   <code>restarter/0</code> được chỉnh sửa lại:
+
+    The act of giving a name to a process allows you to replace the unpredictable pid by an atom. 
+    This atom can then be used exactly as a Pid when sending messages. 
+    To give a process a name, the function <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#register/2" title="here be a title. Enjoy">erlang:register/2</a> is used. 
+    If the process dies, it will automatically lose its name or you can also use 
+    <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#unregister/1" title="hooray for links">unregister/1</a> to do it manually. 
+    You can get a list of all registered processes with <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#registered/0" title="gotta list em all">registered/0</a> 
+    or a more detailed one with the shell command <code>regs()</code>. Here we can rewrite the <code>restarter/0</code> function as follows:</p>
 
 <pre class="brush:erl">
 restarter() -&gt;
@@ -630,7 +683,11 @@ restarter() -&gt;
     end. 
 </pre>
 
-<p>So as you can see, <code>register/2</code> will always give our critic the name 'critic', no matter what the Pid is. What we need to do is then remove the need to pass in a Pid from the abstraction functions. Let's try this one:</p>
+<p>như bạn thấy, bất kể  là tiến trình hày đường dây kết nối tơi người bình phầm nào được tạo ra cũng chúng cũng luôn gán 
+    với cái tên 'critic' qua hàm <code>register/2</code>. Việc còn lại lúc này là xóa bỏ một só chức năng trừu tượng vào trong đinh danh ( pid ).
+
+    So as you can see, <code>register/2</code> will always give our critic the name 'critic', no matter what the Pid is. 
+    What we need to do is then remove the need to pass in a Pid from the abstraction functions. Let's try this one:</p>
 
 <pre class="brush:erl">
 judge2(Band, Album) -&gt;
@@ -643,7 +700,14 @@ judge2(Band, Album) -&gt;
     end.
 </pre>
 
-<p>Here, the line <code>Pid = whereis(critic)</code> is used to find the critic's process identifier in order to pattern match against it in the <code>receive</code> expression. We want to match with this pid, because it makes sure we will match on the right message (there could be 500 of them in the mailbox as we speak!) This can be the source of a problem though. The code above assumes that the critic's pid will remain the same between the first two lines of the function. However, it is completely plausible the following will happen:</p>
+<p>Ở đây dòng <code>Pid = whereis(critic)</code> được sử  dụng để  tìm ra định danh của tiến trình của người bình phẩm hay nói cách khác là xác định địa chỉ của người bình phẩm  
+    để  khớp với mẫu trong biểu thức <code>receive</code>. Bởi vì chúng ta muốn khớp với đinh danh ( pid ) này để  đảm bảo rằng tin nhắc sẽ được khớp chính xác 
+    ( có thể  sẽ có 500 tin nhắn trong hòm thư ), tuy vậy việc làm này của thẻ làn nguồn gốc gây ra một lỗi. Chúng ta sẽ xem xét đoạn mã logic phía trên,
+    giả sử  rằng định danh của người bình phẩm ( critic ) trong hai dòng đầu của hàm luôn không thay đổi, Tuy vậy sẽ có một số  giả thiết sau xảy ra:
+        
+    is used to find the critic's process identifier in order to pattern match against it in the <code>receive</code> expression. We want to match with this pid, 
+    because it makes sure we will match on the right message (there could be 500 of them in the mailbox as we speak!) This can be the source of a problem though. 
+    The code above assumes that the critic's pid will remain the same between the first two lines of the function. However, it is completely plausible the following will happen:</p>
 
 <pre class="expand">
   1. critic ! Message
@@ -668,16 +732,41 @@ judge2(Band, Album) -&gt;
   7. message never matches
 </pre>
             
-<p>The possibility that things go wrong in a different process can make another one go wrong if we don't do things right. In this case, the value of the <samp>critic</samp> atom can be seen from multiple processes. This is known as <em>shared state</em>. The problem here is that the value of <samp>critic</samp> can be accessed <em>and</em> modified by different processes at virtually the same time, resulting in inconsistent information and software errors. The common term for such things is a <em>race condition</em>. Race conditions are particularly dangerous because they depend on the timing of events. In pretty much every concurrent and parallel language out there, this timing depends on unpredictable factors such as how busy the processor is, where the processes go, and what data is being processed by your program.</p>
+<p>Mọi thứ đèu có thể  xảy ra và chắc rằng nếu 
+    trong trường hợp trên giá trị trị của atom <samp>critic</samp> được sử  dụng ở nhiều tiến trình khác nhau, và nó được biêt tới như một 
+    giá trị cùng chia sẻ trạng thái (<em>shared state</em>). bởi vì nó có thể  được truy cập và chỉnh sửa bởi nhiều tiến trinh trong cùng một thời điểm do 
+    đo kết quả không nhất quán ( inconsistent ) và dễ  dẫn tới lỗi trong phần mềm. <em>race condition</em> là một trong những thuật ngữ phổ  biến để  chỉ lỗi trên,
+
+    The possibility that things go wrong in a different process can make another one go wrong if we don't do things right. 
+    In this case, the value of the <samp>critic</samp> atom can be seen from multiple processes. This is known as <em>shared state</em>. 
+    The problem here is that the value of <samp>critic</samp> can be accessed <em>and</em> modified by different processes at virtually the same time, 
+    resulting in inconsistent information and software errors. 
+    The common term for such things is a <em>race condition</em>. Race conditions are particularly dangerous because they depend on the timing of events. 
+    In pretty much every concurrent and parallel language out there, this timing depends on unpredictable factors such as how busy the processor is, 
+    where the processes go, and what data is being processed by your program.</p>
 
 <div class="note koolaid">
     <p><strong>Don't drink too much kool-aid:</strong><br />
-    You might have heard that Erlang is usually free of race conditions or deadlocks and makes parallel code safe. This is true in many circumstances, but never assume your code is really that safe. Named processes are only one example of the multiple ways in which parallel code can go wrong.</p>
+    Chắc hẳn bạn cũng đã từng nghe nói rằng Erlang thường không có race conditions hay deadlocks và viết mã song song trong Erlang khá an toàn.
+    Điều này không hẳn là sai trong nhiều trường hợp, nhưng không bao giơ được phép đặt giả thiết là mã mà bạn viết luôn luôn an toàn.
+    chức năng đăng ký tên cho các tiến trình ở trên là một ví dù điển hình về  mã son song không thực hiện đúng như những gì mong đợi.
+     
+    You might have heard that Erlang is usually free of race conditions or deadlocks and makes parallel code safe.
+     This is true in many circumstances, but never assume your code is really that safe. 
+     Named processes are only one example of the multiple ways in which parallel code can go wrong.</p>
 
-    <p>Other examples include access to files on the computer (to modify them), updating the same database records from many different processes, etc.</p>
+    <p>Ngoài ra còn một số  ví dụ khác như truy câp và chính sửa các file, cật nhật cùng một bản ghi trong cơ sở dữ liệu từ nhiều tiến trình khác tại một thời điểm, etc 
+        record  Other examples include access to files on the computer (to modify them), updating the same database records from many different processes, etc.</p>
 </div>
 
-<p>Luckily for us, it's relatively easy to fix the code above if we don't assume the named process remains the same. Instead, we'll use references (created with <code>make_ref()</code>) as unique values to identify messages. We'll need to rewrite the <code>critic/0</code> function into <code>critic2/0</code> and <code>judge/3</code> into <code>judge2/2</code>:</p>
+<p>May mắn  thay, đoạn mã trên tương đối dễ  dàng giải quyết băng cách giả định thay đổi tên của các tiến trình, để  làm điều này chúng ta sẽ sử dụng hàm <code>make_ref()</code>
+    , hàm này sẽ tạo ra các đinh danh với các giá trị hoàn toàn khác nhau. Bây giờ chúng ta sẽ sửa lại hàm <code>critic/0</code>  một chút, 
+    nào để  chắc chắn hãy tạo ra hàm  <code>critic2/0</code> , <code>judge2/2</code>và copy nội dung của hàm <code>critic/0</code>,  <code>judge/3</code>
+    vao và sủa như sau:
+    
+    Luckily for us, it's relatively easy to fix the code above if we don't assume the named process remains the same. Instead, we'll use references (created with
+     <code>make_ref()</code>) as unique values to identify messages. We'll need to rewrite the <code>critic/0</code> 
+     function into <code>critic2/0</code> and <code>judge/3</code> into <code>judge2/2</code>:</p>
 
 <pre class="brush:erl">
 judge2(Band, Album) -&gt;
@@ -703,7 +792,17 @@ critic2() -&gt;
     critic2().
 </pre>
 
-<p>And then change <code>restarter/0</code> to fit by making it spawn <code>critic2/0</code> rather than <code>critic/0</code>. Now the other functions should keep working fine. The user won't see a difference. Well, they will because we renamed functions and changed the number of parameters, but they won't know what implementation details were changed and why it was important. All they'll see is that their code got simpler and they no longer need to send a pid around function calls:</p>
+<p>sau đó thay đổi đổi lại hàm <code>restarter/0</code> để  nó gọi tới khởi tạo tiến trình cho hàm <code>critic2/0</code> thày vì 
+    <code>critic/0</code>. Đối với các hàm còn lại chúng ta vẫn giữa nguyên không thay dổi gì hết, 
+    Sau đó chạy lại chương trình, đừng ngạc nhiên khi kết quả vân giống lúc trước , người dùng cũng không cảm thấy có điều gì khác biệt cả .
+    bởi vì thực tế  chúng ta không thay đổi vất ky logic nào hét mà chúng ta chỉ thay đổi lại tên hàm và đối số truyền vảo.
+    Tất cả những gì họ nhìn thấy chỉ đoạn mã trông gọn gàn hơn trước và họ không cần phải quan tâm tơi vấn để  truyền một đinh danh khi gọi hàm nữa.
+      
+    And then change <code>restarter/0</code> to fit by making it spawn <code>critic2/0</code> rather than <code>critic/0</code>. 
+    Now the other functions should keep working fine. The user won't see a difference. 
+    Well, they will because we renamed functions and changed the number of parameters, 
+    but they won't know what implementation details were changed and why it was important. 
+    All they'll see is that their code got simpler and they no longer need to send a pid around function calls:</p>
 
 <pre class="brush:eshell">
 6&gt; c(linkmon).
@@ -718,15 +817,35 @@ true
 "They are great!"
 </pre>
 
-<p>And now, even though we killed the critic, a new one instantly came back to solve our problems. That's the usefulness of named processes. Had you tried to call <code>linkmon:judge/2</code> without a registered process, a <samp>bad argument</samp> error would have been thrown by the <code>!</code> operator inside the function, making sure that processes that depend on named ones can't run without them.</p>
+<p>Bây giờ ngay cả khi chúng ta chấm dứt tiến trình critic, thì ngay lập tức một tiến trình khác sẽ được tao ra.
+    Đó là nhờ sử  dụng các tiến trình được đặt tên. bạn hãy thử  gọi hàm <code>linkmon:judge/2</code> mà không cùng với đăng ký tên tiến trình xem,
+    kiểu gì bạn cũng sẽ thấy một lỗi <samp>bad argument</samp> được ném ra bởi hoạt động của toán tử  <code>!</code>
+    trong hàm này, như vậy nó yêu cầu bạn phải đảm bảo chắc rằng các tiến chính phải được đăng ký tên nếu không chúng sẽ gây ra lỗi 
+    And now, even though we killed the critic
+    That's the usefulness of named processes. Had you tried to call <code>linkmon:judge/2</code> without a registered process, 
+    a <samp>bad argument</samp> error would have been thrown by the <code>!</code> operator inside the function, 
+    making sure that processes that depend on named ones can't run without them.</p>
 
 <div class="note">
-    <p><strong>Note:</strong> If you remember earlier texts, atoms can be used in a limited (though high) number. You shouldn't ever create dynamic atoms. This means naming processes should be reserved to important services unique to an instance of the VM and processes that should be there for the whole time your application runs.</p>
+    <p><strong>Lưu ý:</strong> chắc bạn còn nhớ trong bài học về  kiểu dữ liệu , tôi đã đề  cập về  vấn đề  phạm vi giới hạn số  lượng được phép  
+        sử  dụng đối với kiểu dữ liệu atom trong một máy ảo phải không. Có thể  bạn chưa từng gặp các trường hợp yêu cầu các atom được tạo ra một cách tự động,
+        . Nhưng giờ tôi một đề  cập một điều nữa đó là tên của các tiến trính lên được đặt tên cho các dịch vị quan trong duy nhất đối trong một máy ảo và 
+        chúng lên được chạy trong toàn bộ thời gian của ứng dụng. 
+        If you remember earlier texts, atoms can be used in a limited (though high) number. 
+        You shouldn't ever create dynamic atoms. This means naming processes should be reserved to important services unique to an instance of the VM and processes 
+        that should be there for the whole time your application runs.</p>
 
-    <p>If you need named processes but they are transient or there isn't any of them which can be unique to the VM, it may mean they need to be represented as a group instead. Linking and restarting them together if they crash might be the sane option, rather than trying to use dynamic names.</p>
+    <p>Nếu bạn cần các tiến trình được đặt tên nhưng it khi sử  dụng chúng hoặc chỉ sử  dụng chúng khi cần hoặc
+        chúng không phải là duy nhất trong một máy ảo, thì bạn lên biểu diễn chúng dưới dạng một nhóm thay vì riêng rẽ.
+        So với sử  dụng các kiểu tên động thì lên liên kết cả khôi phúc chúng cùng nhau nếu chúng crash bởi cùng một lí do.
+
+        If you need named processes but they are transient or there isn't any of them which can be unique to the VM, 
+        it may mean they need to be represented as a group instead. Linking and restarting them together if they crash might be the sane option, 
+        rather than trying to use dynamic names.</p>
 </div>
 
-<p>In the next chapter, we'll put the recent knowledge we gained on concurrent programming with Erlang to practice by writing a real application.</p>
+<p>Trong chương tiép theo chúng ta sẽ đi sâu vào các kiến thức để chúng ta có thể  lập trình được concurrent trong Erlang và viết một ứng dụng thực tế.
+    In the next chapter, we'll put the recent knowledge we gained on concurrent programming with Erlang to practice by writing a real application.</p>
 				<ul class="navigation">
 											<li><a href="more-on-multiprocessing.html" title="Previous chapter">&lt; Previous</a></li>
 										

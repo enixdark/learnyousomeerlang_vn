@@ -37,117 +37,231 @@
 
 <img class="right" src="static/img/clock.png" width="224" height="232" alt="An alarm clock" title="Okay, this 'rock around the clock' pun is terrible" />
 
-<p>All fine and dandy. You understand the concepts, but then again, all we've had since the beginning of the book were toy examples: calculators, trees, Heathrow to London, etc. It's time for something more fun and more educational. We'll write a small application in concurrent Erlang. The application's going to be small and line-based, but still useful and moderately extensible.</p>
+<p>Bạn đã làm quen với các khái niệm cơ bản rồi, và cũng thực hành thông qua các ví dụ nhưng tất cả những gì kể  từ đâu cuốn sách tới giờ chúng ta 
+    chủ phần lớn làm việc với các mẫu ví dụ cơ bản không có tính thực tiến. Giờ là lúc chúng ta sẽ bắt đầu làm điều gì đó thú vị và nâng cao kiến thức hơn.
+    Trong chương này chúng ta sẽ viết một ứng dụng nhỏ cho phép xử  lí concurrent trong Erlang.
+    ứng dụng khá đơn giản và nhỏ nhưng vẫn hữu ích và hơn nữa chúng ta có thể  mở rộng nếu muốn.
+    
+    All fine and dandy. You understand the concepts, but then again, 
+    all we've had since the beginning of the book were toy examples: calculators, trees, Heathrow to London, 
+    etc. It's time for something more fun and more educational. We'll write a small application in concurrent Erlang. The application's 
+    going to be small and line-based, but still useful and moderately extensible.</p>
 
-<p>I'm a somewhat unorganized person. I'm lost with homework, things to do around the apartment, this book, work, meetings, appointments, etc. I end up having a dozen of lists everywhere with tasks I still forget to do or look over. Hopefully you still need reminders of what to do (but you don't have a mind that wanders as much as mine does), because we're going to write one of these event reminder applications that prompt you to do stuff and remind you about appointments.</p>
+<p>Nào giờ hay xét một ví du, hay đặt giả thiết rằng Tôi là một người sống vô tổ  chức, 
+    tôi đã quên mất phải làm bài tập về  nhà, dọn dẹp căn hộ, cuốn sách này, công việc, các cuộc họp, các cuộc hẹn.  
+    Phải có hẵn một tá các danh sách công việc mà thôi đã quên mất không làm hay không nhìn lại.
+    Hy vọng là đôi khi bạn vẫn cần nhắc nhở những gì bạn làm ( có thể  bạn không đãng trí như tôi ), vạy điều này liên quan gì tới điều chúng ta sắp lại 
+    , ah bởi ví chúng ta đạng dự định sẽ viết một ừng dụng cho phép nhắc nhờ nhanh chóng cho bạn về  các cuộc họp.
+    
+    I'm a somewhat unorganized person. I'm lost with homework, things to do around the apartment, this book, work, meetings, appointments, etc. 
+    I end up having a dozen of lists everywhere with tasks I still forget to do or look over. Hopefully you still need reminders of what to do 
+    (but you don't have a mind that wanders as much as mine does), because we're going to write one of these event reminder applications that prompt 
+    you to do stuff and remind you about appointments.</p>
 
 
 <h3><a class="section" name="understanding-the-problem">Understanding the Problem</a></h3>
 
-<p>The first step is to know what the hell we're doing. "A reminder app," you say. "Of course," I say. But there's more. How do we plan on interacting with the software? What do we want it to do for us? How do we represent the program with processes? How do we know what messages to send?</p>
+<p>Thứ nhất bạn phải biết là chúng ta đang tính làm chuyện quaí gì vậy. 
+    Ah 
+      ban nói: "một ứng dụng nhắc nhở"
+      tôi trả lời: "Tất nhiên rồi"
+    . Nhưng chưa hết. 
+    Vậy chúng ta sẽ lên kế  hoạch để  tương tác với phần mềm như thế  nào ? 
+    Chúng ta muốn ứng dụng này làm được gì cho chúng ta ? 
+    Làm thế  nào để  biểu diễn chương chình này dưới dạng các tiến trình.
+    làm thế  nào để  biết được tin nhắn gửi những gì ?
+    The first step is to know what the hell we're doing. "A reminder app," you say. "Of course," I say. But there's more. 
+    How do we plan on interacting with the software? What do we want it to do for us? How do we represent the program with processes? How do we know what messages to send?</p>
 
-<p>As the quote goes, <cite title="Edward V. Berard">"Walking on water and developing software from a specification are easy if both are frozen."</cite> So let's get a spec and stick to it. Our little piece of software will allow us to do the following:</p>
+<p>Dựa trên một câu nói của Edward V. Berard: <cite title="Edward V. Berard">"Việc đi trên mặt nước và phát triển phần mềm từ một đặc điểm kỹ thuật cụ thể  thật đễ  
+    nếu như chúng đều đóng băng lại."</cite>
+    Do đó hay hãy tìm một đặc điểm kỹ thuật cụ thể  và gắn với nó.
+    Một phần nhỏ của ứng dụng sẽ cho phép làm được nhưng thứ sau:
+    As the quote goes, <cite title="Edward V. Berard">"Walking on water and developing software from a specification are easy if both are frozen."</cite> 
+    So let's get a spec and stick to it. Our little piece of software will allow us to do the following:</p>
 
 <ul>
-	<li>Add an event. Events contain a deadline (the time to warn at), an event name and a description.</li>
-	<li>Show a warning when the time has come for it.</li>
-	<li>Cancel an event by name.</li>
-	<li>No persistent disk storage. It's not needed to show the architectural concepts we'll see. It will suck for a real app, but I'll instead just show where it could be inserted if you wanted to do it and also point to a few helpful functions.</li>
-	<li>Given we have no persistent storage, we have to be able to update the code while it is running.</li>
-	<li>The interaction with the software will be done via the command line, but it should be possible to later extend it so other means could be used (say a GUI, web page access, instant messaging software, email, etc.)</li>
+	<li>Chúng ta có thể  thêm một sự kiện. Các sự kiện có thể  có thời hạn ( thời điểm được cảnh báo ), tên sự kiện và mô tả sự kiện đó là gì.
+        
+        Add an event. Events contain a deadline (the time to warn at), an event name and a description.</li>
+	<li>hiển thị cảnh báo khi tới thời điểm.
+        Show a warning when the time has come for it.</li>
+	<li>hủy bỏ một sự kiện dựa theo tên của nó. 
+        Cancel an event by name.</li>
+	<li>Không cân phải lưu trữ dữ liệu trên ổ  đĩa. 
+        Để  chứng mình các khai niệm kiến trúc mà chúng ta sẽ xem xét, việc lưu trữ dữ liệu là không cần thiết.
+        Đối với một ứng dụng thật thì cách làm này thật tệ nhưng tôi sẽ chỉ cho bạn nơi để  chèn các đoạn mã giúp cho việc lưu trữ trên ổ  đia nếu bạn muốn,
+        đồng thời tôi cũng sẽ đưa ra một vài hàm hữu ích có thể  giúp cho bạn việc này. 
+        No persistent disk storage. It's not needed to show the architectural concepts we'll see. 
+        It will suck for a real app, but I'll instead just show where it could be inserted if you wanted to do it and also point to a few helpful functions.</li>
+	<li>Bởi vì chúng ta không sử  dụng ổ  đĩa đẻ lưu trữ dữ liệu do đó chúng ta phải cập nhật dữ liệu trong khi đang chạy.
+        Given we have no persistent storage, we have to be able to update the code while it is running.</li>
+	<li>Việc tương tác với ứng dụng sẽ thực hiện qua câu lệnh, nhưng có thể  mở rộng về  sau hay vì câu lệnh ( sử  dụng GUI, truy cập thông qua trình duyệt web, sử  dụng  ) 
+        The interaction with the software will be done via the command line, but it should be possible to later extend it so other means could be used (say a GUI, web page access, 
+        thông qua phần mềm gửi tin nhắn, email, etc.)
+        instant messaging software, email, etc.)</li>
 </ul>
 
-<p>Here's the structure of the program I picked to do it:</p>
+<p>Dưới đây là cấu trúc của chương trình chúng ta sẽ thực hiện 
+    Here's the structure of the program I picked to do it:</p>
 
 <img class="center explanation" src="static/img/reminder-structure.png" width="286" height="160" alt="5 components are there: A client (1) that can communicate with an event server (2) and 3 little circles labeled 'x', 'y', and 'z'. All three are linked to the event server." />
 
-<p>Where the client, event server and x, y and z are all processes. Here's what each of them can do:</p>
+<p>Trong đó client, event server và x,y đều là các tiến trình. Chúng sẽ đảm nhiệm từng nhiệm vụ riêng:
+    Where the client, event server and x, y and z are all processes. Here's what each of them can do:</p>
 
 <h4>Event Server</h4>
 <ul>
-	<li>Accepts subscriptions from clients</li>
-	<li>Forwards notifications from event processes to each of the subscribers</li>
-	<li>Accepts messages to add events (and start the x, y, z processes needed)</li>
-	<li>Can accept messages to cancel an event and subsequently kill the event processes</li>
-	<li>Can be terminated by a client</li>
-	<li>Can have its code reloaded via the shell.</li>
+	<li>Chấp nhận các đăng ký từ phía client gửi tới 
+        Accepts subscriptions from clients</li>
+	<li>Chuyển tiếp các thông báo từ các tiến trình event tới từng client đã đăng ký (subscribers).
+        Forwards notifications from event processes to each of the subscribers</li>
+	<li>Chấp nhận các thông báo về  việc bổ sung thêm các sự kiên - events ( cần bắt đầu các tiến trình x, y, z ) Accepts messages to add events (and start the x, y, z processes needed)</li>
+	<li>Chấp nhận các thông báo hủy bỏ một sự kiên ( event ) và chấm dứt các tiến trình trong một chuỗi sự kiện đó 
+        Can accept messages to cancel an event and subsequently kill the event processes</li>
+	<li>Cho phép client có quyền chấm dứt Can be terminated by a client</li>
+	<li>Có khả năng nạp lại mã từ shell Can have its code reloaded via the shell.</li>
 </ul>
 
 <h4>client</h4>
 <ul>
-	<li>Subscribes to the event server and receive notifications as messages. As such it should be easy to design a bunch of clients all subscribing to the event server. Each of these could potentially be a gateway to the different interaction points mentioned above (GUI, web page, instant messaging software, email, etc.)</li>
-	<li>Asks the server to add an event with all its details</li>
-	<li>Asks the server to cancel an event</li>
-	<li>Monitors the server (to know if it goes down)</li>
-	<li>Shuts down the event server if needed</li>
+	<li>đăng ký sự kiện từ event server và nhận thông báo qua tin nhắn.
+        Bằng cách này chúng ta có thể  dễ  dàng thiết kế  một nhóm các client đăng ký sự kiện tới event server.
+        Để  bất kỳ ai trong số chúng cũng đều có khả năng phục vự như một cổng vào ( gateway ) các điểm tương tác khác nhau được đề  cập ở trên (GUI, web page, instant messaging software, email, etc.)
+        Subscribes to the event server and receive notifications as messages. As such it should be easy to design a bunch of clients all subscribing to the event server. 
+        Each of these could potentially be a gateway to the different interaction points mentioned above (GUI, web page, instant messaging software, email, etc.)</li>
+	<li>Đưa ra yêu cầu server để  thêm một sự kiện kèm theo thông tin chi tiết về  sự kiện đó  Asks the server to add an event with all its details</li>
+	<li>Đưa ra yêu cầu server để  hủy bỏ một sự kiện Asks the server to cancel an event</li>
+	<li>Giám sát server ( để  biết khi nào nó ngừng hoạt động ) Monitors the server (to know if it goes down)</li>
+	<li>Ngừng hoạt động event server khi cần Shuts down the event server if needed</li>
 </ul>
 
 <h4>x, y and z:</h4>
 <ul>
-	<li>Represent a notification waiting to fire (they're basically just timers linked to the event server)</li>
-	<li>Send a message to the event server when the time is up</li>
-	<li>Receive a cancellation message and die</li>
+	<li>Chỉ ra một thông báo đã sàng sàng để  kích hoạt ( bản chất chúng chỉ đơn giản là những bộ hẹn giờ 
+        được kết nối với event server )
+         Represent a notification waiting to fire (they're basically just timers linked to the event server)</li>
+	<li>Gửi một tin nhắn tới event server khi hết thời gian Send a message to the event server when the time is up</li>
+	<li>Nhận hủy bỏ môt tin nhắn Receive a cancellation message and die</li>
 </ul>
 
-<p>Note that all clients (IM, mail, etc. which are not implemented in this book) are notified about all events, and a cancellation is not something to warn the clients about. Here the software is written for you and me, and it's assumed only one user will run it.</p>
+<p>Lưu ý là tất cả các client (không bao gồm IM, mail, etc. Bởi vhúng ta sẽ không thực hiện chúng trong cuốn sách nay ) mà được nhận thông báo về  tất cả sự kiện cũng như hủy 
+    bỏ không phải là thông tin cần cảnh báo tới khách hàng. Ứng dụng này được viết chủ yếu cung cấp kiến thúc cho tôi và bạn, vì thế  chúng ta luôn đặt giả thiết chỉ có duy nhất một 
+    người dùng đang sử  dụng.    
+    
+    Note that all clients (IM, mail, etc. which are not implemented in this book) are notified about all events, and a cancellation is not something to warn the clients about. 
+    Here the software is written for you and me, and it's assumed only one user will run it.</p>
 
-<p>Here's a more complex graph with all the possible messages:</p>
+<p>Đưới đây là tất cả các trường hợp về  các tin nhắc có thể  gửi và được mình họa qua một biểu đồ  phức tạp. Here's a more complex graph with all the possible messages:</p>
 
 <img class="center explanation" src="static/img/reminder-bubbles-and-arrows.png" width="609" height="335" alt="A visual representation of the list above" />
 
-<p>This represents every process we'll have. By drawing all the arrows there and saying they're messages, we've written a high level protocol, or at least its skeleton.</p>
+<p>Biểu đồ  minh họa trên đưa ra thông tin vê tất cả các tiến trình mà chúng ta có thể  có. Như bạn thấy trong biểu đồ , các tin nhắn sẽ được biểu diễn bằng các mũi tên,
+    bằng cách minh họa này chúng ta đang thực hiện chúng trong một giao thức bậc cao hoặc ít nhất là phác họa chúng. 
+    This represents every process we'll have. By drawing all the arrows there and saying they're messages, we've written a high level protocol, or at least its skeleton.</p>
 
-<p>It should be noted that using one process per event to be reminded of is likely going to be overkill and hard to scale in a real world application. However, for an application you are going to be the sole user of, this is good enough. A different approach could be using functions such as <a class="docs" href="http://erldocs.com/18.0/stdlib/timer.html#send_after/2">timer:send_after/2-3</a> to avoid spawning too many processes.</p>
+<p>Cũng lên cân nhắc lưu ý là Trong một ứng dụng thực tế  việc sử  dụng một tiến trình cho mỗi sự kiện ( event ) rất lãng phí và khó khăn trong việc mở rộng.'
+    Tuy nhiên, Đối với ứng dùng mà chỉ có duy nhất bạn là người dùng thì như vậy là đủ.
+    Ngoài ra còn một cách tiếp cận khác nữa đó là sử  dụng hàm <a class="docs" href="http://erldocs.com/18.0/stdlib/timer.html#send_after/2">timer:send_after/2-3</a> 
+    để  tránh sinh ( spawn ) ra quá nhiều các tiến trình.
+    It should be noted that using one process per event to be reminded of is likely going to be overkill and hard to scale in a real world application. 
+    However, for an application you are going to be the sole user of, this is good enough. 
+    A different approach could be using functions such as <a class="docs" href="http://erldocs.com/18.0/stdlib/timer.html#send_after/2">timer:send_after/2-3</a> 
+    to avoid spawning too many processes.</p>
 
 <h3><a class="section" name="defining-the-protocol">Defining the Protocol</a></h3>
 
 
-<p>Now that we know what each component has to do and to communicate, a good idea would be to make a list of all messages that will be sent and specify what they will look like. Let's first start with the communication between the client and the event server:</p>
+<p>Bây giờ chúng ta dã hình dung được các thành phần giao tiếp và công việc của chúng rồi.
+    Nó sẽ là một ý tưởng hay để  tạo ra danh sách các tin nhắn được gửi đi và chỉ định định dạng của chúng.
+    Nào hãy băt đầu liên lạc giữa client và event server:
 
-<img class="center explanation" src="static/img/reminder-subscribe.png" width="486" height="163" alt="The client can send {subscribe, Self} to the event server, which can reply only with 'ok'. Note that both the client and server monitor eachother" />
+    Now that we know what each component has to do and to communicate, 
+    a good idea would be to make a list of all messages that will be sent and specify what they will look like. 
+    Let's first start with the communication between the client and the event server:</p>
 
-<p>Here I chose to use two monitors because there is no obvious dependency between the client and the server. I mean, of course the client doesn't work without the server, but the server can live without a client. A link could have done the job right here, but because we want our system to be extensible with many clients, we can't assume other clients will all want to crash when the server dies. And neither can we assume the client can really be turned into a system process and trap exits in case the server dies. Now to the next message set:</p>
+<img class="center explanation" src="static/img/reminder-subscribe.png" width="486" height="163" alt="The client can send {subscribe, Self} to the event server, 
+which can reply only with 'ok'. Note that both the client and server monitor eachother" />
+
+<p>Ở đây , tôi sẽ sử  dụng hai màn hình giám sát ( monitor ) cho client và event server bởi vì rõ ràng không có sự phụ thuộc giữa chúng.
+    Tại sao tôi nói vậy, vì rõ ràng bạn thấy event server có thể  hoạt động mà không cần có client nhưng ngược lại thì không.
+    Chúng ta có thể  sử  dụng liên kết để  đảm đương được công việc đó nhưng dể  có thể  mở rộng hệ thống tới nhiều client, do đó 
+    chúng ta không thể  đặt giả thiết rằng các client cũng sẽ crash khi event server ngừng hoạt động, và cũng không thể  
+    đặt giả thiết là client có thể  tự động chuyển thành một tiến trình hệ thống và trap exits khi event server ngừng hoạt động.
+    Tiếp theo chúng ta sẽ nói về  tập các tin nhắn:
+
+    Here I chose to use two monitors because 
+    there is no obvious dependency between the client and the server. 
+    I mean, of course the client doesn't work without the server, but the server can live without a client. 
+    A link could have done the job right here, but because we want our system to be extensible with many clients, 
+    we can't assume other clients will all want to crash when the server dies. 
+    And neither can we assume the client can really be turned into a system process and trap exits in case the server dies. Now to the next message set:</p>
 
 <img class="center explanation" src="static/img/reminder-add.png" width="507" height="127" alt="The client can send the message {add, Name, Description, TimeOut}, to which the server can either reply 'ok' or {error, Reason}" />
 
-<p>This adds an event to the event server. A confirmation is sent back under the form of the <code>ok</code> atom, unless something goes wrong (maybe the TimeOut is in the wrong format.) The inverse operation, removing events, can be done as follows:</p>
+<p>Hình trên minh họa một sự kiện được thêm vào event server. 
+    Ngay sau đó một xác nhận được gửi lại dưới dạng một atom <code>ok</code>. Trong trường hợp có một sự cố  ( nguyên nhân có thể  do TimeOut được gửi sai đinh dạng ) thì 
+    hoạt động đảo ngược, xóa bỏ các sự kiện có thể  được thực hiện như sau:
+
+    This adds an event to the event server. A confirmation is sent back under the form of the <code>ok</code> atom, 
+    unless something goes wrong (maybe the TimeOut is in the wrong format.) The inverse operation, removing events, can be done as follows:</p>
 
 <img class="center explanation" src="static/img/reminder-remove.png" width="393" height="137" alt="The client can send the message {cancel, Name} and the event server should return ok as an atom" />
 
-<p>The event server can then later send a notification when the event is due:</p>
+<p>Sau đó event server sẽ gửi một thông báo về  sự kiện đã xảy ra  The event server can then later send a notification when the event is due:</p>
 
 <img class="center explanation" src="static/img/reminder-cs-done.png" width="472" height="114" alt="The event server forwards a {done, Name, Description} message to the client" />
 
-<p>Then we only need the two following special cases for when we want to shut the server down or when it crashes:</p>
+<p>Tiêp đó chúng ta chỉ cần thực hiện theo hai trường hợp đặc biệt sau để  tắt event server hoặc khi nó bị crash:
+    Then we only need the two following special cases for when we want to shut the server down or when it crashes:</p>
 
 <img class="center explanation" src="static/img/reminder-shutdown.png" width="442" height="220" alt="When the client sends the 'shutdown' atom to the event server, it dies and returns {'DOWN', Ref, process, Pid, shutdown} because it was monitored" />
 
-<p>No direct confirmation is sent when the server dies because the monitor will already warn us of that. That's pretty much all that will happen between the client and the event server. Now for the messages between the event server and the event processes themselves.</p>
+<p>Sẽ không có bất kỳ xác nhận nào được gửi trưc tiếp từ event server khi nó ngừng hoạt động nhưng 
+    màn hình giám sát sẽ làm việc này để  cảnh báo cho chúng ta biết.
+    Đó là tất cả những gì sẽ xảy ra giữa client và event server. Bây giờ chúng ta sẽ xem về  mối liên hệ giữa các tin nhắn và event server và các tiến trình event. 
+    No direct confirmation is sent when the server dies because the monitor will already warn us of that. 
+    That's pretty much all that will happen between the client and the event server. Now for the messages between the event server and the event processes themselves.</p>
 
-<p>A thing to note here before we start is that it would be very useful to have the event server linked to the events. The reason for this is that we want all events to die if the server does: they make no sense without it.</p>
+<p>Có Một điều lưu ý ở đây là trước tiên chúng ta sẽ bắt đầu các liên kết giữa event server và các sự kiện, 
+    Bởi vì chúng ta muốn đảm bảo rằng các sự kiện sẽ ngừng hoạt động ngay khi server tắt.  
+    A thing to note here before we start is that it would be very useful to have the event server linked to the events. 
+    The reason for this is that we want all events to die if the server does: they make no sense without it.</p>
 
-<p>Ok, so back to the events. When the event server starts them, it gives each of them a special identifier (the event's name). Once one of these events' time has come, it needs to send a message saying so:</p>
+<p>Ok, hay qua lại các sự kiện. Khi event server tạo ra chúng, nó sẽ gán một đinh danh cụ thể  cho mỗi sư kiện đó ( tên sự kiện )
+    . Một khi một trong số  các sự kiện này tới thời điểm kích hoạt, nó sẽ gửi một thông báo cùng với nội dung:
+    
+    so back to the events. When the event server starts them, it gives each of them a special identifier (the event's name). 
+    Once one of these events' time has come, it needs to send a message saying so:</p>
 
 <img class="center explanation" src="static/img/reminder-es-done.png" width="378" height="133" alt="An event can send {done, Id} to the event server" />
 
-<p>On the other hand, the event has to watch for cancel calls from the event server:</p>
+<p>Nói một cách kahcs, các sự kiện sẽ phải theo dõi các cuộc gọi hủy bỏ từ event server 
+     On the other hand, the event has to watch for cancel calls from the event server:</p>
 
 <img class="center explanation" src="static/img/reminder-cancel.png" width="386" height="130" alt="The server sends 'cancel' to an event, which replies with 'ok'" />
 
-<p>And that should be it. One last message will be needed for our protocol, the one that lets us upgrade the server:</p>
+<p>Vậy là chúng ta đã giới thiệu gần hết các loại tin nhắn rồi, tin nhắn cuối cùng chúng ta cần cho giao thức đó là 
+    thông báo cho phép event server cập nhật , nâng cấp server.  
+    And that should be it. One last message will be needed for our protocol, the one that lets us upgrade the server:</p>
 
 <img class="center explanation" src="static/img/reminder-code-change.png" width="426" height="139" alt="the event server has to accept a 'code_change' message from the shell" />
 
-<p>No reply is necessary. We'll see why when we actually program that feature and you'll see it makes sense.</p>
+<p>Không cần thiết phải trả lời tin nhắn này. khi chúng ta bắt đầu đi vào viết ứng dụng bạn sẽ thấy rõ.
+     
+    No reply is necessary. We'll see why when we actually program that feature and you'll see it makes sense.</p>
 
-<p>Having both the protocol defined and the general idea of how our process hierarchy will look in place, we can actually start working on the project.</p>
+<p>Từ những phân tích trên chúng ta đã xác định được giao thức và ý tưởng chung về  cấu trúc của hệ thống phân cấp tiến trình rồi, giờ là chúng ta có 
+    thể  bắt tay vào triển khai dự án được rồi.
+    Having both the protocol defined and the general idea of how our process hierarchy will look in place, we can actually start working on the project.</p>
 
 
 <h3><a class="section" name="lay-them-foundations">Lay Them Foundations</a></h3>
 
 <img class="right" src="static/img/cement.png" width="364" height="203" alt="A cement truck" />
 
-<p>To begin with it all, we should lay down a standard Erlang directory structure, which looks like this:</p>
+<p>Trước khi bắt đầu, chúng lên đưa ra một cấu trúc thư mục chuẩn trong Erlang, nó sẽ có dang như sau:
+    To begin with it all, we should lay down a standard Erlang directory structure, which looks like this:</p>
 
 <pre class="expand">
 ebin/
@@ -156,17 +270,61 @@ priv/
 src/
 </pre>
 
-<p>The <code>ebin/</code> directory is where files will go once they are compiled. The <code>include/</code> directory is used to store <code>.hrl</code> files that are to be included by other applications; the private <code>.hrl</code> files are usually just kept inside the <code>src/</code> directory. The <code>priv/</code> directory is used for executables that might have to interact with Erlang, such as specific drivers and whatnot. We won't actually use that directory for this project. Then the last one is the <code>src/</code> directory, where all <code>.erl</code> files stay.</p>
+<p>Trong đó thư mục <code>ebin/</code> sẽ chứa các file được biên dịch. Thư mục <code>include/</code> dùng để  lưu trữ các file record có định dạng <code>.hrl</code>,
+    các file này sẽ được chèn vào bên trong các ứng dụng khác, các file định dạng <code>.hrl</code> riêng, các file mà chỉ dùng với ứng dụng hiện tại thì  
+    thường được đặt trong thư mục <code>src/</code>. Thư mục <code>priv/</code>, đây là thư mục chưa các file thực thi có thể  tương tác được với Erlang,
+    chúng bao gồm một số các driver. Tuy nhiên với dự án này, chúng ta sẽ không sử  dụng tới các file trong thư mục này. 
+    Cuối cùng thư mục <code>src/</code>, đây sẽ là thư mục chứa các file <code>.erl</code>.
+    
+    directory is where files will go once they are compiled. The <code>include/</code> directory is used to store <code>.hrl</code> 
+    files that are to be included by other applications; the private <code>.hrl</code> files are usually just kept inside the <code>src/</code> directory. 
+    The <code>priv/</code> directory is used for executables that might have to interact with Erlang, such as specific drivers and whatnot. 
+    We won't actually use that directory for this project. Then the last one is the <code>src/</code> directory, where all <code>.erl</code> files stay.</p>
 
-<p>In standard Erlang projects, this directory structure can vary a little. A <code>conf/</code> directory can be added for specific configuration files, <code>doc/</code> for documentation and <code>lib/</code> for third party libraries required for your application to run. Different Erlang product on the market often use different names than these, but the four ones mentioned above usually stay the same given they're part of the <a class="docs" href="http://www.erlang.org/doc/design_principles/applications.html#id71171" title="Reference page only, don't expect to understand everything out of it">standard OTP practices</a>.</p>
+<p>Ngoài ra trong các dự án tiêu chuẩn Erlang, cấu trúc thư mục này có khác biệt đôi chút.
+    Thư mục <code>conf/</code> có thể  được thêm vào các file cấu hình để  xác định cáu hình cho hệ thống, ứng dụng.
+    Các file tài liệu sẽ nằm trong thư mục <code>doc/</code> và các thư viện của bên thứ 3 mà ứng dụng của bạn sử  dụng sẽ đặt trong thư mục 
+    <code>lib/</code>. Hầu hết cấu trúc thư mục chuẩn của Erlang sẽ như vậy một số  trường hợp, trong các ứng dụng thực tế  khác có thể  sẽ đặt tên các thư mục 
+    khác nhau nhưng ý nghĩa không thay đổi nhiều. Riêng bốn thư mục đề  cập phía trên thường sẽ không thay đổi mấy bởi vì chúng là một phần trong 
+    <a class="docs" href="http://www.erlang.org/doc/design_principles/applications.html#id71171" title="Reference page only, don't expect to understand everything out of it">
+        standard OTP practices</a>.</p>
+
+    In standard Erlang projects, this directory structure can vary a little. A <code>conf/</code> directory can be added for specific configuration files, 
+    <code>doc/</code> for documentation and <code>lib/</code> for third party libraries required for your application to run. 
+    Different Erlang product on the market often use different names than these, 
+    but the four ones mentioned above usually stay the same given they're part of the
+     <a class="docs" href="http://www.erlang.org/doc/design_principles/applications.html#id71171" title="Reference page only, don't expect to understand everything out of it">
+        standard OTP practices</a>.</p>
 
 <h3><a class="section" name="an-event-module">An Event Module</a></h3>
 
-<p>Get into the <code>src/</code> directory and start an <a class="source" href="static/erlang/event.erl.html">event.erl</a> module, which will implement the x, y and z events in the earlier drawings. I'm starting with this module because it's the one with the fewest dependencies: we'll be able to try to run it without needing to implement the event server or client functions.</p>
+<p>Nào hãy mở thư mục <code>src/</code> lên và tạo một file module và đặt tên là <a class="source" href="static/erlang/event.erl.html">event.erl</a>,
+    file module này sẽ thực hiện các sự kiện x, y, z như hình vẽ trước đó ).
+    Chúng ta bắt module này trước tien vì nó là một trong những module có ít phụ thuộc nhất: 
+    chúng ta có thể  chạy thử  nó mà không cần phải thực hiện các chức năng cho event server hay client.
+         
+    Get into the <code>src/</code> directory and start an <a class="source" href="static/erlang/event.erl.html">event.erl</a> module, which will 
+    implement the x, y and z events in the earlier drawings. 
+    I'm starting with this module because it's the one with the fewest dependencies: we'll be able to try to run it without needing to implement the event server or client functions.</p>
 
-<p>Before really writing code, I have to mention that the protocol is incomplete. It helps represent what data will be sent from process to process, but not the intricacies of it: how the addressing works, whether we use references or names, etc. Most messages will be wrapped under the form <code>{Pid, Ref, Message}</code>, where <var>Pid</var> is the sender and <var>Ref</var> is a unique message identifier to help know what reply came from who. If we were to send many messages before looking for replies, we would not know what reply went with what message without a reference.</p>
+<p>Trước khi bắt tay vào viết code, tôi phải nhắc bạn rằng giao thức này của chúng ta phát triển vẫn chưa thực sự đầy đủ.
+    Trong giao thức này nó sẽ giúp chúng ta hiển thị quá trình gửi dữ liệu giữa các tiến trình với nhau nhưng sẽ không mô tả chi tiết quá trình gửi: 
+    vd như cách địa chỉ của các tiến trình đang hoạt động như thế  nào thay vào đó những gì chúng ta đang sử  dụng là tài liệu tham khảo hay tên.
+    Hầu hết các tin nhắn sẽ được bao bọc trong một bộ có dạng  <code>{Pid, Ref, Message}</code>, trong đó <var>Pid</var>  là định danh của tiến trình gửi đi 
+    và <var>Ref</var>  là định danh duy nhất của tin nhắn, để  giúp chúng ta biết được tin nhắc phản hồi đó tới từ ai.
+    Trong trường hợp nếu chúng ta gưi quá nhiều tin nhắc trước khi tìm kiếm, đợi phản hồi, thì chúng ta sẽ không thể  biết được sẽ phản hồi tin nhắn ra sao nếu không có 
+    một địa chỉ tham chiếu. 
 
-<p>So here we go. The core of the processes that will run <code>event.erl</code>'s code will be the function <code>loop/1</code>, which will look a bit like the following skeleton if you remember the protocol:</p>
+    Before really writing code, I have to mention that the protocol is incomplete. It helps represent what data will be sent from process to process, 
+    but not the intricacies of it: how the addressing works, whether we use references or names, etc. Most messages will be wrapped under the form <code>{Pid, Ref, Message}</code>,
+     where <var>Pid</var> is the sender and <var>Ref</var> is a unique message identifier to help know what reply came from who. 
+     If we were to send many messages before looking for replies, we would not know what reply went with what message without a reference.</p>
+
+<p>Giờ chúng ta sẽ bắt đầu viết, phần cốt lõi quá trình thực thi các đoạn mã trong module <code>event.erl</code> sẽ là hàm <code>loop/1</code>, nếu bạn nhớ
+    giao thức mà chúng ta đã phác thảo lúc trước thì nó sẽ thực hiện tương tự như vậy:
+
+    So here we go. The core of the processes that will run <code>event.erl</code>'s code will be the function <code>loop/1</code>, 
+    which will look a bit like the following skeleton if you remember the protocol:</p>
 
 <pre class="brush:erl">
 loop(State) -&gt;
@@ -178,9 +336,16 @@ loop(State) -&gt;
     end.
 </pre>
 
-<p>This shows the timeout we have to support to announce an event has come to term and the way a server can call for the cancellation of an event. You'll notice a variable <var>State</var> in the loop. The <var>State</var> variable will have to contain data such as the timeout value (in seconds) and the name of the event (in order to send the message <code>{done, Id}</code>.) It will also need to know the event server's pid in order to send it notifications.</p>
+<p>Ở đây, chúng ta thấy sủ dụng timeout để  thông báo một sự kiện đã tới cũng như cách để  server hủy bỏ một sự kiện.
+    Hãy để  ý biến <var>State</var> trong hàm 'loop', biến này sẽ phảu chứa dữ liệu giống như giá trị timeout ( đơn vị là giây ), 
+    tên của sự kiện ( theo thứ tự gửi thông báo có dạng <code>{done, Id}</code>.). Nó cũng cần phải biết định danh của event server để  gửi thông báo. 
+    This shows the timeout we have to support to announce an event has come to term and the way a server can call for the cancellation of an event. 
+    You'll notice a variable <var>State</var> in the loop. The <var>State</var> variable will have to contain data such as the timeout value (in seconds) 
+    and the name of the event (in order to send the message <code>{done, Id}</code>.) It will also need to know the event server's pid in order to send it notifications.</p>
 
-<p>This is all stuff that's fit to be held in the loop's state. So let's declare a <code>state</code> record on the top of the file:</p>
+<p>tât cả những thông tin này thích hợp để  lưu trữ trạng thái của loop. Và để  thực hiện, chúng ta sẽ khai báo một bản ghi <code>state</code>
+    và đặt nó ở đầu file:
+    This is all stuff that's fit to be held in the loop's state. So let's declare a <code>state</code> record on the top of the file:</p>
 
 <pre class="brush:erl">
 -module(event).
@@ -190,7 +355,8 @@ loop(State) -&gt;
                 to_go=0}).
 </pre>
 
-<p>With this state defined, it should be possible to refine the loop a bit more:</p>
+<p>Cùng với định nghĩa bản ghi <code>state</code>, chúng ta có thể  thay đổi lại hàm 'loop'một chút 
+    it should be possible to refine the loop a bit more:</p>
 
 <pre class="brush:erl">
 loop(S = #state{server=Server}) -&gt;
@@ -202,16 +368,26 @@ loop(S = #state{server=Server}) -&gt;
     end.
 </pre>
 
-<p>Here, the multiplication by a thousand is to change the <code>to_go</code> value from seconds to milliseconds.</p>
+<p>Ở đây, ở mệnh đề  <code>after</code> chúng ta sử  dụng tích của giá trị trong <code>to_go</code> với 1000 để  chuyển đổi từ đơn vị giây sang mili giây 
+    Here, the multiplication by a thousand is to change the <code>to_go</code> value from seconds to milliseconds.</p>
 
 <div class="note koolaid">
-	<p><strong>Don't drink too much Kool-Aid:</strong><br />
-	Language wart ahead! The reason why I bind the variable 'Server' in the function head is because it's used in pattern matching in the receive section. Remember, <a class="chapter" href="a-short-visit-to-common-data-structures.html#records">records are hacks!</a> The expression <code>S#state.server</code> is secretly expanded to <code>element(2, S)</code>, which isn't a valid pattern to match on.</p>
+    <p><strong>Don't drink too much Kool-Aid:</strong><br />
+    Lí giải vì sao tôi liên kết với biến 'Server' ở đầu hàm, đó là bởi vì nó sẽ được sử  dụng để  làm giá trị khớp mẫu trong biểu thức receive.
+    Hãy nhớ lại về  cách sử  dụng bản ghi mà chúng ta đã học trong <a class="chapter" href="a-short-visit-to-common-data-structures.html#records">records are hacks!</a>,
+    biểu thức  <code>S#state.server</code> sẽ ngầm gọi tới <code>element(2, S)</code>, đo đó nó không thể  coi là một mẫu hợp lệ để  khớp được.
+    
+    Language wart ahead! The reason why I bind the variable 'Server' in the function head is because it's used in pattern matching in the receive section. 
+    Remember, <a class="chapter" href="a-short-visit-to-common-data-structures.html#records">records are hacks!</a> The expression <code>S#state.server</code> 
+    is secretly expanded to <code>element(2, S)</code>, which isn't a valid pattern to match on.</p>
 	
-	<p>This still works fine for <code>S#state.to_go</code> after the <code>after</code> part, because that one can be an expression left to be evaluated later.</p>
+    <p>Mặc dù vậy nó hoạt động dược với <code>S#state.to_go</code> như một phần của mệnh đề  <code>after</code>, đó là bởi vì
+        vẫn còn một biểu thức chưa được đanh giá có thể  bị trì hoãn.
+        
+        This still works fine for <code>S#state.to_go</code> after the <code>after</code> part, because that one can be an expression left to be evaluated later.</p>
 </div>
 
-<p>Now to test the loop:</p>
+<p>Giờ chúng ta sẽ kiểm tra hàm này: Now to test the loop:</p>
 <pre class="brush:eshell">
 6&gt; c(event).
 {ok,event}
@@ -235,7 +411,11 @@ Shell got {#Ref&lt;0.0.0.210&gt;,ok}
 ok
 </pre>
 
-<p>Lots of stuff to see here. Well first of all, we import the record from the event module with <code>rr(Mod)</code>. Then, we spawn the event loop with the shell as the server (<code>self()</code>). This event should fire after 5 seconds. The 9th expression was run after 3 seconds, and the 10th one after 6 seconds. You can see we did receive the <code>{done, "test"}</code> message on the second try.</p>
+<p>Có rất nhiều thứ được nhìn thấy ở đây. Đầu tiên, chúng ta đã nạp bản ghi module  sự kiện ( event ) vào trong shell bằng lệnh  <code>rr(Mod)</code>,
+    tiếp đó chúng ta sinh (spawn) ra tiến trình cho hàm loop của module sự kiện ( event ) và sử  dụng tiến trình shell hiện tại thay thế  cho tiến trình server  (<code>self()</code>).
+
+    Lots of stuff to see here. Well first of all, we import the record from the event module with <code>rr(Mod)</code>. Then, we spawn the event loop 
+    with the shell as the server (<code>self()</code>). This event should fire after 5 seconds. The 9th expression was run after 3 seconds, and the 10th one after 6 seconds. You can see we did receive the <code>{done, "test"}</code> message on the second try.</p>
 
 <p>Right after that, I try the cancel feature (with an ample 500 seconds to type it). You can see I created the reference, sent the message and got a reply with the same reference so I know the <code>ok</code> I received was coming from this process and not any other on the system.</p>
 

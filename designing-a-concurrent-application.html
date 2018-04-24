@@ -411,15 +411,36 @@ Shell got {#Ref&lt;0.0.0.210&gt;,ok}
 ok
 </pre>
 
-<p>Có rất nhiều thứ được nhìn thấy ở đây. Đầu tiên, chúng ta đã nạp bản ghi module  sự kiện ( event ) vào trong shell bằng lệnh  <code>rr(Mod)</code>,
-    tiếp đó chúng ta sinh (spawn) ra tiến trình cho hàm loop của module sự kiện ( event ) và sử  dụng tiến trình shell hiện tại thay thế  cho tiến trình server  (<code>self()</code>).
+<p>Có rất nhiều thứ được nhìn thấy ở đây. Đầu tiên, chúng ta đã nạp bản ghi từ module sự kiện ( event ) vào trong shell bằng lệnh  <code>rr(Mod)</code>,
+    tiếp đó chúng ta sinh (spawn) ra tiến trình sự kiện ( hàm loop ) và sử  dụng tiến trình shell hiện tại thay thế  cho tiến trình server  (<code>self()</code>).
+    sư kiện này lên kích hoạt sau 5 giây. xét thời điểm ở biểu thức thứ 9 , khi đó chương trình của chúng ta đã chạy được 3 giấy rồi, và ở biểu thứ thứ 10 là 6s,
+    như bạn nhin thấy chúng ta đã nhận được thông báo <code>{done, "test"}</code> tại lần thử  thứ hai.
 
     Lots of stuff to see here. Well first of all, we import the record from the event module with <code>rr(Mod)</code>. Then, we spawn the event loop 
-    with the shell as the server (<code>self()</code>). This event should fire after 5 seconds. The 9th expression was run after 3 seconds, and the 10th one after 6 seconds. You can see we did receive the <code>{done, "test"}</code> message on the second try.</p>
+    with the shell as the server (<code>self()</code>). This event should fire after 5 seconds. The 9th expression was run after 3 seconds, 
+    and the 10th one after 6 seconds. You can see we did receive the <code>{done, "test"}</code> message on the second try.</p>
 
-<p>Right after that, I try the cancel feature (with an ample 500 seconds to type it). You can see I created the reference, sent the message and got a reply with the same reference so I know the <code>ok</code> I received was coming from this process and not any other on the system.</p>
+<p>Tiếp sau đó, tôi đã thử  tính năng hủy bỏ ( cùng với việc tạo ra một sự kiện và kích hoạt nó sau ̀500 giây ).
+    bằng cách tạo ra một tiến trình đinh danh tham chiều (reference), và gửi đi một tin nhắn, ngay lập tức 
+    tôi nhận được một phản hồi cùng với nội dung là <code>ok</code>. Như bạn thấy tôi đã hận được phản hồi từ chính 
+    tiến trình đinh danh tham chiều này chứ không phải từ bất kỳ một tiến trình nào khác trên hệ thống.
+    
+     Right after that, I try the cancel feature (with an ample 500 seconds to type it). 
+     You can see I created the reference, 
+     sent the message and got a reply with the same reference so I know the <code>ok</code> 
+     I received was coming from this process and not any other on the system.</p>
 
-<p>The reason why the cancel message is wrapped with a reference but the <code>done</code> message isn't is simply because we don't expect it to come from anywhere specific (any place will do, we won't match on the receive) nor should we want to reply to it. There's another test I want to do beforehand. What about an event happening next year?</p>
+<p>Để  giải thích lí do vì sao việc hủy bỏ tin nhắn được bao bọc cùng với tiến trình tham chiều 
+    nhưng tinh nhắc <code>done</code> thì không, đó là bởi vì chúng ra không mong đợi nó 
+    tới từ một tiến trình xác đinh ( bất cứ tiến trình nào cũng làm được và chúng ta sẽ không so sánh để  khơp trong mệnh đề  receive)
+    cũng như muốn nhận phản hồi từ tiến trình đó. Ngay lúc này, tôi muốn làm một số  kiểm tra, trong kiếm tra này tôi sẽ 
+    tạo một sự kiện và thời gian đợi của nó là 1 năm.
+    Vậy điều gì sẽ xảy ra nếu một sự kiện xảy ra trong năm tiếp theo ? 
+    
+    The reason why the cancel message is wrapped with a reference
+     but the <code>done</code> thì không, message isn't is simply 
+     because we don't expect it to come from anywhere specific (any place will do, we won't match on the receive) 
+     nor should we want to reply to it. There's another test I want to do beforehand. What about an event happening next year?</p>
 <pre class="brush:eshell">
 15&gt; spawn(event, loop, [#state{server=self(), name="test", to_go=365*24*60*60}]).
 &lt;0.69.0&gt;
@@ -428,15 +449,30 @@ ok
 Error in process &lt;0.69.0&gt; with exit value: {timeout_value,[{event,loop,1}]}
 </pre>
 
-<p>Ouch. It seems like we hit an implementation limit. It turns out Erlang's timeout value is limited to about 50 days in milliseconds. It might not be significant, but I'm showing this error for three reasons:</p>
+<p>Ouch. Có vẻ như chúng ta đã gặp một hạn chế , thự tế  là giá trị timeout trong Erlang bị giới hạn khoảng 50 ngày ( quy đổi ra mili giấy hay nói chính xác 
+    là tối đa giá trị cho phép của timeout trong Erlang là 2^32 hay 16#ffffffff ).
+    Có lẽ diều này không đáng kể  lắm nhưng tôi sẽ chỉ ra 3 lí do của lỗi này cho bạn thấy:
+    It seems like we hit an implementation limit. It turns out Erlang's timeout value is limited to about 50 days in milliseconds. 
+    It might not be significant, but I'm showing this error for three reasons:</p>
 
 <ol>
-	<li>It bit me in the ass when writing the module and testing it, halfway through the chapter.</li>
-	<li>Erlang is certainly not perfect for every task and what we're seeing here is the consequences of using timers in ways not intended by the implementers.</li>
-	<li>That's not really a problem; let's work around it.</li>
+	<li>Lí đầu tiên đó là nó như ngoạm vào mông khi chúng ta đang viết module này và kiểm tra xuyên suốt nửa chương này rồi.
+        It bit me in the ass when writing the module and testing it, halfway through the chapter.</li>
+	<li>Lí do tiếp theo đó là Erlang không phải là ngôn ngữ lý tưởng để  làm bất cứ công việc ( task ) nào cả, 
+        những gì chúng ta thấy ở đây là hậu quả của việc sử  dụng bộ tính giờ theo cách mà không được các nhà phát triển khuyến khích.
+        Erlang is certainly not perfect for every task and what we're seeing here is the consequences of using timers in ways not intended by the implementers.</li>
+	<li>Cuối cùng thì thực sự lỗi này không phải vấn đề  quá lớn gì hết, và chúng ta hoàn toàn có thể  tránh được lỗi này 
+        That's not really a problem; let's work around it.</li>
 </ol>
 
-<p>The fix I decided to apply for this one was to write a function that would split the timeout value into many parts if turns out to be too long. This will request some support from the <code>loop/1</code> function too. So yeah, the way to split the time is basically divide it in equal parts of 49 days (because the limit is about 50), and then put the remainder with all these equal parts. The sum of the list of seconds should now be the original time:</p>
+<p>Để sửa lại sai xót tối quyết định sẽ viết lại một hàm có chức năng chia nhỏ giá trị timeout thành nhiều phần khi nó vượt quá giá trị cho phép trong Erlang.
+        Tất nhiên là hàm <code>loop/1</code> cũng sẽ yêu cầu thay đổi một chút. Nói chung, chúng ta sẽ chia nhỏ thời gian thành các phần bằng nhau mỗi phần sẽ 
+        dài khoảng 49 ngày ( bởi vì giới hạn cho phép trong Erlang là xấp xỉ ̀50 ngày ), sau đó đặt các phần còn lại này vào danh sách sao cho tổng 
+        của chúng ( tính theo đơn vị giây ) bằng với giá trị gốc.    
+   
+    The fix I decided to apply for this one was to write a function that would split the timeout value into many parts if turns out to be too long. 
+    This will request some support from the <code>loop/1</code> function too. So yeah, the way to split the time is basically divide it in equal parts of 49 days 
+    (because the limit is about 50), and then put the remainder with all these equal parts. The sum of the list of seconds should now be the original time:</p>
 
 <pre class="brush:erl">
 %% Because Erlang is limited to about 49 days (49*24*60*60*1000) in
@@ -446,7 +482,16 @@ normalize(N) -&gt;
     [N rem Limit | lists:duplicate(N div Limit, Limit)].
 </pre>
 
-<p>The function <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#duplicate/2" title="THE MAGICAL LIST THAT CAN DUPLICATE ITSELF">lists:duplicate/2</a></code> will take a given expression as a second argument and reproduce it as many times as the value of the first argument (<code>[a,a,a] = lists:duplicate(3, a)</code>). If we were to send <code>normalize/1</code> the value <code>98*24*60*60+4</code>, it would return <code>[4,4233600,4233600]</code>. The <code>loop/1</code> function should now look like this to accommodate the new format:</p>
+<p>Bằng cách sử  dụng List Compréhesion và hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#duplicate/2" title="THE MAGICAL LIST THAT CAN DUPLICATE ITSELF">lists:duplicate/2</a></code> 
+    chúng ta sẽ truyền vào tham số thứ hai của hàm là một biểu thức mà đã định nghĩa trước và 
+    lặp lại dựa trên giá trị trong tham số  thứ nhất ( ví dụ: <code>[a,a,a] = lists:duplicate(3, a)</code>).
+    nếu chúng ta truyền một giá trị <code>98*24*60*60+4</code> vào trong hàm <code>normalize/1</code>, 
+    kết quả chúng ta sẽ nhận được sẽ là <code>[4,4233600,4233600]</code>. Tiếp đó hàm <code>loop/1</code> của chúng ta sẽ thay đổi lại như 
+    sau để  phù hợp với định dạng mới:
+
+    will take a given expression as a second argument and reproduce it as many times as the value of the first argument (<code>[a,a,a] = lists:duplicate(3, a)</code>). 
+    If we were to send <code>normalize/1</code> the value <code>98*24*60*60+4</code>, it would return <code>[4,4233600,4233600]</code>. 
+    The <code>loop/1</code> function should now look like this to accommodate the new format:</p>
 
 <pre class="brush:erl">
 %% Loop uses a list for times in order to go around the ~49 days limit
@@ -464,9 +509,28 @@ loop(S = #state{server=Server, to_go=[T|Next]}) -&gt;
     end.
 </pre>
 
-<p>You can try it, it should work as normal, but now support years and years of timeout. How this works is that it takes the first element of the <code>to_go</code> list and waits for its whole duration. When this is done, the next element of the timeout list is verified. If it's empty, the timeout is over and the server is notified of it. Otherwise, the loop keeps going with the rest of the list until it's done.</p>
+<p>Bây giờ nó đã hoạt động mà không có vấn đề  gì, nếu không tin bạn có thể  thử  kiểm tra. 
+    Ngoài ra bạn cũng có thể  thử  cả trường hợp giá trị timeout trong vài năm.
+    Vậy nó hoạt động như thế  nào ? 
+    Đầu tiên nó sẽ trích xuất phần tử  đầu tiên trong danh sách biến <code>to_go</code> ra và chuyển sang trạng thái chờ với 
+    thời gian chờ bằng đúng thời gian mà đã trích xuất. sau đó khi thời gian chờ kết thức, nó sẽ tìm kiếm 
+    trong danh sách và lấy phần tử  của timeout tiếp theo ra nếu có, cứ tiếp tục lặp lại như vậy cho tới khi không còn phần từ nào trong danh sách nữa 
+    khi đó tính từ thời gian chờ trong phần từ cuối cùng kết thúc, server sẽ nhận được thông báo.
 
-<p>It would be very annoying to have to manually call something like <code>event:normalize(N)</code> every time an event process is started, especially since our workaround shouldn't be of concern to programmers using our code. The standard way to do this is to instead have an <code>init</code> function handling all initialization of data required for the loop function to work well. While we're at it, we'll add the standard <code>start</code> and <code>start_link</code> functions:</p>
+    You can try it, it should work as normal, but now support years and years of timeout. 
+    How this works is that it takes the first element of the <code>to_go</code> list and waits for its whole duration. 
+    When this is done, the next element of the timeout list is verified. If it's empty, the timeout is over and the server is notified of it. 
+    Otherwise, the loop keeps going with the rest of the list until it's done.</p>
+
+<p>bạn se cảm thấy rát phiền phức khi mà mỗi lần sinh ra mới một tiến trình sự kiện lại phải gọi thủ công hàm <code>event:normalize(N)</code>,
+    Đặc biệt khi bạn muốn các lập trình viên khác sử  dụng đoạn mã này mà không cần phải quan tâm tới vấn đề  trên.
+    Do đó giải pháp tiêu chuẩn để  giải quyết vân đề  này đó là thêm một hàm <code>init</code> để  xứ lí tất cả chức năng liên quan tới việc khởi tạo 
+    dữ liệu dùng cho hàm 'loop'. Vì chúng ta đang thực hiện, do đó chúng sẽ thêm các hàm chuẩn <code>start</code> và <code>start_link</code>:
+
+    It would be very annoying to have to manually call something like <code>event:normalize(N)</code> every time an event process is started, 
+    especially since our workaround shouldn't be of concern to programmers using our code. The standard way to do this is to 
+    instead have an <code>init</code> function handling all initialization of data required for the loop function to work well. 
+    While we're at it, we'll add the standard <code>start</code> and <code>start_link</code> functions:</p>
 
 <pre class="brush:erl">
 start(EventName, Delay) -&gt;
@@ -482,7 +546,9 @@ init(Server, EventName, Delay) -&gt;
                 to_go=normalize(Delay)}).
 </pre>
 
-<p>The interface is now much cleaner. Before testing, though, it would be nice to have the only message we can send, cancel, also have its own interface function:</p>
+<p>Bây giờ giao diện nhìn chúng có vẻ gọn gàng hơn rồi.
+    Trước khi tiến hành kiểm tra, sẽ tốt hơn là việc chúng ta có những hàm riêng ứng với từng chức năng gửi, hủy bỏ tin nhắn thay vì phải làm thủ công trên shell:  
+    The interface is now much cleaner. Before testing, though, it would be nice to have the only message we can send, cancel, also have its own interface function:</p>
 
 <pre class="brush:erl">
 cancel(Pid) -&gt;
@@ -498,7 +564,18 @@ cancel(Pid) -&gt;
     end.
 </pre>
 
-<p>Oh! A new trick! Here I'm using a monitor to see if the process is there or not. If the process is already dead, I avoid useless waiting time and return <code>ok</code> as specified in the protocol. If the process replies with the reference, then I know it will soon die: I remove the reference to avoid receiving them when I no longer care about them. Note that I also supply the <code>flush</code> option, which will purge the <code>DOWN</code> message if it was sent before we had the time to demonitor.</p>
+<p>Oh! Đây là một mẹo mới! Ở đây tôi đã sử  dụng màn hình giám sát ( monitor ) để  theo dõi tiến trình có tồn tại hay không,  
+    trong trường hợp nó đã ngừng hoạt động trước đó rồi, tôi sẽ tránh được việc lãng phí thời gian để  chờ đợi một cách vô nghĩa,
+    thay vào đó tôi sẽ nhận được thông báo  <code>ok</code> giống với những gì mà chúng ta đã phác thảo trong giao thức.
+    Nếu tiến trình phản hồi cùng với thông tin về  tiến trình tham chiếu, tức la tôi sẽ biết răng tiến trình đó sẽ sỡm ngừng hoạt động:
+    như vậy tôi sẽ xóa bỏ tiến tiến trình tham chiếu này đi để  tránh nhận được các tin nhắn không cần thiết nữa.
+    Lưu ý là hàm <code>flush</code> cũng được cung cấp sử dụng như một tùy chọn, nó sẽ xóa tin nhắn <code>DOWN</code> nếu nó đã đươc gửi đi trước khi 
+    ngưng việc giám sát.   
+
+    A new trick! Here I'm using a monitor to see if the process is there or not. If the process is already dead, 
+    I avoid useless waiting time and return <code>ok</code> as specified in the protocol. If the process replies with the reference, 
+    then I know it will soon die: I remove the reference to avoid receiving them when I no longer care about them. Note that I also supply the 
+    <code>flush</code> option, which will purge the <code>DOWN</code> message if it was sent before we had the time to demonitor.</p>
 
 <p>Let's test these:</p>
 <pre class="brush:eshell">
@@ -517,7 +594,15 @@ ok
 ok
 </pre>
 
-<p>And it works! The last thing annoying with the event module is that we have to input the time left in seconds. It would be much better if we could use a standard format such as Erlang's datetime (<code>{{Year, Month, Day}, {Hour, Minute, Second}}</code>). Just add the following function that will calculate the difference between the current time on your computer and the delay you inserted:</p>
+<p>Tuyệt nó hoạt động chính xác! Tuy vậy vẫn còn một tính nằng của module sự kiện ( event ) gây phiền phức cho chúng ta, khi sinh ra một sự kiện chúng ta cần phải xác định thời gian 
+    chờ cho sự kiện đó, tuy vậy thời gian này chúng ta vẫn đang sử  dụng theo dơn vị giây, tốt hơn hết néu chúng ta có thể  sử  dụng thời gian ở định dạng chuẩn, ví dụ như 
+    (<code>{{Year, Month, Day}, {Hour, Minute, Second}}</code>). Để làm điều này chúng ta chỉ cần tạo ra một hàm <code>time_to_go/1</code>, hàm này sẽ tính 
+    khlảng thời gian chênh lệch giữa đô trễ  thơi gian bạn nhập vào so với thời gian hiện tại của hệ thống, mấy tính: 
+
+    And it works! The last thing annoying with the event module is that we have to input the time left in seconds. 
+    It would be much better if we could use a standard format such as Erlang's datetime 
+    (<code>{{Year, Month, Day}, {Hour, Minute, Second}}</code>). Just add the following 
+    function that will calculate the difference between the current time on your computer and the delay you inserted:</p>
 
 <pre class="brush:erl">
 time_to_go(TimeOut={{_,_,_}, {_,_,_}}) -&gt;
@@ -530,7 +615,16 @@ time_to_go(TimeOut={{_,_,_}, {_,_,_}}) -&gt;
     normalize(Secs).
 </pre>
 
-<p>Oh, yeah. The <a class="docs" href="http://erldocs.com/18.0/stdlib/calendar.html" title="">calendar module</a> has pretty funky function names. As noted above, this calculates the number of seconds between now and when the event is supposed to fire. If the event is in the past, we instead return <samp>0</samp> so it will notify the server as soon as it can. Now fix the init function to call this one instead of <code>normalize/1</code>. You can also rename <var>Delay</var> variables to say <var>DateTime</var> if you want the names to be more descriptive:</p>
+<p>Oh, yeah.  <a class="docs" href="http://erldocs.com/18.0/stdlib/calendar.html" title="">module calendar</a>
+    có cái tên thật hài hước. Như đã đè cập ở trên, đây là phép tính toán giữa thời điểm hiện tại trên hệ thống và khi một sự kiện được kích hoạt. 
+    Nếu sự kiện đó đa qua, chúng ta sẽ trả về  giá trị <samp>0</samp> và gửi thông báo tới server sớm nhất có thể .  
+    Nao giờ hãy sửa lại hàm 'init' để  gọi hàm này thay vì hàm <code>normalize/1</code>.
+    Ngoài ra bạn cũng có thể  đổi tên biên <var>Delay</var> thành <var>DateTime</var> nếu như bạn muốn một cái tên mô tả chính xác ý nghĩa của đoạn mã đó hơn.
+
+    has pretty funky function names. As noted above, this calculates the number of seconds between now and when the event is supposed to fire. 44
+    If the event is in the past, we instead return <samp>0</samp> so it will notify the server as soon as it can. 
+    Now fix the init function to call this one instead of <code>normalize/1</code>. You can also rename <var>Delay</var> variables to say <var>DateTime</var> 
+    if you want the names to be more descriptive:</p>
 
 <pre class="brush:erl">
 init(Server, EventName, DateTime) -&gt;
@@ -539,11 +633,16 @@ init(Server, EventName, DateTime) -&gt;
                 to_go=time_to_go(DateTime)}).
 </pre>
 
-<p>Now that this is done, we can take a break. Start a new event, go drink a pint (half-litre) of milk/beer and come back just in time to see the event message coming in.</p>
+<p>Vậy là chúng ta đã hoàn thành module sự kiện này rồi, bây giờ bạn có thể  nghỉ nghơi một chút.
+    Bắt đầu một sự kiện mới và thư giãn bằng cách uống một cốc sữa hay bear ( nửa lit ) và quay trở lại sau khi một thông báo về  sự kiện đó tới. 
+    Now that this is done, we can take a break. Start a new event, go drink a pint (half-litre) of milk/beer and come back just in time to see the event message coming in.</p>
 
 <h3><a class="section" name="the-event-server">The Event Server</a></h3>
 
-<p>Let's deal with the <a class="source" href="static/erlang/evserv.erl.html">event server</a>. According to the protocol, the skeleton for that one should look a bit like this:</p>
+<p>Tiếp theo chúng ta sẽ xét <a class="source" href="static/erlang/evserv.erl.html">event server</a>. 
+    Như những gì mà giao thức của chúng ta minh họa, cấu trúc của nó sẽ có dạng như sau:
+
+    Let's deal with the <a class="source" href="static/erlang/evserv.erl.html">event server</a>. According to the protocol, the skeleton for that one should look a bit like this:</p>
 
 <pre class="brush:erl">
 -module(evserv).
@@ -571,7 +670,16 @@ loop(State) -&gt;
     end.
 </pre>
 
-<p>You'll notice I have wrapped calls that require replies with the same <code>{Pid, Ref, Message}</code> format as earlier. Now, the server will need to keep two things in its state: a list of subscribing clients and a list of all the event processes it spawned. If you have noticed, the protocol says that when an event is done, the event server should receive <code>{done, Name}</code>, but send <code>{done, Name, Description}</code>. The idea here is to have as little traffic as necessary and only have the event processes care about what is strictly necessary. So yeah, list of clients and list of events:</p>
+<p>Bạn có thể  nhận thấy trước đó tôi đã bao bọc các lời gọi mà yêu cầu thông báo phản hồi có cùng một định dạng <code>{Pid, Ref, Message}</code>.
+    Còn bây giờ, server sẽ cần phải lưu trũ hai thứ trong một trạng thái: đó là một danh sách các cient đã đăng ký và danh sách tất cả các tiến trình sự kiện được sinh ra và kết nối với 
+    server. Nếu bạn để  ý giao thức, khi mọt sự kiện hoàn tất, server sẽ nhận được một thông báo  <code>{done, Name}</code>, nhưng gửi <code>{done, Name, Description}</code>.
+    ý tưởng ở đây là có không cần thiết có nhiều truy cập và để  cho các tiến trình sự kiện xử lí những xử kiện cần thiết thôi. do vậy, dưới đây là định nghĩa của danh sách client và 
+    danh sách sự kiện:    
+    
+    You'll notice I have wrapped calls that require replies with the same <code>{Pid, Ref, Message}</code> format as earlier. 
+    Now, the server will need to keep two things in its state: a list of subscribing clients and a list of all the event processes it spawned.
+    If you have noticed, the protocol says that when an event is done, the event server should receive <code>{done, Name}</code>, but send <code>{done, Name, Description}</code>. 
+    The idea here is to have as little traffic as necessary and only have the event processes care about what is strictly necessary. So yeah, list of clients and list of events:</p>
 
 <pre class="brush:erl">
 -record(state, {events,    %% list of #event{} records
@@ -583,7 +691,8 @@ loop(State) -&gt;
                 timeout={{1970,1,1},{0,0,0}}}).
 </pre>
 
-<p>And the loop now has the record definition in its head:</p>
+<p>Và hàm 'loop' giờ sẽ sử  dụng bản ghi ở đầu hàm như sau: 
+    And the loop now has the record definition in its head:</p>
 
 <pre class="brush:erl">
 loop(S = #state{}) -&gt;
@@ -592,7 +701,14 @@ loop(S = #state{}) -&gt;
     end.
 </pre>
 
-<p>It would be nice if both events and clients were orddicts. We're unlikely to have many hundreds of them at once. If you recall the chapter on <a class="chapter" href="a-short-visit-to-common-data-structures.html#key-value-stores">data structures</a>, orddicts fit that need very well. We'll write an <code>init</code> function to handle this:</p>
+<p>sẽ tốt hơn nếu bạn sử  dụng kiểu cấu trúc orddicts cho việc lưu trữ cả client lẫn sự kiện ( event ).
+    Bởi vì như chúng ta sẽ không thẻ có hàng trăm client và sự kiện cùng lúc được.
+    cấu trúc orddicts rất thích hợp để sử dụng trong trường hợp này, hãy nhớ lại cấu trúc này trong chương <a class="chapter" href="a-short-visit-to-common-data-structures.html#key-value-stores">data structures</a>
+    mà chúng ta đã học trước đó. Nào giờ chúng ta sẽ viết một hàm <code>init</code> để  xứ lí:
+    It would be nice if both events and clients were orddicts. 
+    We're unlikely to have many hundreds of them at once. 
+    If you recall the chapter on <a class="chapter" href="a-short-visit-to-common-data-structures.html#key-value-stores">data structures</a>, 
+    orddicts fit that need very well. We'll write an <code>init</code> function to handle this:</p>
 
 <pre class="brush:erl">
 init() -&gt;
@@ -605,7 +721,17 @@ init() -&gt;
                 clients=orddict:new()}).
 </pre>
 
-<p>With the skeleton and initialization done, I'll implement each message one by one. The first message is the one about subscriptions. We want to keep a list of all subscribers because when an event is done, we have to notify them. Also, the protocol above mentions we should monitor them. It makes sense because we don't want to hold onto crashed clients and send useless messages for no reason. Anyway, it should look like this:</p>
+<p>Chúng ta đã hoàn thành cơ bản cấu trúc và việc khởi tạo. 
+    tiếp theo tôi sẽ thực hiện từng các chức năng trong từng mẫu tin nhắn mà chúng ta đã dịnh nghĩa trước đó.
+    tin nhắn đầu tiên mà chúng ta xét sẽ liên quan tới việc đăng ký.
+    Bởi vì chúng ta muốn lưu trữ một danh sách tất cả các ngừoi đăng ký khi một sự kiện xảy ra, và thông báo tới họ.
+    Ngoài ra trong giao thức minh họa ở trên, chúng cũng cần giám sát họ.
+    Việc làm này có ý nghĩa vì chúng ta không muốn giữ các client những người đã bị crash và gưi những dòng tin nhắc vô nghĩa mà không có lí do gì.
+    With the skeleton and initialization done, I'll implement each message one by one. 
+    The first message is the one about subscriptions. 
+    We want to keep a list of all subscribers because when an event is done, 
+    we have to notify them. Also, the protocol above mentions we should monitor them. 
+    It makes sense because we don't want to hold onto crashed clients and send useless messages for no reason. Anyway, it should look like this:</p>
 
 <pre class="brush:erl">
 {Pid, MsgRef, {subscribe, Client}} -&gt;

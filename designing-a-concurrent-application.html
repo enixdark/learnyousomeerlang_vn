@@ -726,7 +726,8 @@ init() -&gt;
     tin nhắn đầu tiên mà chúng ta xét sẽ liên quan tới việc đăng ký.
     Bởi vì chúng ta muốn lưu trữ một danh sách tất cả các ngừoi đăng ký khi một sự kiện xảy ra, và thông báo tới họ.
     Ngoài ra trong giao thức minh họa ở trên, chúng cũng cần giám sát họ.
-    Việc làm này có ý nghĩa vì chúng ta không muốn giữ các client những người đã bị crash và gưi những dòng tin nhắc vô nghĩa mà không có lí do gì.
+    Việc làm này có ý nghĩa vì chúng ta không muốn giữ các client những người đã bị crash và gửi những dòng tin nhắc vô nghĩa mà không có lí do gì.
+
     With the skeleton and initialization done, I'll implement each message one by one. 
     The first message is the one about subscriptions. 
     We want to keep a list of all subscribers because when an event is done, 
@@ -743,11 +744,35 @@ init() -&gt;
 
 <img class="left" src="static/img/rss.png" width="154" height="156" alt="Hand drawn RSS logo" />
 
-<p>So what this section of <code>loop/1</code> does is start a monitor, and store the client info in the orddict under the key <var>Ref</var>. The reason for this is simple: the only other time we'll need to fetch the client ID will be if we receive a monitor's <code>EXIT</code> message, which will contain the reference (which will let us get rid of the orddict's entry).</p>
+<p>Vậy sao bên trong hàm <code>loop/1</code> lại sử  dụng một màn hình giám sát ( monitor ), và sử  dụng định danh tham chiếu của màn hình này 
+    như một khóa trong orddict để  lưu trữ thông tin của client. Tôi làm vậy bởi lí do rất đơn giản: trong một số  thời điểm, chúng ta càn phải lấy ID của client,
+    khi chúng ta nhận được một tín hiệu <code>EXIT</code> từ màn hình giám sát trong đó nó sẽ chưa đinh danh tham chiếu ( điều này cho phép chúng ta loại bỏ đinh danh này trong orddict)
+    So what this section of <code>loop/1</code> does is start a monitor, and store the client info in the orddict under the key <var>Ref</var>. 
+    
+    The reason for this is simple: the only other time we'll need to fetch the client ID will be if we receive a monitor's <code>EXIT</code> message, 
+    which will contain the reference (which will let us get rid of the orddict's entry).</p>
 
-<p>The next message to care about is the one where we add events. Now, it is possible to return an error status. The only validation we'll do is check the timestamps we accept. While it's easy to subscribe to the <code>{{Year,Month,Day}, {Hour,Minute,seconds}}</code> layout, we have to make sure we don't do things like accept events on February 29 when we're not in a leap year, or any other date that doesn't exist. Moreover, we don't want to accept impossible date values such as "5 hours, minus 1 minute and 75 seconds". A single function can take care of validating all of that.</p>
+<p>Tiêp theo chúng ta sẽ đi xét trường hợp thông báo thêm mới một sự kiện. Bằng cách này, nó có thể  sé trả lại một trạng thái lỗi. Do đó để  đảm bảo,
+    chúng ta sẽ tiến hành xác thực thời gian mà chúng ta chấp nhận chúng xảy ra. Mặc dù giờ khá dễ  trong việc đăng ký một sự kiện với định dạng thời gian  
+    <code>{{Year,Month,Day}, {Hour,Minute,seconds}}</code>, tuy vậy sẽ có một số  trường hợp đặc biệt, do đó chúng ta phải đảm bảo rằng không cho phép một 
+    sự kiện được lên lịch vào 29/2 nếu như năm đo không phải là năm luận hay ngày nào dó mà không tồn tại ( vd như 32/1 ).
+    Hơn nữa, chúng ta cũng dược được phép chấp thuận các trường hợp thời gian mà giá trị có dạng "̀5 giờ trừ đi một phút và 75̃ giây".
+    Để  làm việc này chúng ta sẽ cần một hàm có chức năng xác thực giá trị thời gian cho phép:
+    
+    The next message to care about is the one where we add events. Now, it is possible to return an error status. The only validation 
+    we'll do is check the timestamps we accept. While it's easy to subscribe to the <code>{{Year,Month,Day}, {Hour,Minute,seconds}}</code> 
+    layout, we have to make sure we don't do things like accept events on February 29 when we're not in a leap year, 
+    or any other date that doesn't exist. Moreover, we don't want to accept impossible date values such as "5 hours, minus 1 minute and 75 seconds". 
+    A single function can take care of validating all of that.</p>
 
-<p>The first building block we'll use is the function <code><a class="docs" href="http://erldocs.com/18.0/stdlib/calendar.html#valid_date/1" title="oh, erldocs. So many links!">calendar:valid_date/1</a></code>. This one, as the name says, checks if the date is valid or not. Sadly, the weirdness of the calendar module doesn't stop at funky names: there is actually no function to confirm that <code>{H,M,S}</code> has valid values. We'll have to implement that one too, following the funky naming scheme:</p>
+<p>Trong hàm này chúng ta sẽ sử  dụng hàm  <code><a class="docs" href="http://erldocs.com/18.0/stdlib/calendar.html#valid_date/1" title="oh, erldocs. So many links!">calendar:valid_date/1</a></code>
+    để  xác thực tinh hợp lệ của ngày. Tuy nhiên có một điều không lấy làm vui là module calendar không có hàm nào xác thực thời gian với giá trị truyền vào có định dạng <code>{H,M,S}</code>,
+    vì thế  chúng ta phải phải tự định nghĩa và viết hàm để  giải quyét vấn đề  này. 
+
+    The first building block we'll use is the function 
+    <code><a class="docs" href="http://erldocs.com/18.0/stdlib/calendar.html#valid_date/1" title="oh, erldocs. So many links!">calendar:valid_date/1</a></code>. 
+    This one, as the name says, checks if the date is valid or not. Sadly, the weirdness of the calendar module doesn't stop at funky names: 
+    there is actually no function to confirm that <code>{H,M,S}</code> has valid values. We'll have to implement that one too, following the funky naming scheme:</p>
 
 
 <pre class="brush:erl">
@@ -769,7 +794,8 @@ valid_time(_,_,_) -&gt; false.
 </pre>
 
 
-<p>The <code>valid_datetime/1</code> function can now be used in the part where we try to add the message:</p>
+<p>Giờ bạn có thể  sử  dụng hàm <code>valid_datetime/1</code> mà chúng ta vừa định nghĩa ở trên vào trong phần thông báo thêm mới một sự kiện: 
+    function can now be used in the part where we try to add the message:</p>
 
 <pre class="brush:erl">
 {Pid, MsgRef, {add, Name, Description, TimeOut}} -&gt;
@@ -790,9 +816,25 @@ valid_time(_,_,_) -&gt; false.
     end;
 </pre>
 
-<p>If the time is valid, we spawn a new event process, then store its data in the event server's state before sending a confirmation to the caller. If the timeout is wrong, we notify the client rather than having the error pass silently or crashing the server. Additional checks could be added for name clashes or other restrictions (just remember to update the protocol documentation!)</p>
+<p>Trong đoạn logic này, nếu thời gian chúng kiểm ta là họp hợp lệ, thì một tiến trình sự kiện mới sẽ được tạo ra và 
+    thêm vào thông tin trạng thái của các sự kiện trên server trước khi nó gửi một thông báo để  xác thực tới tiến trình gọi ( người gọi ).
+    trong trường hợp giá trị timeout không đúng, chúng ta sẽ thông báo về  lỗi cho cho client hon là việc lặng lẽ xem như không lỗi gì 
+    hoặc gây crash server. Thêm nữa việc kiểm tra lên được thêm vào để  tránh xung đột tên hay gây lên một số  hạn chế nào đó ( và đừng quên cập nhật các tài liệu giao thức!) 
 
-<p>The next message defined in our protocol is the one where we cancel an event. Canceling an event never fails on the client side, so the code is simpler there. Just check whether the event is in the process' state record. If it is, use the <code>event:cancel/1</code> function we defined to kill it and send ok. If it's not found, just tell the user everything went right anyway -- the event is not running and that's what the user wanted.</p>
+    If the time is valid, we spawn a new event process, then store its data in the event server's state before sending a confirmation to the caller. 
+    If the timeout is wrong, we notify the client rather than having the error pass silently or crashing the server. 
+    Additional checks could be added for name clashes or other restrictions (just remember to update the protocol documentation!)</p>
+
+<p>Mẫu tin nhắc tiếp theo trong giai thức của chúng ta sẽ xem xét đó là thông báo hủy bỏ một sự kiên.
+    Việc hủy một sự kiện thì không bao giờ ảnh hưởng tới phía client, do đó viết mã logic cho chúng khá dễ  dàng.   
+    Bạn chỉ cần kiểm tra một sự kiên có tồn tài hay không trong bản ghi của tiến trình trang thái. Trong trường hợp nếu 
+    có, hãy sử  dụng hàm  <code>event:cancel/1</code>  mà chúng đã đã định nghĩa trước đó để  xóa bỏ mà gửi trả thông báo ok.
+    Ngược lại, không có gì phức tạp cả, chúng ta chỉ đơn giản nói với người dùng là mọi thứ vẫn diễn ra bình thường, sự kiện đó 
+    không hoạt động, đó là những gì mà người dùng mong muốn.
+    The next message defined in our protocol is the one where we cancel an event. Canceling an event never fails on the client side, so the code is simpler there. 
+    Just check whether the event is in the process' state record. If it is, use the <code>event:cancel/1</code> 
+    function we defined to kill it and send ok. If it's not found, just tell the user everything went right anyway -- 
+    the event is not running and that's what the user wanted.</p>
 
 
 <pre class="brush:erl">
@@ -808,7 +850,13 @@ valid_time(_,_,_) -&gt; false.
     loop(S#state{events=Events});
 </pre>
 
-<p>Good, good. So now all voluntary interaction coming from the client to the event server is covered. Let's deal with the stuff that's going between the server and the events themselves. There are two messages to handle: canceling the events (which is done), and the events timing out. That message is simply <code>{done, Name}</code>:</p>
+<p>Tôt, thật tốt. vậy là giờ tât cả tương tác tùy từ client tới event server đã được thực hiện. Bây giờ việc còn lại của chúng ta là  
+    xử  lí những gì xảy ra giữa server và các sự kiện. Có hai dạng tin nhắc mà chúng ta cần phải xú lí: đầu tiên dó là lọai tin hủy bỏ các sự kiện ( cái mà chúng ta đã làm )
+    và cái thứ hai đó là các sự kiện mà quá hạn thời gian đợi. Tin nhắc đó sẽ có dạng đơn giản như sau <code>{done, Name}</code>: 
+
+    Good, good. So now all voluntary interaction coming from the client to the event server is covered.
+     Let's deal with the stuff that's going between the server and the events themselves. There are two messages to handle: canceling the events (which is done),
+      and the events timing out. That message is simply <code>{done, Name}</code>:</p>
 
 <pre class="brush:erl">
 {done, Name} -&gt;
@@ -825,14 +873,17 @@ valid_time(_,_,_) -&gt; false.
     end;
 </pre>
 
-<p>And the function <code>send_to_clients/2</code> does as its name says and is defined as follows:</p>
+<p>Và hàm <code>send_to_clients/2</code> với chức năng đúng với tên gọi của nó được định nghĩa như sau:
+    And the function <code>send_to_clients/2</code> does as its name says and is defined as follows:</p>
 
 <pre class="brush:erl">
 send_to_clients(Msg, ClientDict) -&gt;
     orddict:map(fun(_Ref, Pid) -&gt; Pid ! Msg end, ClientDict).
 </pre>
 
-<p>That should be it for most of the loop code. What's left is the set different status messages: clients going down, shutdown, code upgrades, etc. Here they come:</p>
+<p>Trong hầu hết các đoạn lặp mã nó lên được thực hiện như vậy. Và những gì còn lại bây giờ là các trạng thái khác nhau của tin nhắn như: dạng tin nhắn để  nhận diện client sẽ ngừng hoạt động, 
+    khi server ngừng hoạt động ( shutdown ) và nâng cấp mã nguôn, etc. Dưới đây là cách thực hiện chúng:  
+    That should be it for most of the loop code. What's left is the set different status messages: clients going down, shutdown, code upgrades, etc. Here they come:</p>
 
 <pre class="brush:erl">
 shutdown -&gt;
@@ -846,32 +897,86 @@ Unknown -&gt;
     loop(S)
 </pre>
 
-<p>The first case (<code>shutdown</code>) is pretty explicit. You get the kill message, let the process die. If you wanted to save state to disk, that could be a possible place to do it. If you wanted safer save/exit semantics, this could be done on every <code>add</code>, <code>cancel</code> or <code>done</code> message. Loading events from disk could then be done in the <code>init</code> function, spawning them as they come.</p>
+<p>Với trường hợp đầu tiên ở trên ( <code>shutdown</code>), mẫu này nhìn chung chức năng của nó khá rõ ràng. Bạn sẽ nhận được một tin nhắn 
+    thông báo về việc chấm dứt tiến trình. Nếu ban muốn lưu trữ trạng thái trong ổ  đĩa, thì đây là mà bạn có thể  thực hiện việc đó.
+    Nêu bạn muốn một ngữ nghĩa an toàn hơn để  lưu và thoát, thì bạn có thể  thực hiện nó bằng cách xủ lí tin nhắn trong <code>add</code>, <code>cancel</code> hoặc <code>done</code>
+    việc nạp dữ liệu, các sự kiện từ ổ  đĩa vào có thể  thực hiện trong hàm <code>init</code>.
+    tức The first case (<code>shutdown</code>) is pretty explicit. You get the kill message, let the process die. 
+    If you wanted to save state to disk, that could be a possible place to do it. If you wanted safer save/exit semantics,
+     this could be done on every <code>add</code>, <code>cancel</code> or <code>done</code> message. Loading events from disk could then be done in the <code>init</code> function, 
+     spawning them as they come.</p>
 
-<p>The <code>'DOWN'</code> message's actions are also simple enough. It means a client died, so we remove it from the client list in the state.</p>
+<p>Với mẫu thông báo <code>'DOWN'</code> thì các hành động thực hiện cũng khá đơn giản. 
+    Một khi nhận thông báo này cũng tức là nó báo cho ta biết rằng client cũng đã ngừng hoạt động, vì thế  chỉ cần thực hiẹn chức năng xóa thông tin 
+    của client đó trong danh sach trạng thái client là được.
+    cùng message's actions are also simple enough. It means a client died, so we remove it from the client list in the state.</p>
 
-<p>Unknown messages will just be shown with <code>io:format/2</code> for debugging purposes, although a real production application would likely use a dedicated logging module</p>
+<p>Với trường hợp còn lại, trường hợp thông báo mà chúng ta chưa biết dược, rất khó để  xác định để  xủ lí do vậy chỉ cần 
+    hiển thị thông tin ra trước cùng với hàm code>io:format/2</code> để  kiểm tra thông tin cho việc gỡ lỗi trước tiên.
+    Mặc dù vậy trong một ứng dụng thưc tế  chúng ta thường ít làm theo cách này mà thay thế  nó băng một module logging.
 
-<p>And here comes the code change message. This one is interesting enough for me to give it its own section.</p>
+    Unknown messages will just be shown with <code>io:format/2</code> for debugging purposes, although a real production application would likely use a dedicated logging module</p>
+
+<p>Và tiếp theo chúng ta sẽ xét thông báo thay đổi, nâng cấp mã. 
+    Đối với tôi nó rất thú vị và đủ để  tôi tạo ra một mục riêng để  viết về  nó: 
+    And here comes the code change message. This one is interesting enough for me to give it its own section.</p>
 
 
 <h3><a class="section" name="hot-code-loving">Hot Code Loving</a></h3>
 
-<p>In order to do hot code loading, Erlang has a thing called the <em>code server</em>. The code server is basically a VM process in charge of an <a class="docs" href="http://erldocs.com/18.0/stdlib/ets.html">ETS table</a> (in-memory database table, native to the VM.) The code server can hold two versions of a single module in memory, and both versions can run at once. A new version of a module is automatically loaded when compiling it with <code>c(Module)</code>, loading with <code>l(Module)</code> or loading it with one of the many functions of the <a class="docs" href="http://erldocs.com/18.0/kernel/code.html">code module</a>.</p>
+<p>Để thực hiện nạp mã tức thi ( hot code loading ), Erlang cung cấp một tính năng được gọi là <em>code server</em>.
+    về  bản chất <em>code server</em> là một tiến trình máy ảo phục trách quản lí, được lưu trong <a class="docs" href="http://erldocs.com/18.0/stdlib/ets.html">ETS table</a>
+    đây là một cấu trúc cở dữ liệu dạng bảng lưu trữ trên RAM, là một phần của máy ảo ). Nó sẽ lưu trữ hai phiên bản mã của một module trong bộ nhớ RAM của máy tính, và chúng 
+    đều động thời chạy. Khi một phiên bạn mới của module được tự động nạp và biện dịch cùng với hàm <code>c(Module)</code> hay được nạp bằng hàm <code>l(Module)</code> 
+    hay bằng cách nạp cùng với một trong nhiều hàm khác của <a class="docs" href="http://erldocs.com/18.0/kernel/code.html">code module</a>
+    In order to do hot code loading, Erlang has a thing called the <em>code server</em>. The code server is basically a VM process 
+    in charge of an <a class="docs" href="http://erldocs.com/18.0/stdlib/ets.html">ETS table</a> (in-memory database table, native to the VM.) 
+    The code server can hold two versions of a single module in memory, and both versions can run at once. 
+    A new version of a module is automatically loaded when compiling it with <code>c(Module)</code>, loading with <code>l(Module)</code> 
+    or loading it with one of the many functions of the <a class="docs" href="http://erldocs.com/18.0/kernel/code.html">code module</a>.</p>
 
-<p>A concept to understand is that Erlang has both <em>local</em> and <em>external</em> calls. Local calls are those function calls you can make with functions that might not be exported. They're just of the format <code>Atom(Args)</code>. An external call, on the other hand, can only be done with exported functions and has the form <code>Module:Function(Args)</code>.</p>
+<p>Để  hiểu hơn khái niệm này , chúng ta câng hiểu về  khái niệm giữa các cuộc gọi <em>local</em> và <em>external</em> trong Erlang.
+    với lời gọi local, đó là những lời gọi hàm chỉ xảy ra bên trong một module và không được export ra sử  dụng bên ngoài các module các. 
+    Định dang của những cuộc gọi này có dạng là <code>Atom(Args)</code>. Còn lời gọi external hay nói một cách khác thì đây là lời gọi chỉ thực hiên khi sử  dụng những hàm được 
+    export từ một module, chúng sẽ có dạng  <code>Module:Function(Args)</code>. 
+    A concept to understand is that Erlang has both <em>local</em> and <em>external</em> calls. Local calls are those function calls you can make with functions that might not be exported. 
+    They're just of the format <code>Atom(Args)</code>. An external call, on the other hand, can only be done with exported functions and has the form <code>Module:Function(Args)</code>.</p>
 
-<p>When there are two versions of a module loaded in the VM, all local calls are done through the currently running version in a process. However, external calls are <strong>always</strong> done on the newest version of the code available in the code server. Then, if local calls are made from within the external one, they are in the new version of the code.</p>
+<p>Quay trở lại, khi hai phiển bản của module đươc nạp vào cùng một Máy ảo, 
+    lúc đó tât cả các lời gọi hàm local sẽ được thực hiên bởi phiên bản đạng chạy của tiến trình, tuy nhiên với những lời gọi hàm external, chúng se <strong>luôn luôn</strong> sử  dụng cùng với 
+    phiên bản mới nhất của mã có sẵn trên code server. sau đó khi một lời gọi hàm local mà được thực hiện bên trong một lời gọi hàm external, thì nó sẽ sử  dụng phiên bản mới của mã
+    
+    When there are two versions of a module loaded in the VM, all local calls are done through the currently running version in a process. However, external calls are <strong>always</strong> 
+    done on the newest version of the code available in the code server. Then, if local calls are made from within the external one, they are in the new version of the code.</p>
 
-<img class="center explanation" src="static/img/hot-code-loading.png" width="513" height="307" alt="A fake module showing local calls staying in the old version and external calls going on the new one" />
+<img class="center explanation" src="static/img/hot-code-loading.png" width="513" height="307" alt="A fake module showing local calls staying in the old 
+version and external calls going on the new one" />
 
-<p>Given that every process/actor in Erlang needs to do a recursive call in order to change its state, it is possible to load entirely new versions of an actor by having an external recursive call.</p>
+<p>Bạn thấy rằng mỗi tiến trình, actor trong Erlang cần một lời gọi đề  quy để  thay đổi trạng thái, tuy nhiên 
+    bạn vẫn có thê sử  dụng các lời gọi đệ quy từ các module khác để  nạp toàn bộ các phiên bản cập nhật mới của actỏ
+    Given that every process/actor in Erlang needs to do a recursive call in order to change its state, 
+    it is possible to load entirely new versions of an actor by having an external recursive call.</p>
 
 <div class="note">
-<p><strong>Note:</strong> If you load a third version of a module while a process still runs with the first one, that process gets killed by the VM, which assumes it was an orphan process without a supervisor or a way to upgrade itself. If nobody runs the oldest version, it is simply dropped and the newest ones are kept instead.</p>
+<p><strong>Lưu ý:</strong> nếu bạn tải một phiên bản thứ 3 của một module trong khi tiến trình, ứng dụng của bạn vẫn đang chạy cùng với bản module đầu tiên,
+    thì Máy ảo sẽ nhìn nhận và chấm dứt nó. Bởi vì nó sẽ coi tiến trình này như một tiến trình độc lập mà không có sự giám sát của bất kỳ tiến trình giám sát nào hoặc không có 
+    khả năng nâng cấp. Trong trường hợp nếu không có bất kỳ một tiến trình nào đang sử  dụng phiên bản cũ nhất, thì nó sẽ tự động được loại bỏ và thay thế  bằng phiên bản mới nhất. 
+    If you load a third version of a module while a process still runs with the first one, that process gets killed by the VM, 
+    which assumes it was an orphan process without a supervisor or a way to upgrade itself. If nobody runs the oldest version, it is simply dropped and the newest ones are kept instead.</p>
 </div>
 
-<p>There are ways to bind yourself to a system module that will send messages whenever a new version of a module is loaded. By doing this, you can trigger a module reload only when receiving such a message, and always do it with a code upgrade function, say <code>MyModule:Upgrade(CurrentState)</code>, which will then be able to transform the state data structure according to the new version's specification. This 'subscription' handling is done automatically by the OTP framework, which we'll start studying soon enough. For the reminder application, we won't use the code server and will instead use a custom <code>code_change</code> message from the shell, doing very basic reloading. That's pretty much all you need to know to do hot code loading. Nevertheless, here's a more generic example:</p>
+<p>Trong Erlang cũng hỗ  trợ một số  công cụ để  thông báo cho bạn biết khi có bất cứ một phiên bản cật nhập mới nào được tải , nạp vào trong ứng dụng.
+    Việc này sẽ giúp bạn có thể  chủ động hơn trong việc tải lại module khi nhận được thông báo. Khi nhận được thông báo này,
+    hãy luôn lưu ý tới việc sử  dụng hàm nâng cấp mã <code>MyModule:Upgrade(CurrentState)</code>, hàm này sẽ giúp bạn chuyển trạng thái của cấu trúc dữ liệu
+    trong bản hiện tai sang bản mới nhất. 'subscription' cũng sẽ được xử  lý tự động bởi OTP framework, đây là một framework quan trọng trong Erlang và 
+    chúng ta sẽ đi tim hiểu chúng ở các chương sau. Đói với ứng dụng trong chương này để  hiểu rõ hơn chúng ta sẽ không sử  dụng code server cho việc nâng cấp 
+    mà thay vào đó chúng ta sẽ đi viết một chức năng gửi thông báo <code>code_change</code> riêng từ shell. Dưới đây là ví dụ tổng quát:
+    There are ways to bind yourself to a system module that will send messages whenever a new version of a module is loaded. 
+    By doing this, you can trigger a module reload only when receiving such a message, and always do it with a code upgrade function, 
+    say <code>MyModule:Upgrade(CurrentState)</code>, which will then be able to transform the state data structure according to the new version's specification. 
+    This 'subscription' handling is done automatically by the OTP framework, which we'll start studying soon enough. For the reminder application, 
+    we won't use the code server and will instead use a custom <code>code_change</code> message from the shell, doing very basic reloading.
+     That's pretty much all you need to know to do hot code loading. Nevertheless, here's a more generic example:</p>
 
 <pre class="brush:erl">
 -module(hotload).
@@ -891,12 +996,15 @@ upgrade(OldState) -&gt;
     %% transform and return the state here.
 </pre>
 
-<p>As you can see, our <code>?MODULE:loop(S)</code> fits this pattern.</p>
+<p>như bạn thấy, hàm <code>?MODULE:loop(S)</code> hoàn toàn tương thích với mẫu này.
+    As you can see, our <code>?MODULE:loop(S)</code> fits this pattern.</p>
 
 
 <h3><a class="section" name="hide-your-messages">I Said, Hide Your Messages</a></h3>
 
-<p>Hiding messages! If you expect people to build on your code and processes, you must hide the messages in interface functions. Here's what we used for the <code>evserv</code> module:</p>
+<p>Ẩn Các tin nhắn! Nếu bạn muốn người khác dựa vào đoạn và các tiến trình mà bạn viết, bạn sẽ phải ẩn đi các tin nhắn giao giao diện hàm.
+    Dưới đầy là những chúng ta sử  dụng cho module <code>server</code>
+    Hiding messages! If you expect people to build on your code and processes, you must hide the messages in interface functions. Here's what we used for the <code>evserv</code> module:</p>
 
 <pre class="brush:erl">
 start() -&gt;
@@ -911,9 +1019,20 @@ terminate() -&gt;
     ?MODULE ! shutdown.
 </pre>
 
-<p>I decided to register the server module because, for now, we should only have one running at a time. If you were to expand the reminder use to support many users, it would be a good idea to instead register the names with the <a class="docs" href="http://erldocs.com/18.0/stdlib/global.html">global module</a>, or the <a class="docs" href="http://github.com/uwiger/gproc">gproc library</a>. For the sake of this example app, this will be enough.</p>
+<p>Tôi đã quyết định đăng ký module server bởi vì lúc này tôi chỉ lên có một phiên bản tiến trình của nó chạy nó mà thôi. Nếu bạn muốn mở rộng ứng dụng ra với việc hỗ trợ nhiều người dùng, 
+    thì một ý kiến hay là bạn lên đăng ký các tên đó cùng với <a class="docs" href="http://erldocs.com/18.0/stdlib/global.html">global module</a> hoặc sư dụng <a class="docs" href="http://github.com/uwiger/gproc">gproc library</a>
+    . Đối với nhu câu của ưng dụng trong ví dụ này thì một là đủ.
 
-<p>The first message we wrote is the next we should abstract away: how to subscribe. The little protocol or specification I wrote above called for a monitor, so this one is added there. At any point, if the reference returned by the subscribe message is in a <code>DOWN</code> message, the client will know the server has gone down.</p>
+    I decided to register the server module because, for now, we should only have one running at a time. If you were to expand the reminder use to support many users, 
+    it would be a good idea to instead register the names with the <a class="docs" href="http://erldocs.com/18.0/stdlib/global.html">global module</a>, 
+    or the <a class="docs" href="http://github.com/uwiger/gproc">gproc library</a>. For the sake of this example app, this will be enough.</p>
+
+<p>Bây giờ chúng ta sẽ đi xét tin nhắn đầu tiên, nó được định nghĩa để  mổ  tả cách đăng ký.
+    Dựa trên giao thức hay đặc điểm kỹ thuật mà chúng ta đã nói phía trên với việc sử  dụng một màn hình hình giám sát ( monitor ), chúng ta sẽ áp dụng
+    nó ở đây. Tại bất cứ thời điểm nào nếu một tiến trình tham chiếu được trả về  bởi một tin nhắn đăng ký với nội dung là <code>DOWN</code>, thì client 
+    sẽ biết được rằng khi đó server đã ngừng hoạt động.
+    The first message we wrote is the next we should abstract away: how to subscribe. The little protocol or specification I wrote above called for a monitor, so this one is added there.
+     At any point, if the reference returned by the subscribe message is in a <code>DOWN</code> message, the client will know the server has gone down.</p>
 
 <pre class="brush:erl">
 subscribe(Pid) -&gt;
@@ -929,7 +1048,8 @@ subscribe(Pid) -&gt;
     end.
 </pre>
 
-<p>The next one is the event adding:</p>
+<p>với một sự kiện khi được thêm mới vào 
+    The next one is the event adding:</p>
 
 <pre class="brush:erl">
 add_event(Name, Description, TimeOut) -&gt;
@@ -942,7 +1062,13 @@ add_event(Name, Description, TimeOut) -&gt;
     end.
 </pre>
 
-<p>Note that I choose to forward the <code>{error, bad_timeout}</code> message that could be received to the client. I could have also decided to crash the client by raising <code>erlang:error(bad_timeout)</code>. Whether crashing the client or forwarding the error message is the thing to do is still debated in the community. Here's the alternative crashing function:</p>
+<p>Lưu ý là tôi lựa chọn việc chuyển tiếp tới thông báo <code>{error, bad_timeout}</code>  tới client. Tôi cũng có thể 
+    thể  quyết định gây ra crash cho client bầng cách đưa ra một ngoại lệ <code>erlang:error(bad_timeout)</code>.
+    Việc chọn giữa hai cách này vẫn còn đang được công dồng tiếp tục tranh luận, vì thế   Dưới đầy là một hàm thay thế  crash.
+
+    Note that I choose to forward the <code>{error, bad_timeout}</code> message that could be received to the client. 
+    I could have also decided to crash the client by raising <code>erlang:error(bad_timeout)</code>. 
+    Whether crashing the client or forwarding the error message is the thing to do is still debated in the community. Here's the alternative crashing function:</p>
 
 <pre class="brush:erl">
 add_event2(Name, Description, TimeOut) -&gt;
@@ -956,7 +1082,8 @@ add_event2(Name, Description, TimeOut) -&gt;
     end.
 </pre>
 
-<p>Then there's event cancellation, which just takes a name:</p>
+<p>Tiếp đó, khi một sự kiện bị hủy bỏ, chúng ta chỉ cần dựa trên tên sự kiện là đủ:
+    Then there's event cancellation, which just takes a name:</p>
 
 <pre class="brush:erl">
 cancel(Name) -&gt;
@@ -969,7 +1096,10 @@ cancel(Name) -&gt;
     end.
 </pre>
 
-<p>Last of all is a small nicety provided for the client, a function used to accumulate all messages during a given period of time. If messages are found, they're all taken and the function returns as soon as possible:</p>
+<p>Cuối cùng là một tính năng nhỏ được cung cấp cho khách hàng, một hàm dùng để  tổng hợp tất cả các tin nhắc dựa trên thời gian nhất định.
+    Nếu các tin nhắn được tìm thấy, chúng sẽ được lấy ra đọc và sớm trả về  một hàm khi có thể : 
+    Last of all is a small nicety provided for the client, a function used to accumulate all messages during a given period of time. If messages are found, 
+    they're all taken and the function returns as soon as possible:</p>
 
 <pre class="brush:erl">
 listen(Delay) -&gt;
@@ -984,7 +1114,12 @@ listen(Delay) -&gt;
 
 <h3><a class="section" name="a-test-drive">A Test Drive</a></h3>
 
-<p>You should now be able to compile the application and give it a test run. To make things a bit simpler, we'll write a specific Erlang makefile to build the project. Open a file named <code>Emakefile</code> and put it in the project's base directory. The file contains Erlang terms and gives the Erlang compiler the recipe to cook wonderful and crispy <code>.beam</code> files:</p>
+<p>Bây giờ bạn có thể  biện dịch ứng dụng ra chay thử  được rồi. Để  làm cho mọi thứ trở lên đơn giản hơn, chúng ta sẽ tạo ra một makefile để  tự động giúp cho việc 
+    xây dựng dữ án. Hãy tạo ra một file đặt tên là <code>Emakefile</code> và để  nó ở trong thư mục gốc của dự án này. Bên trong file này 
+    chúng ta sẽ sử  dụng một số  thuật ngữ của Erlang để  đưa ra một công thức cho trình biên dịch của Erlang để  tạo ra các file <code>.beam</code>:
+    You should now be able to compile the application and give it a test run. To make things a bit simpler, 
+    we'll write a specific Erlang makefile to build the project. Open a file named <code>Emakefile</code> and put it in the project's base directory. 
+    The file contains Erlang terms and gives the Erlang compiler the recipe to cook wonderful and crispy <code>.beam</code> files:</p>
 
 <img class="right" src="static/img/oven.png" width="230" height="229" alt="An old oven with smoke coming out of it" />
 
@@ -995,13 +1130,25 @@ listen(Delay) -&gt;
            {outdir, "ebin"}]}.
 </pre>
 
-<p>This tells the compiler to add debug_info to the files (this is rarely an option you want to give up), to look for files in the <code>src/</code> and <code>include/</code> directory and to output them in <code>ebin/</code>.</p>
+<p>Đoạn mã trên sẽ cho trình biên dịch biết debug_info lên được thêm vào trong các file ( đây là một lựa chọn mà bạn hiếm khi có thể  từ chối ), 
+    nó cũng sẽ tièm kiếm các file trong thư mục <code>src/</code> và <code>include/</code> và xuất chúng tới thư mục <code>ebin/</code>.
+    This tells the compiler to add debug_info to the files (this is rarely an option you want to give up), to look for files in the <code>src/</code> and <code>include/</code> 
+    directory and to output them in <code>ebin/</code>.</p>
 
-<p>Now, by going in your command line and running <code>erl -make</code>, the files should all be compiled and put inside the <code>ebin/</code> directory for you. Start the Erlang shell by doing <code>erl -pa ebin/</code>. The <code>-pa &lt;directory&gt;</code> option tells the Erlang VM to add that path to the places it can look in for modules.</p>
+<p>Nào bậy giờ hay mở terminal lên mà gõ dòng lệnh sau <code>erl -make</code>, bạn sẽ thấy tất cả các file sẽ được biên dịch và đặt trong thư mục <code>ebin/</code>.
+    Tiếp đó hay chạy lệnh <code>erl -pa ebin/</code> để  bắt đầu shell. tham số  <code>-pa &lt;directory&gt;</code> sẽ cho Máy ảo Erlang biết đường dẫn chưa các file module 
+    được thêm vào ngoài đường dẫn nơi chưa các thư viên chuẩn của Erlang. 
 
-<p>Another option is to start the shell as usual and call <code>make:all([load])</code>. This will look for a file named 'Emakefile' in the current directory, recompile it (if it changed) and load the new files.</p>
+    Now, by going in your command line and running <code>erl -make</code>, the files should all be compiled and put inside the <code>ebin/</code> directory for you. 
+    Start the Erlang shell by doing <code>erl -pa ebin/</code>. The <code>-pa &lt;directory&gt;</code> option tells the Erlang VM to add that path to the places it can look in for modules.</p>
 
-<p>You should now be able to track thousands of events (just replace the <var>DateTime</var> variables with whatever makes sense when you're writing the text):</p>
+<p>Một cách khác đó là trong shell bạn gọi tới lệnh <code>make:all([load])</code>. Khi gọi lệnh này file 'Emakefile' sẽ được nó tìm kiếm tại thư mục nơi bạn bắt đầu 
+    shell và biên dịch lại nó ( nếu như có bất kỳ sự thay đổi nào trong dự án) và tải các file mới vào máy ảo. 
+    Another option is to start the shell as usual and call <code>make:all([load])</code>. This will look for a file named 'Emakefile' in the current directory, 
+    recompile it (if it changed) and load the new files.</p>
+
+<p>Bậy giờ bạn có thể  theo dõi hàng ngàn các sự kiện rồi ( Chỉ cần thay thế  biến <var>DateTime</var>  bằng bất cứ giá trị hợp lệ nào khác mà bạn muốn)
+    You should now be able to track thousands of events (just replace the <var>DateTime</var> variables with whatever makes sense when you're writing the text):</p>
 <pre class="brush:eshell">
 1&gt; evserv:start().
 &lt;0.34.0&gt;
@@ -1019,12 +1166,16 @@ ok
 [{done,"Hey there2","test"}]
 </pre>
 
-<p>Nice nice nice. Writing any client should now be simple enough given the few basic interface functions we have created.</p>
+<p>Thật tuyệt. Bây giờ chỉ cần sử  dụng các hàm giao tiếp chúng ta đã tạo lên là bạn có thể  đơn giản viết đươc bất kỳ client nào rồi.
+    Nice nice nice. Writing any client should now be simple enough given the few basic interface functions we have created.</p>
 
 
 <h3><a class="section" name="adding-supervision">Adding Supervision</a></h3>
 
-<p>In order to be a more stable application, we should write another 'restarter' as we did in the <a class="chapter" href="errors-and-processes.html#naming-processes"> last chapter</a>. Open up a file named <a class="source" href="static/erlang/sup.erl.html">sup.erl</a> where our supervisor will be:</p>
+<p>Để  làm cho ứng dụng ổn định hơn, chúng ta lên viết thêm một chức năng  'restarter' như chúng ta đã làm trước đó trong chương <a class="chapter" href="errors-and-processes.html#naming-processes"> last chapter</a>
+    Hãy tao ra một file module mới và đặt tên nó là <a class="source" href="static/erlang/sup.erl.html">sup.erl</a>, đâu sẽ là file mà chúng ta thực hiện chức năng giám sát:
+    In order to be a more stable application, we should write another 'restarter' as we did in the <a class="chapter" href="errors-and-processes.html#naming-processes"> last chapter</a>. 
+    Open up a file named <a class="source" href="static/erlang/sup.erl.html">sup.erl</a> where our supervisor will be:</p>
 
 <pre class="brush:erl">
 -module(sup).
@@ -1051,7 +1202,12 @@ loop({M,F,A}) -&gt;
     end.
 </pre>
 
-<p>This is somewhat similar to the 'restarter', although this one is a tad more generic. It can take any module, as long as it has a <code>start_link</code> function. It will restart the process it watches indefinitely, unless the supervisor itself is terminated with a shutdown exit signal. Here it is in use:</p>
+<p>Nó sẽ tượng tự như cách mà 'restarter' đã làm, mặc dù ở đây nó được viết tổng quá hơn và có thể  chấp nhận bất kỳ một module nào ,  
+    miễn sao hàm <code>start_link</code> đã được dịnh nghĩa sẵn. Nó sẽ có chức động lại tiến trình mà nó theo dõi vô thời hạn trừ khi 
+    supervisor ngừng hoạt động bằng cách tạo một exit sign. Dứoi đây là cách sử  dụng nó:
+    This is somewhat similar to the 'restarter', although this one is a tad more generic. It can take any module, 
+    as long as it has a <code>start_link</code> function. It will restart the process it watches indefinitely, 
+    unless the supervisor itself is terminated with a shutdown exit signal. Here it is in use:</p>
 
 <pre class="brush:eshell">
 1&gt; c(evserv), c(sup).
@@ -1072,29 +1228,57 @@ true
 undefined
 </pre>
 
-<p>As you can see, killing the supervisor will also kill its child.</p>
+<p>Như bạn thấy, chấm dứt supervisor cũng sẽ chấm dứt tất cả các tiến trình con của nó.
+    As you can see, killing the supervisor will also kill its child.</p>
 
 <div class="note">
-	<p><strong>Note:</strong> We'll see much more advanced and flexible supervisors in the chapter about OTP supervisors. Those are the ones people are thinking of when they mention <em>supervision trees</em>. The supervisor demonstrated here is only the most basic form that exists and is not exactly fit for production environments compared to the real thing.</p>
+    <p><strong>Lưu ý:</strong> Các tính năng cao cấp hơn và linh hoạt hơn của supervisors, chúng ta sẽ được học trong chương về  OTP supervisors.
+        Khi nhắc tới <em>supervision trees</em>, OTP supervisors là những gì mà nhiều người thường nghĩ ngay tới.
+        trong vi dụ này chức ta chỉ thực hiện chức nẵng cơ bản nhất của supervisor mà thôi. Trong môi trường thực tế  chúng ta sé sử  dụng supervisors
+        ở một chức năng cao hơn.
+        We'll see much more advanced and flexible supervisors in the chapter about OTP supervisors. 
+        Those are the ones people are thinking of when they mention <em>supervision trees</em>. 
+        The supervisor demonstrated here is only the most basic form that exists and is not exactly fit for production environments compared to the real thing.</p>
 </div>
 
 <h3><a class="section" name="namespaces">Namespaces (or lack thereof)</a></h3>
 
 <img class="left" src="static/img/gentleman.png" width="334" height="298" alt="A Gentleman about to step in a pile of crap" title="Mentlegent!" />
 
-<p>Because Erlang has a flat module structure (there is no hierarchy), It is frequent for some applications to enter in conflict. One example of this is the frequently used <code>user</code> module that almost every project attempts to define at least once. This clashes with the <code>user</code> module shipped with Erlang. You can test for any clashes with the function <code><a class="docs" href="http://erldocs.com/18.0/kernel/code.html#clash/0">code:clash/0</a></code>.</p>
+<p>Một phần bởi vì Erlang sử  dụng một cấu trục module phẳng ( không có sự phân cấp giữa các module) do đó các ứng dụng sẽ không tránh khỏi xung đọt giữa các module với nhau 
+    Một ví dụ tiêu biểu đó là module <code>user</code> thường xuyên được định nghĩa trong hầu hết các dự án ít nhất một lần,
+    và module này có thể  sẽ xung đột với module <code>user</code> định nghĩa trong Erlang. Để  kiểm tra bạn có thể  
+    xem và kiểm tra cùng với hàm <code><a class="docs" href="http://erldocs.com/18.0/kernel/code.html#clash/0">code:clash/0</a></code>.
+    
+    Because Erlang has a flat module structure (there is no hierarchy), 
+    It is frequent for some applications to enter in conflict. 
+    One example of this is the frequently used <code>user</code> module that almost every project attempts to define at least once. 
+    This clashes with the <code>user</code> module shipped with Erlang. You can test for any clashes with the function 
+    <code><a class="docs" href="http://erldocs.com/18.0/kernel/code.html#clash/0">code:clash/0</a></code>.</p>
 
-<p>Because of this, the common pattern is to prefix every module name with the name of your project. In this case, our reminder application's modules should be renamed to <code>reminder_evserv</code>, <code>reminder_sup</code> and <code>reminder_event</code>.</p>
+<p>Do đó để  giải quyết vấn đề  này chúng ta thường lên thêm tiền tố  tên dự án của bạn vào trước các tên phổ  biến thường để  
+    đặt cho module. rong ví dụ này, các module ứng dụng của chúng ta đổi tên lại thành <code>reminder_evserv</code>, <code>reminder_sup</code> and <code>reminder_event</code>.
+    Because of this, the common pattern is to prefix every module name with the name of your project. In this case, 
+    our reminder application's modules should be renamed to <code>reminder_evserv</code>, <code>reminder_sup</code> and <code>reminder_event</code>.</p>
 
-<p>Some programmers then decide to add a module, named after the application itself, which wraps common calls that programmers could use when using their own application. Example calls could be functions such as starting the application with a supervisor, subscribing to the server, adding and cancelling events, etc.</p>
+<p>Some programmers then decide to add a module, named after the application itself, which wraps common calls that programmers 
+    could use when using their own application. Example calls could be functions such as starting the application with a supervisor, 
+    subscribing to the server, adding and cancelling events, etc.</p>
 
-<p>It's important to be aware of other namespaces, too, such as registered names that must not clash, database tables, etc.</p>
+<p>Quan trọng là nhận thức được namespaces để  tránh đăng ký các tên trùng với các tên đã tồn tại hay các tên bảng trong cơ sở dữ liệu.  
+    It's important to be aware of other namespaces, too, such as registered names that must not clash, database tables, etc.</p>
 
-<p>That's pretty much it for a very basic concurrent Erlang application. This one showed we could have a bunch of concurrent processes without thinking too hard about it: supervisors, clients, servers, processes used as timers (and we could have thousands of them), etc. No need to synchronize them, no locks, no real main loop. Message passing has made it simple to compartmentalize our application into a few modules with separated concerns and tasks.</p>
+<p>That's pretty much it for a very basic concurrent Erlang application. This one showed we could have a bunch of concurrent 
+    processes without thinking too hard about it: supervisors, clients, servers, processes used as timers (and we could have thousands of them), 
+    etc. No need to synchronize them, no locks, no real main loop. Message passing has made it simple to compartmentalize our application into a 
+    few modules with separated concerns and tasks.</p>
 
-<p>The basic calls inside <a class="source" href="static/erlang/evserv.erl.html">evserv.erl</a> could now be used to construct clients that would allow to interact with the event server from somewhere outside of the Erlang VM and make the program truly useful.</p>
+<p>The basic calls inside <a class="source" href="static/erlang/evserv.erl.html">evserv.erl</a> could now be used to construct clients 
+    that would allow to interact with the event server from somewhere outside of the Erlang VM and make the program truly useful.</p>
 
-<p>Before doing that, though, I suggest you read up on the OTP framework. The next few chapters will cover some of its building blocks, which will allow for much more robust and elegant applications. A huge part of Erlang's power comes from using it. It's a carefully crafted and well-engineered tool that any self-respecting Erlang programmer has to know.</p>
+<p>Before doing that, though, I suggest you read up on the OTP framework. The next few chapters will cover some of its building blocks, 
+    which will allow for much more robust and elegant applications. A huge part of Erlang's power comes from using it. 
+    It's a carefully crafted and well-engineered tool that any self-respecting Erlang programmer has to know.</p>
 				<ul class="navigation">
 											<li><a href="errors-and-processes.html" title="Previous chapter">&lt; Previous</a></li>
 										

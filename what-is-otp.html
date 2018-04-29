@@ -39,34 +39,85 @@
 
 <img class="left" src="static/img/hullo.png" width="280" height="279" alt="A telephone with someone on the other end saying 'Hullo'" title="THE QUESTION IS COMING FROM INSIDE THE HOUSE" />
 
-<p>OTP stands for <em>Open Telecom Platform</em>, although it's not that much about telecom anymore (it's more about software that has the property of telecom applications, but yeah.) If half of Erlang's greatness comes from its concurrency and distribution and the other half comes from its error handling capabilities, then the OTP framework is the third half of it.</p>
+<p>OTP, viết tắt của cụm tư <em>Open Telecom Platform</em>, khi đọc tới cái tên này bạn có thể  nghĩ ngay tới viễn thông nhưng có thể  là trước đây còn giờ nó không còn liên quan nhiều tới viễn thông nữa 
+    ( Thay vào đó giờ nó như một nền tảng để  viết các ứng dụng phần mềm cho viên thông ).  Nếu như một nửa thành phần quan trọng tạo lên Erlang tới từ  concurrency và phân tán, nửa thứ hai
+    tới từ khả năng xử  lí lỗi, thì nửa còn lại chính là  OTP framework.
+    OTP stands for <em>Open Telecom Platform</em>, although it's not that much about telecom anymore (it's more about software that has the property of telecom applications, but yeah.) 
+    If half of Erlang's greatness comes from its concurrency and distribution and the other half comes from its error handling capabilities, then the OTP framework is the third half of it.</p>
 
-<p>During the previous chapters, we've seen a few examples of common practices on how to write concurrent applications with the languages' built-in facilities: links, monitors, servers, timeouts, trapping exits, etc. There were a few 'gotchas' here and there on the order things need to be done, on how to avoid race conditions or to always remember that a process could die at any time. There was also hot code loading, naming processes and adding supervisors, to name a few.</p>
+<p>Trong các chương trước, chúng ta đã làm quen với một số  ví dụ phô biến cũng như cách viết các ứng dụng concurrent với sự trợ giúp của các tiện ích tích hợp sẵn trong ngôn ngữ rồi: liên kết ( link ),
+    màn hình giám sát ( monitor ), servers, timeout, trapping exít, etc. Trong đó chúng ta có một số  nguyên tắc 'gotchas' theo thứ tự cần phải thực hiện, như cách để  tránh race condition hoặc đừng quên rằng 
+    rằng một tiến trình có thể  chấm dứt ở bất kỳ thời điểm nào. Chúng ta cũng thấy các trường hợp về  hot code loading, đặt tên cho các tiến trình và supervisors.
+    During the previous chapters, we've seen a few examples of common practices on how to write concurrent applications with the languages' built-in facilities: links, monitors, servers, 
+    timeouts, trapping exits, etc. There were a few 'gotchas' here and there on the order things need to be done, on how to avoid race conditions or to always remember that a process could 
+    die at any time. There was also hot code loading, naming processes and adding supervisors, to name a few.</p>
 
-<p>Doing all of this manually is time consuming and sometimes prone to error. There are corner cases to be forgotten about and pits to fall into. The OTP framework takes care of this by grouping these essential practices into a set of libraries that have been carefully engineered and battle-hardened over years. Every Erlang programmer should use them.</p>
+<p>Nếu bạn làm tất cả những thứ vừa liệt kê trên theo phương pháp thủ công thì chắc chắc bạn sẽ phải mất rất nhiều thời gian và không tránh phải một số  sai xót khi thực hiện.
+    Hơn nữa để  ghi nhớ tất cả không phải là dễ  dàng, sẽ có nhiều trường hợp bạn quên mất và làm bạn dễ  dàng gặp lỗi. Do đó OTP framework được tạo ra để  giải quyết vấn đề  này.
+    Nó sẽ nhóm các nguyên tắc cần thiết thành một tập các thư viện, các thư viện này được thiết kế  một cách cẩn thận và trải qua nhiều năm rèn luyện. Vì vậy bất cứ lập trình viên 
+    nào sử  dụng Erlang đều lên sử  dụng chúng. 
 
-<p>The OTP framework is also a set of modules and standards designed to help you build applications. Given most Erlang programmers end up using OTP, most Erlang applications you'll encounter in the wild will tend to follow these standards.</p>
+    Doing all of this manually is time consuming and sometimes prone to error. There are corner cases to be forgotten about and pits to fall into. The OTP framework takes care of this by 
+    grouping these essential practices into a set of libraries that have been carefully engineered and battle-hardened over years. Every Erlang programmer should use them.</p>
+
+<p>Ngoài ra OTP framework cũng là một tập hợp các module và các tiêu chuânt được thiết kế  để  giúp bạn trong việc xây dụng một ứng dụng dễ  dàng hơn. Với phần lớn các lạp trình viên Erlang 
+    sử  dụng OPT framework, phần lớn các ứng dụng bạn gặp trong tự nhiên sẽ có xu hướng tuân theo chuẩn sau:
+    The OTP framework is also a set of modules and standards designed to help you build applications. Given most Erlang programmers end up using OTP, most Erlang applications you'll 
+    encounter in the wild will tend to follow these standards.</p>
 
 
 <h3><a class="section" name="the-common-process-abstracted">The Common Process, Abstracted</a></h3>
 
-<p>One of the things we've done many times in the previous process examples is divide everything in accordance to very specific tasks. In most processes, we had a function in charge of spawning the new process, a function in charge of giving it its initial values, a main loop, etc.</p>
+<p>Một trong những thứ mà chúng ta làm rát nhiều lần trong các ví dụ trước đó là chia các công việc ra thành từng phần cụ thể.
+    trong hầu hết các trường hợp chúng ta có một hàm phụ trách việc sinh ( spawn ) mới một tiến trình, một hàm phụ trách việc khởi tạo giá trị khi sinh và một 
+    hàm lặp ( loop ), etc.  
+    One of the things we've done many times in the previous process examples is divide everything in accordance to very specific tasks. 
+    In most processes, we had a function in charge of spawning the new process, a function in charge of giving it its initial values, a main loop, etc.</p>
 
-<p>These parts, as it turns out, are usually present in all concurrent programs you'll write, no matter what the process might be used for.</p>
+<p>Các phần đó, có thể  thấy chúng thường được xuất hiện trong bất cữ các chương trình concurrent mà bạn viết, 
+    bất kể  là tiến trình dó được sử  dụng nhằm mục đích nào đó.
+    These parts, as it turns out, are usually present in all concurrent programs you'll write, no matter what the process might be used for.</p>
 
 <img class="center explanation" src="static/img/common-pattern.png" width="381" height="140" alt="common process pattern: spawn -> init -> loop -> exit" />
 
-<p>The engineers and computer scientists behind the OTP framework spotted these patterns and included them in a bunch of common libraries. These libraries are built with code that is equivalent to most of the abstractions we used (like using references to tag messages), with the advantage of being used for years in the field and also being built with far more caution than we were with our implementations. They contain functions to safely spawn and initialize processes, send messages to them in a fault-tolerant manner and many other things. Funnily enough, you should rarely need to use these libraries yourself. The abstractions they contain are so basic and universal that a lot more interesting things were built on top of them. Those libraries are the ones we'll use.</p>
+<p>Các kỹ sự và các nhà khoa học máy tính xây dựng lên OTP framework đã xác định các mẫu này và đặt chúng vào trong một số  thư viện phổ  biến.
+    Các thư viện này được xây dưng cùng với các đoạn mã tương tự các khác niệm trừu tượng mà chúng ta đã dùng ( vd như đanh dấu các tin nhắc qua references  ).
+    cùng với đó là lợi thế  trong nhiều năm sử  dụng trong các lĩnh vực và được xây dựng một cách thận trọng hơn nhiều những gì mà chúng ta đã thực hiện với 
+    các nguyên tắc trước cho một ứng dụng ổn định. Thư này bao gồm các hàm khởi tạo và sinh ( spawn ) các tiến trình an toàn hơn, quá trình gửi các tin nhắn
+    bao gồm việc phục hồi lại lỗi các tin nhắc và nhiều tính năng hơn nữa.
+    Một điều hài hước ở đây là mặc dù nó cung cấp rất nhiều tính năng kể  trên nhưng trái lại bạn hiếm khi phải tự mình sử  dụng các thư viện này.
+    Các khái niệm trừu tượng của chúng rất đơn giản và phổ  thông tới mức mà có rất nhiều điều thú vị để  xây dựng dựa trên chúng. Đó các các thư viện 
+    như hình mình họa mà chúng ta sẽ sử  dụng:
+
+    The engineers and computer scientists behind the OTP framework spotted these patterns and included them in a bunch of common libraries. 
+    These libraries are built with code that is equivalent to most of the abstractions we used (like using references to tag messages), 
+    with the advantage of being used for years in the field and also being built with far more caution than we were with our implementations. 
+    They contain functions to safely spawn and initialize processes, send messages to them in a fault-tolerant manner and many other things. 
+    Funnily enough, you should rarely need to use these libraries yourself. The abstractions they contain are so basic and universal that a lot more 
+    interesting things were built on top of them. Those libraries are the ones we'll use.</p>
 
 <img class="center explanation" src="static/img/abstraction-layers.png" width="320" height="320" alt="graph of Erlang/OTP abstraction layers: Erlang -> Basic Abstraction Libraries (gen, sys, proc_lib) -> Behaviours (gen_*, supervisors)" />
 
-<p>In the following chapters we'll see a few of the common uses of processes and then how they can be abstracted, then made generic. Then for each of these we'll also see the corresponding implementation with the OTP framework's behaviours and how to use each of them.</p>
+<p>Trong các chương sau chúng ta sẽ gặp một mẫu sử  dụng tương đối phổ  biến của các tiến trình và sau đó xem cách chúng được khái quát hóa, 
+    đối với mỗi mẫu chúng ta sẽ xem xét cách thực hiện từng trường hợp đó ứng với các hành vi trong OTP framework và cách sử  dụng các hành vi này như thế  nào.
+    In the following chapters we'll see a few of the common uses of processes and then how they can be abstracted, 
+    then made generic. Then for each of these we'll also see the corresponding implementation with the OTP framework's behaviours and how to use each of them.</p>
 
 <h3><a class="section" name="the-basic-server">The Basic Server</a></h3>
 
-<p>The first common pattern I'll describe is one we've already used. When writing the <a class="chapter" href="designing-a-concurrent-application.html">event server</a>, we had what could be called a <em>client-server model</em>. The event server would receive calls from the client, act on them and then reply to it if the protocol said to do so.</p>
+<p>Với mẫu đầu tiên mà tôi sẽ mô tả này, sẽ không có gì ngạc nhiên nếu bạn cảm thấy nó quen thuộc bởi vì đây là mẫu mà chúng ta đã thực hiện ở chương trước.
+    Ở chương trước, chúng ta đã phân tích và viết một <a class="chapter" href="designing-a-concurrent-application.html">event server</a>, khi viết chúng ta đã 
+    vân dụng một mô hình gọi là <em>client-server</em>. Trong mô hình này server sẽ nhận được các lời gọi từ client và xử lí, phản hồi lại lời gọi đó nếu nằm trong 
+    phạm vi của giao thức mà được yêu cầu để  làm vậy. 
 
-<p>For this chapter, we'll use a very simple server, allowing us to focus on the essential properties of it. Here's the <a class="source" href="static/erlang/kitty_server.erl.html">kitty_server</a>:</p>
+    Mẫu đầu tiên mà tối sẽ mô tả ở đây là mẫu mà chúng ta đã làm ở chương trước  
+     The first common pattern I'll describe is one we've already used. When writing the <a class="chapter" href="designing-a-concurrent-application.html">event server</a>, 
+     we had what could be called a <em>client-server model</em>. The event server would receive calls from the client, act on them and then reply to it if the protocol said to do so.</p>
+
+<p>Trong chương này, chúng sẽ sử  dụng một server đơn giản hơn cho phép chúng ta tập trung vào các thuộc tính cơ bản của nó. Chúng ta sẽ 
+    tạo ra một file module gọi tên là <a class="source" href="static/erlang/kitty_server.erl.html">kitty_server</a> và gõ các đoạn mã dưới đây:
+    For this chapter, we'll use a very simple server, allowing us to focus on the essential properties of it. 
+    Here's the <a class="source" href="static/erlang/kitty_server.erl.html">kitty_server</a>:</p>
 
 <pre class="brush:erl">
 %%%%% Naive version
@@ -145,7 +196,10 @@ terminate(Cats) -&gt;
     ok.
 </pre>
 
-<p>So this is a kitty server/store. The behavior is extremely simple: you describe a cat and you get that cat. If someone returns a cat, it's added to a list and is then automatically sent as the next order instead of what the client actually asked for (we're in this kitty store for the money, not smiles):</p>
+<p>Vâng đó là server cửa hàng mèo ( kitty server/store ). Để  mô tả hành vi hoạt động của cửa hàng này khá đơn giản: bạn nhận được một chú mèo với hình dáng ra sao.
+    Nếu chú mèo được trả về, nó sẽ tự động thêm vào danh sách và chuyển tới thứ tự tiếp theo thay vì phải đợi client đưa ra yêu cầu ( của hàng mèo này phục vụ vì tiền chứ không phải vì tiếng cười )
+    So this is a kitty server/store. The behavior is extremely simple: you describe a cat and you get that cat. If someone returns a cat, 
+    it's added to a list and is then automatically sent as the next order instead of what the client actually asked for (we're in this kitty store for the money, not smiles):</p>
 
 <pre class="brush:eshell">
 1&gt; c(kitty_server).
@@ -174,9 +228,19 @@ ok
      in function  kitty_server:close_shop/1
 </pre>
 
-<p>Looking back at the source code for the module, we can see patterns we've previously applied. The sections where we set monitors up and down, apply timers, receive data, use a main loop, handle the init function, etc. should all be familiar. It should be possible to abstract away these things we end up repeating all the time.</p>
+<p>Quay trở lại mã nguồn của module, Không khó gì để  bạn có thể  thấy các mẫu mà chúng ta đã sử  dụng trước đó. Trong đoạn mã này bạn thấy nơi mà chúng ta thiết lâp một màn hình giám sát ( monitor ) 
+    được hoạt động hay ngừng, sử  dụng bộ tính thời gian, nhận dữ liệu, sử  dụng vòng lặp chính ( main loop ), hàm khởi tạo ( init function ), etc. Chúng không có gì lạ nhẫm cả. Mọi thứ đều giống như trước 
+    đó chúng ta đã làm cả, vì thế  chúng ta dó thể  khái quát hóa lại những thứ mà chúng ta luôn lặp lại.       
 
-<p>Let's first take a look at the client API. The first thing we can notice is that both synchronous calls are extremely similar. These are the calls that would likely go in abstraction libraries as mentioned in the previous section. For now, we'll just abstract these away as a single function in a <a class="source" href="static/erlang/my_server.erl.html">new module</a> which will hold all the generic parts of the kitty server:</p>
+    Looking back at the source code for the module, we can see patterns we've previously applied. The sections where we set monitors up and down, apply timers, receive data, use a main loop, 
+    handle the init function, etc. should all be familiar. It should be possible to abstract away these things we end up repeating all the time.</p>
+
+<p>Tiếp theo, hãy nhin vào phía Client API, điều đầu tiên gây chú ý tới chúng ta đó là cả hai lời gọi đồng bô ( synchronous calls ) thực sự rất giống nhau.
+    Những cuộc gọi này có khả năng xuất hiện trong các thư viện trừu tượng mà chúng ta đã nói tới trong phần trước rồi. Và giờ, chúng ta sẽ chỉ khái quát hóa chúng với một 
+    hàm duy nhất trong một module mới gọi tên là <a class="source" href="static/erlang/my_server.erl.html">my_server.erl</a>, nó sẽ định nghĩa tất cả các thành phần chung của kitty server.
+    Let's first take a look at the client API. The first thing we can notice is that both synchronous calls are extremely similar. 
+    These are the calls that would likely go in abstraction libraries as mentioned in the previous section. For now, we'll just abstract these away as a single function in a 
+    <a class="source" href="static/erlang/my_server.erl.html">new module</a> which will hold all the generic parts of the kitty server:</p>
 
 <pre class="brush:erl">
 -module(my_server).
@@ -196,7 +260,13 @@ call(Pid, Msg) -&gt;
     end.
 </pre>
 
-<p>This takes a message and a PID, sticks them into in the function, then forwards the message for you in a safe manner. From now on, we can just substitute the message sending we do with a call to this function. So if we were to rewrite a new kitty server to be paired with the abstracted <code>my_server</code>, it could begin like this:</p>
+<p>Hàm này sẽ có nhiệm vụ nhận một tin nhắn và một định danh ( PID ), sao đó thực hiện chuyển tiếp tin nhắn cho bạn một cách an toàn. 
+    Từ giờ trở đi, chúng ta có thể  chỉ cần thay thế  các tin nhắn, thông báo gửi đi bằng cách gọi hàm này. 
+    Tiếp theo để  kết hợp module kitty server với các hàm khái quát trong module <code>my_server</code>, chúng ta sẽ làm như sau:
+    
+    This takes a message and a PID, sticks them into in the function, then forwards the message for you in a safe manner. From now on, 
+    we can just substitute the message sending we do with a call to this function. 
+    So if we were to rewrite a new kitty server to be paired with the abstracted <code>my_server</code>, it could begin like this:</p>
 
 <pre class="brush:erl">
 -module(kitty_server2).
@@ -221,7 +291,14 @@ close_shop(Pid) -&gt;
     my_server:call(Pid, terminate).
 </pre>
 
-<p>The next big generic chunk of code we have is not as obvious as the <code>call/2</code> function. Note that every process we've written so far has a loop where all the messages are pattern matched. This is a bit of a touchy part, but here we have to separate the pattern matching from the loop itself. One quick way to do it would be to add:</p>
+<p>Đoạn mã tiếp theo mà chúng ta xét sẽ không đơn giản như hàm <code>call/2</code>. Lưu ý là tất cả tiến trình được tạo ra mà chúng ta viết trước đó
+    đều bắt đầu với một hàm lăp ( loop function ) và các mẫu tin nhắn bên trong chúng sử  dụng để  khớp với từng trường hợp. Mặc dù cách làm như vậy không 
+    có vấn đề  gì nhưng sẽ có một chút rắc rối khi đọc với một lượng lớn các mẫu tin nhắn, do đó chúng ta sẽ thử  thay đổi một chút, tuy hơi mang tính nhạy cảm.
+    Chúng ta sẽ tách các đoạn mẫu tin nhắc trong hàm lặp này ra. Cách nhanh nhất để  thực hiện điều đó là:
+
+    The next big generic chunk of code we have is not as obvious as the <code>call/2</code> function. 
+    Note that every process we've written so far has a loop where all the messages are pattern matched. 
+    This is a bit of a touchy part, but here we have to separate the pattern matching from the loop itself. One quick way to do it would be to add:</p>
 
 <pre class="brush:erl">
 loop(Module, State) -&gt;
@@ -230,7 +307,8 @@ loop(Module, State) -&gt;
     end.
 </pre>
 
-<p>And then the specific module can look like this:</p>
+<p>Và hàm xử  lí module trông sẽ như thế  này: 
+    And then the specific module can look like this:</p>
 
 <pre class="brush:erl">
 handle(Message1, State) -&gt; NewState1;
@@ -239,9 +317,19 @@ handle(Message2, State) -&gt; NewState2;
 handle(MessageN, State) -&gt; NewStateN.
 </pre>
 
-<p>This is better. There are still ways to make it even cleaner. If you paid attention when reading the <code>kitty_server</code> module (and I hope you did!), you will have noticed we have a specific way to call synchronously and another one to call asynchronously. It would be pretty helpful if our generic server implementation could provide a clear way to know which kind of call is which.</p>
+<p>Nhìn tốt hơn phải không ? Ngoài ra còn vẫn có một số  cách để  làm cho đoạn mã này trỏ lên rõ nghĩa hơn nữa. Khi đọc module <code>kitty_server</code> nếu bạn để  ý 
+    đọc kỹ chúng (Tôi hi vọng là bạn đã làm được), bạn sẽ thấy chúng ta có một cách khá cụ thể  để  gọi lời gọi đồng bộ và lời gọi bất đồng bộ.
+    Sẽ tuyệt vời hơn nếu chúng ta thực hiện một chức năng chung cho module server để  cung cấp một cách phân biệt rà ràng với hai loại này.
 
-<p>In order to do this, we will need to match different kinds of messages in <code>my_server:loop/2</code>. This means we'll need to change the <code>call/2</code> function a little bit so synchronous calls are made obvious by adding the atom <code>sync</code> to the message on the function's second line:</p>
+     This is better. There are still ways to make it even cleaner. If you paid attention when reading the <code>kitty_server</code> module (and I hope you did!), '
+     you will have noticed we have a specific way to call synchronously and another one to call asynchronously. 
+     It would be pretty helpful if our generic server implementation could provide a clear way to know which kind of call is which.</p>
+
+<p>Để  làm điều đó, chúng ta sẽ cần khớp với các loại tin nhắc khác nhau trong hàm <code>my_server:loop/2</code>, Và cũng sẽ cần phải thay đổi hàm <code>call/2</code> một chút 
+    đối với lời gọi đồng bộ bằng cách thêm atom <code>sync</code> vào trong tin nhắn ở trong thứ hai của hàm để  xác định rõ lời gọi đồng bộ.
+    In order to do this, we will need to match different kinds of messages in <code>my_server:loop/2</code>. 
+    This means we'll need to change the <code>call/2</code> function a little bit so synchronous calls are made obvious by adding the atom 
+    <code>sync</code> to the message on the function's second line:</p>
 
 <pre class="brush:erl">
 call(Pid, Msg) -&gt;
@@ -258,7 +346,9 @@ call(Pid, Msg) -&gt;
     end.
 </pre>
 
-<p>We can now provide a new function for asynchronous calls. The function <code>cast/2</code> will handle this:</p>
+<p>tiếp đó để  xử  lí các lời gọi bất đồng bộ chúng ta cần định nghĩa thêm một hàm mới cho việc này, 
+    và nó sẽ thực hiện bởi hàm <code>cast/2</code>
+    We can now provide a new function for asynchronous calls. The function <code>cast/2</code> will handle this:</p>
 
 <pre class="brush:erl">
 cast(Pid, Msg) -&gt;
@@ -266,7 +356,8 @@ cast(Pid, Msg) -&gt;
     ok.
 </pre>
 
-<p>With this done, the loop can now look like this:</p>
+<p>Cuối cùng hàm lặp của chúng ta sẽ có dạng: 
+    sau With this done, the loop can now look like this:</p>
 
 <pre class="brush:erl">
 loop(Module, State) -&gt;
@@ -280,9 +371,20 @@ loop(Module, State) -&gt;
 
 <img class="right" src="static/img/sink.png" width="209" height="140" alt="A kitchen sink" title="get it? GET IT?" />
 
-<p>And then you could also add specific slots to handle messages that don't fit the sync/async concept (maybe they were sent by accident) or to have your debug functions and other stuff like hot code reloading in there.</p>
+<p>Sau đó bạn cũng có thể  thêm rất nhiều các mẫu khác để  xủ lí các tin nhắn mà không phù hợp với khái niệm sync/async như hai mãu đồng bộ, bất đồng bộ trên hoặc 
+    thêm một chức năng cho việc gỡ lõi hoặc một số  khác như hot code reloading.
+      
+    And then you could also add specific slots to handle messages that don't fit the sync/async concept (maybe they were sent by accident) 
+    or to have your debug functions and other stuff like hot code reloading in there.</p>
 
-<p>One disappointing thing with the loop above is that the abstraction is leaking. The programmers who will use <code>my_server</code> will still need to know about references when sending synchronous messages and replying to them. That makes the abstraction useless. To use it, you still need to understand all the boring details. Here's a quick fix for it:</p>
+<p>tuy nhiên ở đoạn mã trong hàm lặp trên có một điều gây thất vọng đó là abstraction is leaking.
+    Các lập trình viện trong trường hợp nếu sử  dụng module  <code>my_server</code> để  gửi các tin nhắc bất đồng bộ và nhận phản hồi sẽ cần phải biết thôn tin về 
+    định danh tham chiếu. Việc làm này khiến cho mô hình khái quát hoá ko có nghĩa. 
+    Dưới đây là cách chúng tôi có thể khắc phục nhanh chóng:
+
+    One disappointing thing with the loop above is that the abstraction is leaking. 
+    The programmers who will use <code>my_server</code> will still need to know about references when sending synchronous messages and replying to them. 
+    That makes the abstraction useless. To use it, you still need to understand all the boring details. Here's a quick fix for it:</p>
 
 <pre class="brush:erl">
 loop(Module, State) -&gt;
@@ -294,14 +396,21 @@ loop(Module, State) -&gt;
     end.
 </pre>
 
-<p>By putting both variables <var>Pid</var> and <var>Ref</var> in a tuple, they can be passed as a single argument to the other function as a variable with a name like <var>From</var>. Then the user doesn't have to know anything about the variable's innards. Instead, we'll provide a function to send replies that should understand what <var>From</var> contains:</p>
+<p>Bằng cách đặt hay biến <var>Pid</var>, <var>Ref</var> vào trong một bộ, chúng ta có thể  chỉ cần truyền chúng như một đối số  tới một hàm khác thông qua một biến giả định như biến <var>From</var>
+    Thông qua biến này, người dùng không cần phải biết bất cứ điều gì bên trong biên này. Thay vào đó chúng ta chỉ càn cung cấp một hàm để  gưi phản hồi dựa trên nội dung của biến <var>From</var>
+
+    By putting both variables <var>Pid</var> and <var>Ref</var> in a tuple, they can be passed as a single argument to the other function as a variable with a name like <var>From</var>. 
+    Then the user doesn't have to know anything about the variable's innards. Instead, we'll provide a function to send replies that should understand what <var>From</var> contains:</p>
 
 <pre class="brush:erl">
 reply({Pid, Ref}, Reply) -&gt;
     Pid ! {Ref, Reply}.
 </pre>
 
-<p>What is left to do is specify the starter functions (<code>start</code>, <code>start_link</code> and <code>init</code>) that pass around the module names and whatnot. Once they're added, the module should look like this:</p>
+<p>Việc còn lại giờ là chúng ta sẽ phải xác định cụ thể  các hàm cho việc khởi tạo tiến trinh ( <code>start</code>, <code>start_link</code> và <code>init</code> ),
+    các hàm này sẽ được định nghĩa thông qua tên module và một số  thứ khác. Một khi chúng được thêm vào module, nó sẽ có dạng như sau:
+    What is left to do is specify the starter functions (<code>start</code>, <code>start_link</code> and <code>init</code>) that pass around the module names and whatnot. 
+    Once they're added, the module should look like this:</p>
 
 <pre class="brush:erl">
 -module(my_server).
@@ -347,7 +456,16 @@ loop(Module, State) -&gt;
     end.
 </pre>
 
-<p>The next thing to do is reimplement the kitty server, now <code><a class="source" href="static/erlang/kitty_server2.erl.html">kitty_server2</a></code> as a callback module that will respect the interface we defined for <code>my_server</code>. We'll keep the same interface as the previous implementation, except all the calls are now redirected to go through <code>my_server</code>:</p>
+<p>Tiếp theo chúng ta sẽ phải thay đổi lại module kitty server cho phù hợp với những hàm mà chúng ta đã viết phía trên.
+    hay tạo ra một module mới và đặt tên nó là <code><a class="source" href="static/erlang/kitty_server2.erl.html">kitty_server2</a></code>, 
+    module mới này sẽ hoạt động như một module callback, tương tự các giao tiếp ( interface ) của nó sẽ liên kết hay sử  dụng các giao tiếp mà chúng ta đã định nghĩa cho module 
+    <module code>my_server</code>. Chúng ta cũng không thay đổi bất kỳ các giao tiếp ( interface ) nào trong module <code><a class="source" href="static/erlang/kitty_server2.erl.html">kitty_server2</a></code>
+    này so với module <code><a class="source" href="static/erlang/kitty_server2.erl.html">kitty_server</a></code> ngoại trừ nội dung logic bên trong mỗi hàm giớ sẽ xử lí thông qua 
+    module <code>my_server</code>.
+        
+    The next thing to do is reimplement the kitty server, now <code><a class="source" href="static/erlang/kitty_server2.erl.html">kitty_server2</a></code> 
+    as a callback module that will respect the interface we defined for <code>my_server</code>. We'll keep the same interface as the previous implementation, 
+    except all the calls are now redirected to go through <code>my_server</code>:</p>
 
 <pre class="brush:erl">
 -module(kitty_server2).
@@ -373,7 +491,9 @@ close_shop(Pid) -&gt;
     my_server:call(Pid, terminate).
 </pre>
 
-<p>Note that I added a second <code>-export()</code> at the top of the module. Those are the functions <code>my_server</code> will need to call to make everything work:</p>
+<p>Lưu ý: tôi đã thêm thuộc tinh <code>-export()</code> thứ hay ở đầu module ngày sau thuộc <code>-export()</code> đầu tiên là bởi vì chúng ta sẽ cần chúng để  có thể  hoạt động 
+    được với module <code>my_server</code>: 
+    Note that I added a second <code>-export()</code> at the top of the module. Those are the functions <code>my_server</code> will need to call to make everything work:</p>
 
 <pre class="brush:erl">
 %%% Server functions
@@ -396,7 +516,8 @@ handle_cast({return, Cat = #cat{}}, Cats) -&gt;
     [Cat|Cats].
 </pre>
 
-<p>And then what needs to be done is to re-add the private functions:</p>
+<p>Và tiếp đó để  hoàn thành, chúng ta sẽ thêm lại các hàm riêng: 
+    And then what needs to be done is to re-add the private functions:</p>
 
 <pre class="brush:erl">
 %%% Private functions
@@ -408,30 +529,99 @@ terminate(Cats) -&gt;
     exit(normal).
 </pre>
 
-<p>Just make sure to replace the <code>ok</code> we had before by <code>exit(normal)</code> in <code>terminate/1</code>, otherwise the server will keep going on. </p>
+<p>Để  chắc chắn server hoạt động, hãy thay thế  kết quả trả về  <code>ok</code> trước đó trong hàm <code>ok</code> bằng <code>exit(normal)</code>.
+    Just make sure to replace the <code>ok</code> we had before by <code>exit(normal)</code> in <code>terminate/1</code>, otherwise the server will keep going on. </p>
 
-<p>The code should be compilable and testable, and run in exactly the same manner as it was before. The code is quite similar, but let's see what changed.</p>
+<p>Cuối cùng hay biên dịch đã mã mà chúng ta vừa viết và kiểm tra nó, không có gì ngạc nhiên khi nó sẽ thực hiện chính xác giống với nhưng gì trước đó chúng ta đã làm,
+    Tuy nhiên chúng ta sẽ xem xét những thay đỏi so với trước. 
+
+    The code should be compilable and testable, and run in exactly the same manner as it was before. The code is quite similar, but let's see what changed.</p>
 
 
 <h3><a class="section" name="specific-vs-generic">Specific Vs. Generic</a></h3>
 
-<p>What we've just done is get an understanding the core of OTP (conceptually speaking). This is what OTP really is all about: taking all the generic components, extracting them in libraries, making sure they work well and then reusing that code when possible. Then all that's left to do is focus on the specific stuff, things that will always change from application to application.</p>
+<p>Những gì chúng ta làm ở trên là một cách để  hiểu được bản chất, cốt lõi của OTP ( như một khái niệm ). Đây là những gì mà OTP mang lại: bằng cách đưa ra các thành phần phổ  biến, 
+    trích xuất chúng và đưa chúng vào trong các thư viện, đảm bảo chúng hoạt động chính xác và tái sử  dụng các đoạn mã đó ( nếu có thể ). 
+    Chúng ta sẽ không phải bận tâm tới các vấn đề  đó nữa mà thay vào đó tập trung vào các công việc cụ thể hơn, những thứ luôn thay đổi từ ứng dụng này sang ứng dụng khác.  
+    What we've just done is get an understanding the core of OTP (conceptually speaking). This is what OTP really is all about: taking all the generic components, extracting them in libraries, 
+    making sure they work well and then reusing that code when possible. Then all that's left to do is focus on the specific stuff, things that will always change from application to application.</p>
 
-<p>Obviously, there isn't much to save by doing things that way with only the kitty server. It looks a bit like abstraction for abstraction's sake. If the app we had to ship to a customer were nothing but the kitty server, then the first version might be fine. If you're going to have larger applications then it might be worth it to separate generic parts of your code from the specific sections.</p>
+<p>Rõ ràng, không có quá ý nghĩa ở đây khi chỉ áp dụng chúng với kitty server. Nó giống như việc chúng ta đang làm ở đây là khái quát hóa dựa trên những gì đã được khái quát trước dó rồi.
+    Nếu ứng dụng của chúng ta cần phải gửi cho khác hàng, thì với phiên bản kitty server đầu chắc chắn sẽ hoạt động tốt, không có bất kỳ vấn đề  gì. 
+    Obviously, there isn't much to save by doing things that way with only the kitty server. It looks a bit like abstraction for abstraction's sake. 
+    Trong trường hợp với một ứng dụng lớn hơn , thì bạn có thể  tách các phần chung mã chung từ các phần cụ thể .
+     
+    If the app we had to ship to a customer were nothing but the kitty server, then the first version might be fine. 
+    If you're going to have larger applications then it might be worth it to separate generic parts of your code from the specific sections.</p>
 
-<p>Let's imagine for a moment that we have some Erlang software running on a server. Our software has a few kitty servers running, a veterinary process (you send your broken kitties and it returns them fixed), a kitty beauty salon, a server for pet food, supplies, etc. Most of these can be implemented with a client-server pattern. As time goes, your complex system becomes full of different servers running around.</p>
+<p>Hãy tưởng tượng rằng hiện tại chúng ta đang có một ứng Erlang đang chạy trên server. Ứng dụng này đang chạy cùng trên một số  kitty server, cùng với đó là 
+    một tiến trình gọi là thú ý ( bạn sẽ gửi các chú mèo bị thương tới và nó sẽ phản hồi lại cho bạn về  chú mèo đó kèm với việc đã trị cho chúng ),
+    một salon chăm sóc sắc đẹp cho mèo, một server thức ăn cho động vật, các trang thiết thiết, đồ  dụng , etc. Hầu hết tất cả những thứ trên đều có thể  
+    triển khai thông qua một mẫu client-server. THeo thơi gian, hệ thống của bạn dần trở lên phức tập và gần như có nhiều các loại server khác nhau đang chạy. 
+      
+    Let's imagine for a moment that we have some Erlang software running on a server. Our software has a few kitty servers running, 
+    a veterinary process (you send your broken kitties and it returns them fixed), a kitty beauty salon, a server for pet food, supplies, etc. 
+    Most of these can be implemented with a client-server pattern. As time goes, your complex system becomes full of different servers running around.</p>
 
-<p>Adding servers adds complexity in terms of code, but also in terms of testing, maintenance and understanding. Each implementation might be different, programmed in different styles by different people, and so on. However, if all these servers share the same common <code>my_server</code> abstraction, you substantially reduce that complexity. You understand the basic concept of the module instantly ("oh, it's a server!"), there's a single generic implementation of it to test, document, etc. The rest of the effort can be put on each specific implementation of it.</p>
+<p>Thêm càng nhiều server sẽ khiến cho các đoạn mã càng trở lên phức tạp , đồng thời quá trình kiểm tra, bảo trì và hiểu được kiến trúc của hệ thống cũng càng phức tạp khó khăn hơn.
+    mỗi lần triển khai có thể  khác nhau, có thể được lập trình theo nhiều cách khác nhau bởi nhiều ngừoi, etc. Tuy nhiên nếu tất cả các server đó cùng tuân theo
+    một mẫu, mô hình chung, một mẫu được khái quát hóa như trong module <code>my_server</code>, thì chúng ta sẽ giảm được rất nhiều tính phức tạp trước đó đi.
+    nhìn vào đó, ngay lập tức bạn hiểu khái niệm cơ bản của module ( oh, nó chỉ là một server mà thôi!), việc triển khai để  kiểm tra, tài liệu, etc cũng trở lên dễ  dàng
+    hơn. Phần còn lại của nỗ  lực có thể  được áp dụng cho các chi tiết cụ thể  của từng triển khai cụ thể. 
+
+    Adding servers adds complexity in terms of code, but also in terms of testing, maintenance and understanding. Each implementation might be different, 
+    programmed in different styles by different people, and so on. However, if all these servers share the same common <code>my_server</code> abstraction, 
+    you substantially reduce that complexity. You understand the basic concept of the module instantly ("oh, it's a server!"), there's a single generic 
+    implementation of it to test, document, etc. The rest of the effort can be put on each specific implementation of it.</p>
 
 <img class="right" src="static/img/dung.png" width="279" height="236" alt="A dung beetle pushing its crap" title="This is me pushing my code in production" />
 
-<p>This means you reduce a lot of time tracking and solving bugs (just do it at one place for all servers). It also means that you reduce the number of bugs you introduce. If you were to re-write the <code>my_server:call/3</code> or the process' main loop all the time, not only would it be more time consuming, but chances of forgetting one step or the other would skyrocket, and so would bugs. Fewer bugs mean fewer calls during the night to go fix something, which is definitely good for all of us. Your mileage may vary, but I'll bet you don't appreciate going to the office on days off to fix bugs either.</p>
+<p>Việc này sẽ giúp bạn giảm được rất nhiều thời gian cho việc dà soát và giải quyết các lỗi phát sinh ( chỉ cần sửa, làm ở một nơi cho tất cả các server ).
+    Đồng thời bạn cũng có thể  giảm được dáng kể  lỗi trong chương trình. Nếu mỗi lần bạn viết lại hàm <code>my_server:call/3</code>  hay hàm lặp chính, nó sẽ không chí 
+    tiêu tốn thời gian của bạ mà còn khiến bạn bỏ sót bước này hay bước khác và góp phần gây ra nhiều lỗi khác hơn. ít lỗi hơn cũng tức là ít có những cuộc gọi vào 
+    ban đêm chỉ để  sửa những lỗi này, điều đó chắc chắn là rất tốt cho bạn, cho tôi và tất cả mọi người. Có thể  nhà bạn gần công tuy, nhưng tôi cá là 
+    bạn không hề  muốn tới công ty vào ngày nghỉ chỉ để  sửa lỗi.
+      
+    This means you reduce a lot of time tracking and solving bugs (just do it at one place for all servers). It also means that you reduce the number of bugs you introduce. 
+    If you were to re-write the <code>my_server:call/3</code> or the process' main loop all the time, not only would it be more time consuming, 
+    but chances of forgetting one step or the other would skyrocket, and so would bugs. Fewer bugs mean fewer calls during the night to go fix something, 
+    which is definitely good for all of us. Your mileage may vary, but I'll bet you don't appreciate going to the office on days off to fix bugs either.</p>
 
-<p>Another interesting thing about what we did when separating the generic from the specific is that we instantly made it much easier to test our individual modules. If you wanted to unit test the old kitty server implementation, you'd need to spawn one process per test, give it the right state, send your messages and hope for the reply you expected. On the other hand, our second kitty server only requires us to run the function calls over the 'handle_call/3' and 'handle_cast/2' functions and see what they output as a new state. No need to set up servers, manipulate the state. Just pass it in as a function parameter. Note that this also means the generic aspect of the server is much easier to test given you can just implement very simple functions that do nothing else than let you focus on the behaviour you want to observe, without the rest.</p>
+<p>Một điều thú vị khác mà chúng ta đã làm trước đó khi phân tách thành phần chung từ các thành phần cụ thể  đó là đơn giản hóa việc thử  nghiệm các module riêng lẻ.
+    . Nếu bạn muốn thực hiện một unit test trên kitty server cũ, bạn sẽ cần sinh ra  ( spawn ) mỗi tiến trình riêng cho mỗi kiểm tra, truyền vào đó một trạng thái đúng 
+    và gửi các đoạn tin nhắn của bạn tới với hi vọng là kết quả phản hồi đúng với những gì bạn mong đợi. Nói một cách khác, kitty server thứ hai của chúng ta chỉ cần yêu cầu 
+    gọi tới hàm 'handle_call/3' và 'handle_cast/2' và nhìn nhật kết quả đưa ra như một trạng thái mới. Không yêu cầu chúng ta phải thiết lập các server, thao tác với trạng thái,
+    . Mà thay vào đó chỉ cần sử  dụng trạng thái như một tham số truyền vào hàm thôi. Lưu ý là việc này giúp bạn dễ  dàng kiểm tra các phương diện phổ  biến của server, 
+    bạn chỉ cần thực hiện một số  hàm rất đơn giản cho phép bạn tập trung vào các hành vi mà bạn muốn quan sát, không cần bận tâm tới các hành vi khác.
 
-<p>A much more 'hidden' advantage of using common abstractions in that way is that if everyone uses the exact same backend for their processes, when someone optimizes that single backend to make it a little bit faster, every process using it out there will run a little bit faster too. For this principle to work in practice, it's usually necessary to have a whole lot of people using the same abstractions and putting effort on them. Luckily for the Erlang community, that's what happens with the OTP framework.</p>
+    Another interesting thing about what we did when separating the generic from the specific is that we instantly made it much easier to test our individual modules. 
+    If you wanted to unit test the old kitty server implementation, you'd need to spawn one process per test, give it the right state, send your messages and hope for the reply you expected. 
+    On the other hand, our second kitty server only requires us to run the function calls over the 'handle_call/3' and 'handle_cast/2' functions and see what they output as a new state. 
+    No need to set up servers, manipulate the state. Just pass it in as a function parameter. Note that this also means the generic aspect of the server is much easier to test given you 
+    can just implement very simple functions that do nothing else than let you focus on the behaviour you want to observe, without the rest.</p>
 
-<p>Back to our modules. There are a bunch of things we haven't yet addressed: named processes, configuring the timeouts, adding debug information, what to do with unexpected messages, how to tie in hot code loading, handling specific errors, abstracting away the need to write most replies, handling most ways to shut a server down, making sure the server plays nice with supervisors, etc. Going over all of this is superfluous for this text, but would be necessary in real products that need to be shipped. Again, you might see why doing all of this by yourself is a bit of a risky task. Luckily for you (and the people who'll support your applications), the Erlang/OTP team managed to handle all of that for you with the gen_server behaviour. <code>gen_server</code> is a bit like <code>my_server</code> on steroids, except it has years and years of testing and production use behind it.</p>
+<p>Bằng cách sử  dụng những lợi ích 'vô hình' của việc sử dụng trừu tượng phổ  biến, nếu  bất kỳ người nào sử  dụng chính xác cùng một backend cho tiến trình của họ, 
+    thì khi họ tối ưu hóa hệ thống backend cá nhân này khiến cho nó nhanh hơn, thì mọi tiến trình sử  dụng nó cũng sẽ được tăng hiệu suất. Đối với nguyên tắc này để  làm việc trong thực tế , nhièu 
+    người lên cố  gắng sử  dụng cùng một mẫu trừu tượng. May mắn thay trong cộng đồng Erlang, OTP framework thực hiện chính xác nhưng điều như vậy. 
+
+    A much more 'hidden' advantage of using common abstractions in that way is that if everyone uses the exact same backend for their processes, when someone optimizes that single backend 
+    to make it a little bit faster, every process using it out there will run a little bit faster too. For this principle to work in practice, it's usually necessary to have a whole lot of 
+    people using the same abstractions and putting effort on them. Luckily for the Erlang community, that's what happens with the OTP framework.</p>
+
+<p>Quay trở lại với module của chúng ta, có một số  vấn đề  mà chúng ta vẫn chưa thực sự nhắc tới: như named processes, cấu hình thời chờ ( timeout ), thêm thông tin cho việc gỡ lỗi,
+    cách giải quyết các trường hợp tin nhắc không mong muốn xảy ra, cách tích hợp với hot code loading, cách xử  lí các lỗi đặc biệt, cách viết các đọa mã khái quát hóa đối với 
+    hầu hết các tin nhắn phản hồi, cách xử  lí khi server ngừng hoạt động ( shutdown ), đảm bảo việc tích hợp server cùng với supervisor hoạt động tốt, etc.  Tất cả các vấn đề  liệt 
+    kê trên không cần thiết trong chương này, nhưng nó vẫn rất quan trọng trong dự án thực tế . Một lần nữa, bạn có thể  thấy tại sao làm tất cả những vấn đề  trên một mình là một việc 
+    làm khá nguy hiểm. May mắn cho bạn ( và những người hỗ  trỡ ứng dụng của bạn),  đội ngũ phát triển Erlang/OTP sẽ xử lí tất cả những vấn đề  trên cùng với mẫu hành vi 'gen_server'.  <code>gen_server</code>
+    thoạt nhìn rất giống với nhưng gì chúng ta đã làm với module <code>my_server</code> kết hợp với thuốc kích thích ( steroids ), và nó được đảm trong thực tiẽn qua nhiều năm kiểm tra và đươc sử  dụng trong 
+    rất nhiều các sản phẩm production.
+      
+    Back to our modules. There are a bunch of things we haven't yet addressed: named processes, configuring the timeouts, adding debug information, 
+    what to do with unexpected messages, how to tie in hot code loading, handling specific errors, abstracting away the need to write most replies, handling most ways to shut a server down, 
+    making sure the server plays nice with supervisors, etc. Going over all of this is superfluous for this text, but would be necessary in real products that need to be shipped. 
+    Again, you might see why doing all of this by yourself is a bit of a risky task. Luckily for you (and the people who'll support your applications), the Erlang/OTP team managed to handle 
+    all of that for you with the gen_server behaviour. <code>gen_server</code> is a bit like <code>my_server</code> on steroids, except it has years and years of testing and production use behind it.
+</p>
 
 				<ul class="navigation">
 											<li><a href="designing-a-concurrent-application.html" title="Previous chapter">&lt; Previous</a></li>

@@ -174,7 +174,7 @@ the server to receive a message. If no message is received before the deadline, 
 
 <h4>handle_info</h4>
 
-<p>Tôi đã từng đề  cập tới vân để  server của chúng ta đã bỏ qua các tin nhắc mà không khớp với mẫu interface của chúng ta đúng không ?
+<p>Tôi đã từng đề  cập tới vân để  server của chúng ta đã bỏ qua các tin nhắn mà không khớp với mẫu interface của chúng ta đúng không ?
   Đúng vậy, tuy nhiên giờ chúng ta có thể  dễ  dàng giải quyết chúng với hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#handle_info/2">handle_info/2</a></code>
   . Cách dùng hàm này khá giống với những gì chúng ta dùng với hàm <code>handle_cast/2</code> trước đó cùng với việc trả về  bộ dữ liệu tương tự, chỉ khác một điều đó là callback 
   chỉ hoạt động đối với các thông báo tin nhắc mà được gửi trực tiếp cùng với toán tử  <code>!</code> và một số  hàm đặc biệt giống như timeout trong <code>init/1</code>,
@@ -200,37 +200,74 @@ the server to receive a message. If no message is received before the deadline, 
 <div class="note">
   <p><strong>Lưu ý:</strong> Nếu có bất kỳ lí do nào khác ngoài <code>normal</code>, <code>shutdown</code> hay <code>{shutdown, Term}</code> , thì hàm 
     <code>terminate/2</code> cũng sẽ được gọi và OTP framework sẽ nhìn nhận nó như một trường hợp lỗi và tiến hành bắt đầu ghi nhận một số  thông tin cho bạn.
-    
     if any reason other than <code>normal</code>, <code>shutdown</code> hay <code>{shutdown, Term}</code> 
     is used when <code>terminate/2</code> is called, the OTP framework will see this as a failure and start logging a bunch of stuff here and there for you.</p>
 </div>
 
-<p>This function is pretty much the direct opposite of <code>init/1</code> so whatever was done in there should have its opposite in <code>terminate/2</code>. It's your server's janitor, the function in charge of locking the door after making sure everyone's gone. Of course, the function is helped by the VM itself, which should usually delete all <a class="docs" href="http://erldocs.com/18.0/stdlib/ets.html">ETS tables</a>, close all <a class="external" href="http://www.erlang.org/doc/tutorial/c_port.html">ports</a>, etc. for you. Note that the return value of this function doesn't really matter, because the code stops executing after it's been called.</p>
+<p>Có thể  nói rằng hàm <code>terminate/2</code> là một sự nghịch đảo đối với hàm <code>init/1</code>, mỗi hành vi diễn ra trong <code>init/1</code> 
+  sẽ có một hành vi trái ngược với nó trong <code>terminate/2</code>. Hình dung nó như một người vệ cho server của bạn, nó sẽ có nhiệm vụ giúp khóa cửa lại sau khi đảm bảo 
+  rằng tất cả mọi người đã đi ra ngoài, không còn một ai ở bên trong nữa. Dĩ nhiên là bản thân máy ảo cũng thực hiện chức năng này qua việc xóa bỏ tất cả các 
+  <a class="docs" href="http://erldocs.com/18.0/stdlib/ets.html">ETS tables</a> và đóng tất cả các <a class="external" href="http://www.erlang.org/doc/tutorial/c_port.html">ports</a>
+  lại ,etc. Một lưu ý nữa đó là giá trị trả về  của hàm này không nhất thiết phải quan tâm tới bởi vì chương trình sẽ dừng thực thi mã sau khi gọi hàm này.
+   This function is pretty much the direct opposite of <code>init/1</code> so whatever was done in there should have its opposite in <code>terminate/2</code>. 
+  It's your server's janitor, the function in charge of locking the door after making sure everyone's gone. 
+  Of course, the function is helped by the VM itself, which should usually delete all <a class="docs" href="http://erldocs.com/18.0/stdlib/ets.html">ETS tables</a>, 
+  close all <a class="external" href="http://www.erlang.org/doc/tutorial/c_port.html">ports</a>, etc. for you. Note that the return value of this function doesn't really matter, 
+  because the code stops executing after it's been called.</p>
 
 
 <h4>code_change</h4>
 
-<p>The function <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#code_change/3">code_change/3</a></code> is there to let you upgrade code. It takes the form <code>code_change(PreviousVersion, State, Extra)</code>. Here, the variable <var>PreviousVersion</var> is either the version term itself in the case of an upgrade (read <a class="chapter" href="modules.html#more-about-modules">More About Modules</a> again if you forget what this is), or <code>{down, Version}</code> in the case of a downgrade (just reloading older code). The <var>State</var> variable holds all of the current's server state so you can convert it.</p>
+<p>như trong chương trước đó chúng ta đã học cách viết một hàm dùng cho việc nâng cấp chương trình, tương tự trong gen_server cũng hỗ  trợ hành vi này, 
+  bằng cách sử  dụng hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#code_change/3">code_change/3</a></code>.
+  Hàm này được sử  dụng dưới dạng <code>code_change(PreviousVersion, State, Extra)</code>, trong đó biến <var>PreviousVersion</var> là một thuật ngữ dùng để  
+  chỉ phiên bản trong trường hợp nâng cấp (nếu bạn không nhớ hãy xem lại chương <a class="chapter" href="modules.html#more-about-modules">More About Modules</a>), hay 
+  <code>{down, Version}</code> tương ứng với trường hợp hạ cấp ( chỉ cần tải nạp đoạn mã ở bản trước đó vào ). Biến <var>State</var> được dùng để  lưu trữ tất cả các 
+  trang thái của server do đó nó luôn sẵn có để  bạn có thể chuyển đổi. 
+  is there to let you upgrade code. 
+  It takes the form <code>code_change(PreviousVersion, State, Extra)</code>. Here, the variable <var>PreviousVersion</var> is either the version term itself 
+  in the case of an upgrade (read <a class="chapter" href="modules.html#more-about-modules">More About Modules</a> again if you forget what this is), or <code>{down, Version}</code> 
+  in the case of a downgrade (just reloading older code). The <var>State</var> variable holds all of the current's server state so you can convert it.</p>
 
-<p>Imagine for a moment that we used an orddict to store all of our data. However, as time goes on, the orddict becomes too slow and we decide to change it for a regular dict. In order to avoid the process crashing on the next function call, the conversion from one data structure to the other can be done in there, safely. All you have to do is return the new state with <code>{ok, NewState}</code>.</p>
+<p>Hãy hình dùng rằng tại một thời điểm chúng ta sử  dụng kiểu cấu trúc orddict để  lưu trữ tất cả các dữ liệu. tuy nhiên, Một thời gian sau đó, khi lượng dữ liệu tăng lên, 
+  cấu trúc orddict sẽ càng trở lên chậm hơn so chúng ta buộc phải quyết dịnh thay đổi sang một kiểu cấu trúc từ điển phổ  thông, và để  an toàn hơn, tránh gây ra lỗi crash server trong lần gọi 
+  hàm tiếp theo khi chuyển đổi kiểu giữa hai kiểu cấu trúc, tất cả những gì bạn phải làm đó là trả về một trạng tháu mới cùng với dạng <code>{ok, NewState}</code>.
+
+  Imagine for a moment that we used an orddict to store all of our data. However, as time goes on, the orddict becomes too slow and we decide to change it for a regular dict. 
+  In order to avoid the process crashing on the next function call, the conversion from one data structure to the other can be done in there, safely. 
+  All you have to do is return the new state with <code>{ok, NewState}</code>.</p>
 
 <img class="right" src="static/img/kitty.png" width="277" height="323" alt="a cat with an eye patch" />
 
-<p>The <var>Extra</var> variable isn't something we'll worry about for now. It's mostly used in larger OTP deployment, where specific tools exist to upgrade entire releases on a VM. We're not there yet.</p>
+<p>Còn lại biến <var>Extra</var> , nó thực sự không quan trọng khiến chúng ta phải bận tâm, hầu hết trong các trường hơp nó được sử  dụng để  hỗ  trợ triển khai trong các ứng dựng OTP lớn,
+  nới mà bạn sẽ sử  dụng các công cụ đặc biệt để  nâng cấp toàn bộ máy ảo, do đó trong phạm vi của cuốn sách này chúng ta không thực sự phải dùng tới nó.
 
-<p>So now we've got all the callbacks defined. Don't worry if you're a bit lost: the OTP framework is a bit circular sometimes, where to understand part <var>A</var> of the framework you have to understand part <var>B</var>, but then part <var>B</var> requires to see part <var>A</var> to be useful. The best way to get over that confusion is to actually implement a gen_server.</p>
+  The <var>Extra</var> variable isn't something we'll worry about for now. It's mostly used in larger OTP deployment, where specific tools exist to upgrade entire releases on a VM.
+   We're not there yet.</p>
+
+<p>Bây giờ chúng ta đã xem xét hết tất cả các hàm callback cần phải định nghĩa rồi. Đừng lo lắng nếu bạn cảm thấy có chút bối rối, khó hiểu, bởi vì đôi lúc chúng ta phải đi đường vòng 
+  khi tìm hiểu về  OTP framework, khi mà muốn hiểu được <var>A</var> của nó thì bạn phải hiểu <var>B</var>, nhưng để  để  sử  dụng được trong <var>B</var>, bạn phải quay trở lại để  
+  nhìn <var>A</var>, thật sự rất vòng vèo gây khó chịu do đó cách tốt nhất để  tránh những nhầm lẫn này đó là thực hiện ví dụ về  gen_server.
+  So now we've got all the callbacks defined. Don't worry if you're a bit lost: the OTP framework is a bit circular sometimes, 
+  where to understand part <var>A</var> of the framework you have to understand part <var>B</var>, but then part <var>B</var> requires to see part <var>A</var> to be useful.
+   The best way to get over that confusion is to actually implement a gen_server.</p>
 
 
 <h3><a class="section" name="beam-me-up-scotty">.BEAM me up, Scotty!</a></h3>
 
-<p>This is going to be the <code><a class="source" href="static/erlang/kitty_gen_server.erl.html">kitty_gen_server</a></code>. It's going to be mostly similar to <code>kitty_server2</code>, with only minimal API changes. First start a new module with the following lines in it:</p>
+<p>Chúng ta sẽ thực hiện ví dụ qua một module được gọi là <code><a class="source" href="static/erlang/kitty_gen_server.erl.html">kitty_gen_server</a></code>. Module này 
+  sẽ thực hiện các chức năng tương tự giống với module <code>kitty_server2</code> mà chúng ta đã làm trước đó cùng với một ít thay đổi trong API.
+  Nào hãy bắt đầu tao mới một module đã viết những đoạn mã sau vào:   
+  This is going to be the <code><a class="source" href="static/erlang/kitty_gen_server.erl.html">kitty_gen_server</a></code>. 
+  It's going to be mostly similar to <code>kitty_server2</code>, with only minimal API changes. First start a new module with the following lines in it:</p>
 
 <pre class="brush:erl">
 -module(kitty_gen_server).
 -behaviour(gen_server).
 </pre>
 
-<p>And try to compile it. You should get something like this:</p>
+<p>Hãy thử  biện dịch và ngay lập tức bạn sẽ nhin thấy gióng như dưới đây: 
+  And try to compile it. You should get something like this:</p>
 
 <pre class="brush:eshell">
 1&gt; c(kitty_gen_server).
@@ -243,13 +280,20 @@ the server to receive a message. If no message is received before the deadline, 
 {ok,kitty_gen_server}
 </pre>
 
-<p>The compilation worked, but there are warnings about missing callbacks. This is because of the <code>gen_server</code> behaviour. A behaviour is basically a way for a module to specify functions it expects another module to have. The behaviour is the contract sealing the deal between the well-behaved generic part of the code and the specific, error-prone part of the code (yours).</p>
+<p>Ok, công cụ biện dịch hoạt động nhưng kèm theo đó là một số  cảnh báo về  một số  hàm callback không được dịnh nghĩa. Lí giải điều này đó là bởi vì đó là những hàm 
+  yêu cầu hay nói một cách cụ thể là những hành vi bắt buộc trong <code>gen_server</code>. Hành vi trong <code>gen_server</code> là một cách cơ bản để  xác định 
+  các hàm, chức năng mà một module mong muốn một module khác phải có. Hành vi cũng là một hợp đồng gắn kết giữa các phần đúng và phần lỗi trong đoạn mã của bạn.
+  The compilation worked, but there are warnings about missing callbacks. This is because of the <code>gen_server</code> behaviour. 
+  A behaviour is basically a way for a module to specify functions it expects another module to have. The behaviour is the contract sealing the deal between the well-behaved 
+  generic part of the code and the specific, error-prone part of the code (yours).</p>
 
 <div class="note">
-    <p><strong>Note:</strong> both 'behavior' and 'behaviour' are accepted by the Erlang compiler.</p>
+    <p><strong>Lưu ý:</strong> cả hai cách khai báo là  'behavior' và 'behaviour đều được chấp nhận trong Erlang.
+      both 'behavior' and 'behaviour' are accepted by the Erlang compiler.</p>
 </div>
 
-<p>Defining your own behaviours is really simple. You just need to export a function called <code>behaviour_info/1</code> implemented as follows:</p>
+<p>Để  khai báo hành vi rất đơn giản, chỉ cần xuất hàm bằng tên <code>behaviour_info/1</code> và làm như sau: 
+  Defining your own behaviours is really simple. You just need to export a function called <code>behaviour_info/1</code> implemented as follows:</p>
 
 <pre class="brush:erl">
 -module(my_behaviour).
@@ -260,17 +304,28 @@ behaviour_info(callbacks) -&gt; [{init,1}, {some_fun, 0}, {other, 3}];
 behaviour_info(_) -&gt; undefined.
 </pre>
 
-<p>And that's about it for behaviours. You can just use <code>-behaviour(my_behaviour).</code> in a module implementing them to get compiler warnings if you forgot a function. Anyway, back to our third kitty server.</p>
+<p>Đó là những gì mà chúng ta phải làm, bạn chỉ cần đặt đoạn mã <code>-behaviour(my_behaviour).</code> trong module của bạn và thực hiện chúng, nếu bạn quên thì có thể 
+  dựa trên những cảnh bảo từ trình biên dịch để  thêm vào. Bây giờ chúng ta sẽ quay trở lại module kitty server.
 
-<p>The first function we had was <code>start_link/0</code>. This one can be changed to the following:</p>
+  And that's about it for behaviours. You can just use <code>-behaviour(my_behaviour).</code> in a module implementing them to get compiler warnings if you forgot a function. 
+  Anyway, back to our third kitty server.</p>
+
+<p>hàm đầu tiên chúng ta cần thực hiện đó là hàm  <code>start_link/0</code>, nó có thể  viết như sau:
+  The first function we had was <code>start_link/0</code>. This one can be changed to the following:</p>
 
 <pre class="brush:erl">
 start_link() -&gt; gen_server:start_link(?MODULE, [], []).
 </pre>
 
-<p>The first parameter is the callback module, the second one is the list of parameters to pass to <code>init/1</code> and the third one is about debugging options that won't be covered right now. You could add a <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#start_link/4">fourth parameter</a> in the first position, which would be the name to register the server with. Note that while the previous version of the function simply returned a pid, this one instead returns <code>{ok, Pid}</code>.</p>
+<p>Trong đó hãy để  ý thám số  đầu tiên của là một callback module, và tham số  thứ hai truyền vào là một danh sách các tham số  sẽ truyền vào hàm  <code>init/1</code> , và tham số  tiếp theo 
+  như một lựa chọn để sử  dụng cho mục đích gỡ lỗi vì vậy tôi sẽ không đề  cập chi tiết lúc này. Ngoài ra bạn cũng có thể  thêm một  <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#start_link/4">tham số  thứ tư</a>
+  vào đầu vị trí để  sử  dụng như một tên dịnh danh đăng ký cho server. Một Lưu ý nữa là trong bản trước đó của kitty server, 
+  chúng ta chỉ đơn giản trả về  một đinh danh tiến trình ( pid ), tuy nhiên với gen_server, chúng ta phải trả về  dưới dạng <code>{ok, Pid}</code>.
+  The first parameter is the callback module, the second one is the list of parameters to pass to <code>init/1</code> and the third one is about debugging options 
+  that won't be covered right now. You could add a <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#start_link/4">fourth parameter</a> in the first position, 
+  which would be the name to register the server with. Note that while the previous version of the function simply returned a pid, this one instead returns <code>{ok, Pid}</code>.</p>
 
-<p>Next functions now:</p>
+<p>Các hàm tiếp theo chúng ta sẽ xét đến là: Next functions now:</p>
 
 <pre class="brush:erl">
 %% Synchronous call
@@ -286,9 +341,16 @@ close_shop(Pid) -&gt;
     gen_server:call(Pid, terminate).
 </pre>
 
-<p>All of these calls are a one-to-one change. Note that a third parameter can be passed to <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#call/2">gen_server:call/2-3</a></code> to give a timeout. If you don't give a timeout to the function (or the atom <code>infinity</code>), the default is set to 5 seconds. If no reply is received before time is up, the call crashes.</p>
+<p>Lưu ý là đối với tham số  thứ ba trong <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#call/2">gen_server:call/2-3</a></code> được sử  dụng cho 
+  việc xác định thời gian chờ trước khi có tín hiệu phản hồi, trong trường hợp bạn không thiết lập thời gian ( hoặc truyền vào đó một atom <code>infinity</code>), nó sẽ được mặc là thời gian là 5 giây. 
+  . Nếu sau thời gian chờ mà không có bất kỳ một phản hồi nào lại, lời gọi sẽ tụ động chấm dứt bằng cách đưa ra một crash. 
+   All of these calls are a one-to-one change. Note that a third parameter can be passed to 
+  <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#call/2">gen_server:call/2-3</a></code> to give a timeout. 
+  If you don't give a timeout to the function (or the atom <code>infinity</code>), the default is set to 5 seconds. If no reply is received before time is up, the call crashes.</p>
 
-<p>Now we'll be able to add the gen_server callbacks. The following table shows the relationship we have between calls and callbacks:</p>
+<p>Bây giờ chúng ta đã  có thể  thêm các hàm callback trong gen_server rồi, dựa trên cấy trúc bảng sau sẽ đưa ra mối quan hệ giữa 
+  các lời gọi hàm và hàm callback trong gen_server: 
+  Now we'll be able to add the gen_server callbacks. The following table shows the relationship we have between calls and callbacks:</p>
 
 <table>
   <thead>
@@ -334,7 +396,8 @@ close_shop(Pid) -&gt;
 </table>
 
 
-<p>And then you have the other callbacks, those that are more about special cases:</p>
+<p>Ngoải ra vẫn còn một số  hàm callback nữa, chúng sẽ được sử  dụng cho các trường hợp đặc biêt: 
+  And then you have the other callbacks, those that are more about special cases:</p>
 
 <ul>
     <li><code>handle_info/2</code></li>
@@ -342,7 +405,8 @@ close_shop(Pid) -&gt;
     <li><code>code_change/3</code></li>
 </ul>
 
-<p>Let's begin by changing those we already have to fit the model: <code>init/1</code>, <code>handle_call/3</code> and <code>handle_cast/2</code>.</p>
+<p>Nào, hãy bắt đầu điều chỉnh lại các đoạn mã trong module để  phù hợp với mô hình: <code>init/1</code>, <code>handle_call/3</code> và <code>handle_cast/2</code>
+  Let's begin by changing those we already have to fit the model: <code>init/1</code>, <code>handle_call/3</code> and <code>handle_cast/2</code>.</p>
 
 <pre class="brush:erl">
 %%% Server functions
@@ -361,7 +425,12 @@ handle_cast({return, Cat = #cat{}}, Cats) -&gt;
     {noreply, [Cat|Cats]}.
 </pre>
 
-<p>Again, very little has changed there. In fact, the code is now shorter, thanks to smarter abstractions. Now we get to the new callbacks. The first one is <code>handle_info/2</code>. Given this is a toy module and we have no logging system pre-defined, just outputting the unexpected messages will be enough:</p>
+<p>Một lần nữa, không có nhiều thay đổi ở đây, may mắn hơn là đoạn mã giờ trông ngắn gọn hơn nhờ vào sự trừu tượng thông minh.
+  Bây giờ chúng ta sẽ xét một số  hàm  callback mới, hàm đàu tiên chúng ta xét đó là hàm <code>handle_info/2</code>. Trong module kitty server này, chức năng tương đối nhỏ và 
+  mục đích của chúng ta chỉ để  mình họa do đó sẽ không sử  dụng các hệ thống ghi log mà thay vào đó chỉ đơn giản xuất ra màn hình các dòng thông báo tin nhắc không biết trước 
+  là đủ.  
+  Again, very little has changed there. In fact, the code is now shorter, thanks to smarter abstractions. Now we get to the new callbacks. 
+  The first one is <code>handle_info/2</code>. Given this is a toy module and we have no logging system pre-defined, just outputting the unexpected messages will be enough:</p>
 
 <pre class="brush:erl">
 handle_info(Msg, Cats) -&gt;
@@ -369,7 +438,8 @@ handle_info(Msg, Cats) -&gt;
     {noreply, Cats}.
 </pre>
 
-<p>The next one is the <code>terminate/2</code> callback. It will be very similar to the <code>terminate/1</code> private function we had:</p>
+<p>Hàm tiếp theo chúng ta sẽ xét đó là <code>terminate/2</code>, cơ bản không có gì thay đổi nhiều so vơi hàm riêng <code>terminate/1</code> mà chúng ta đã có từ trước đó: 
+  The next one is the <code>terminate/2</code> callback. It will be very similar to the <code>terminate/1</code> private function we had:</p>
 
 <pre class="brush:erl">
 terminate(normal, Cats) -&gt;
@@ -377,7 +447,8 @@ terminate(normal, Cats) -&gt;
     ok.
 </pre>
 
-<p>And then the last callback, <code>code_change/3</code>:</p>
+<p>Hàm cuối cùng chúng ta xét đó là <code>code_change/3</code>:
+  And then the last callback, <code>code_change/3</code>:</p>
 
 <pre class="brush:erl">
 code_change(_OldVsn, State, _Extra) -&gt;
@@ -386,7 +457,8 @@ code_change(_OldVsn, State, _Extra) -&gt;
     {ok, State}. 
 </pre>
 
-<p>Just remember to keep in the <code>make_cat/3</code> private function:</p>
+<p>Hãy nhớ đừng công khai hàm <code>make_cat/3</code> để  sử  dụng bên ngoài module:
+   Just remember to keep in the <code>make_cat/3</code> private function:</p>
 
 <pre class="brush:erl">
 %%% Private functions
@@ -394,7 +466,8 @@ make_cat(Name, Col, Desc) -&gt;
     #cat{name=Name, color=Col, description=Desc}.
 </pre>
 
-<p>And we can now try the brand new code:</p>
+<p>Tât cả định nghĩa cho module này đã xong, giờ chúng ta có thể  kiểm tra nó:
+  And we can now try the brand new code:</p>
 
 <pre class="brush:eshell">
 1&gt; c(kitty_gen_server).
@@ -426,9 +499,16 @@ ok
 
 <img class="right" src="static/img/mittens.png" width="156" height="132" alt="pair of wool mittens" />
 
-<p>Oh and hot damn, it works!</p>
+<p>Oh , tuyệt vời nó hoạt động rất chính xác! Oh and hot damn, it works!</p>
 
-<p>So what can we say about this generic adventure? Probably the same generic stuff as before: separating the generic from the specific is a great idea on every point. Maintenance is simpler, complexity is reduced, the code is safer, easier to test and less prone to bugs. If there are bugs, they are easier to fix. Generic servers are only one of the many available abstractions, but they're certainly one of the most used ones. We'll see more of these abstractions and behaviours in the next chapters.</p>
+<p>Vậy tổng kết lại chúng ta đã học được bài học gì từ hanh trình này? Có lẽ nó giống với lúc trước đó là sự phân tách từ các phần cụ thể  ra thành phần chung là một ý tưởng tuyệt vời.
+  Việc làm này sẽ giúp cho công việc bảo trì các đoạn mã, ứng dụng trở lên đỡ phức tạp, đơn giản và an toàn hơn, nó cũng giúp giảm lỗi gặp phải trong quá trình kiểm tra. Kể cả trong trường 
+  vẫn còn lỗi thì việc sửa chúng cũng dễ  dàng hơn. Mặc dù các server chung chỉ là một trong nhưng mâu trừu tượng có sẵn nhưng chúng là một trong các mẫu được sử  dụng nhiều nhất, và chúng 
+  ta sẽ thường xuyên bắt gặp các mẫy trừ tượng này và hành vi của chúng trong các chương tiếp theo.
+  So what can we say about this generic adventure? Probably the same generic stuff as before: separating the generic from the specific is a great idea on every point. Maintenance is simpler, 
+  complexity is reduced, the code is safer, easier to test and less prone to bugs. 
+  If there are bugs, they are easier to fix. Generic servers are only one of the many available abstractions, but they're certainly one of the most used ones. 
+  We'll see more of these abstractions and behaviours in the next chapters.</p>
 				<ul class="navigation">
 											<li><a href="what-is-otp.html" title="Previous chapter">&lt; Previous</a></li>
 										

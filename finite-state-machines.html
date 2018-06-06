@@ -36,19 +36,34 @@
 <h2>Rage Against The Finite-State Machines</h2>
 <h3><a class="section" name="what-are-they">What Are They?</a></h3>
 
-<p>A finite-state machine (FSM) is not really a machine, but it does have a finite number of states. I've always found finite-state machines easier to understand with graphs and diagrams. For example, the following would be a simplistic diagram for a (very dumb) dog as a state machine:</p>
+<p>Trong chương tiếp theo này chúng ta sẽ tìm hiểu về  máy trạng thái finite-state machine (FSM), vậy nó thực sự là gì ? máy trạng thái ( FSM ) trong Erlang vể  bản chất là một thuật ngữ để  chỉ 
+    các trạng thái của thứ gì đó thay vì coi nó là một dạng máy ( như máy ảo ). Để  hiểu đơn giản về  máy trạng thái tôi đã mô phỏng chúng dưới dạng đồ thị, sơ đồ.
+    vd như sơ đồ dưới đây là một minh họa đơn giản của một máy trạng thái cho hành vi của một chú chó.  
+    A finite-state machine (FSM) is not really a machine, but it does have a finite number of states. 
+    I've always found finite-state machines easier to understand with graphs and diagrams. 
+    For example, the following would be a simplistic diagram for a (very dumb) dog as a state machine:</p>
 
 <img class="center explanation" src="static/img/fsm_dog.png" width="284" height="161" alt="A dog supports 3 states: barks, wag tail and sits. A barking dog can have the action 'gets petted' applied to it, prompting a transition to 'wag tail'. If the dog waits for too long, it goes back to barks state. If it gets petted more, it will sit until it sees a squirrel and starts barking again" />
 
-<p>Here the dog has 3 states: sitting, barking or wagging its tail. Different events or inputs may force it to change its state. If a dog is calmly sitting and sees a squirrel, it will start barking and won't stop until you pet it again. However, if the dog is sitting and you pet it, we have no idea what might happen. In the Erlang world, the dog could crash (and eventually be restarted by its supervisor). In the real world that would be a freaky event, but your dog would come back after being ran over by a car, so it's not all bad.</p>
+<p>Giả sử  một chú chó sẽ có 3 trang thái cơ bản: ngôi, sửa và vẫy đuổi. Các sự kiện hoặc đầu vào khác nhau có thể  làm thay đổi trạng thái của nó.
+    nếu một chú chó đang ở trạng thái ngồi, bỗng trông thấy một con sóc chạy qua nó sẽ bắt đầu sủa cho tới khi bạn vuốt ve nó. Tuy nhiên nếu nó đang ngồi và bạn
+    vuốt ve nó thì se chả có gì xảy ra cả. Trong thế  giới của Erlang, một chú chó đại diện cho một tiến trình và có thể  crash ( thực tế  là nó sẽ được khởi động lại bởi supervisor).
+    Còn trong thực tế  thì điều này khá vô lý, khi mà một chú có có thể  quay lại sau khi bị một chiếc xe cán.     
+    Here the dog has 3 states: sitting, barking or wagging its tail. 
+    Different events or inputs may force it to change its state. 
+    If a dog is calmly sitting and sees a squirrel, it will start barking and won't stop until you pet it again. However, if the dog is sitting and you pet it, 
+    we have no idea what might happen. In the Erlang world, the dog could crash (and eventually be restarted by its supervisor). 
+    In the real world that would be a freaky event, but your dog would come back after being ran over by a car, so it's not all bad.</p>
 
-<p>Here's a cat's state diagram for a comparison:</p>
+<p>Còn đầy là biểu đồ  đối chiếu trạng của một chú mèo: Here's a cat's state diagram for a comparison:</p>
 
 <img class="center explanation" src="static/img/fsm_cat.png" width="200" height="102" alt="A cat only has the state 'doesn't give a crap about you' and can receive any event, remaining in that state." />
 
-<p>This cat has a single state, and no event can ever change it.</p>
+<p>Có vẻ như chú mèo này chỉ có duy nhất một trạng thái và không có sự kiện nào có thể  thay đổi trạng thái của nó. 
+    This cat has a single state, and no event can ever change it.</p>
 
-<p>Implementing the <a class="source" href="static/erlang/cat_fsm.erl.html">cat state machine</a> in Erlang is a fun and simple task:</p>
+<p>Việc thực hiện một  <a class="source" href="static/erlang/cat_fsm.erl.html">cat state machine</a> trong Erlang là một điều thú vị và khá đơn giản: 
+    Implementing the <a class="source" href="static/erlang/cat_fsm.erl.html">cat state machine</a> in Erlang is a fun and simple task:</p>
 
 <pre class="brush:erl">
 -module(cat_fsm).
@@ -75,7 +90,9 @@ dont_give_crap() -&gt;
 	dont_give_crap().
 </pre>
 
-<p>We can try the module to see that the cat really never gives a crap:</p>
+<p>Bay giờ chúng ta có thể  thử  kiểm tra đoạn mã trong module mà chúng ta vừa viết, 
+    bạn sẽ thấy chú mèo của chúng ta không bao giờ thay đổi gì cả:
+    We can try the module to see that the cat really never gives a crap:</p>
 
 <pre class="brush:eshell">
 1&gt; c(cat_fsm).
@@ -93,7 +110,9 @@ Switching to 'dont_give_crap' state
 {ok,meh}
 </pre>
 
-<p>The same can be done for the <a class="source" href="static/erlang/dog_fsm.erl.html">dog FSM</a>, except more states are available: </p>
+<p>tương tự chúng ta sẽ thực hiện cho trạng thái của một chú chó với module <a class="source" href="static/erlang/dog_fsm.erl.html">dog FSM</a>, ngoài ra sẽ thêm một số  trạng thái 
+    như chúng ta mô tả phía trên:
+    except more states are available: </p>
 
 <pre class="brush:erl">
 -module(dog_fsm).
@@ -141,7 +160,9 @@ sit() -&gt;
     end.
 </pre>
 
-<p>It should be relatively simple to match each of the states and transitions to what was on the diagram above. Here's the FSM in use:</p>
+<p>Tương đối dễ  dàng để  khớp với mỗi trạng thái và quá trình chuyển đổi với những gì được mô tả ở biểu đồ  trạng thái của chú chó phía trên. 
+    Dưới đây là cách sử  dụng máy trạng thái:  
+    It should be relatively simple to match each of the states and transitions to what was on the diagram above. Here's the FSM in use:</p>
 
 <pre class="brush:eshell">
 6&gt; c(dog_fsm).
@@ -181,40 +202,108 @@ Dog is sitting. Gooooood boy!
 pet
 </pre>
 
-<p>You can follow along with the schema if you want (I usually do, it helps being sure that nothing's wrong).</p>
+<p>Để  không khỏi rối khi kiểm tra, bạn có thể  làm theo lược đồ  nếu muốn  ( tôi vẫn thường hay làm vây vì nó sẽ đảm bảo việc kiểm tra dễ  dàng hơn và không mắc sai sót nào cả).
+    You can follow along with the schema if you want (I usually do, it helps being sure that nothing's wrong).</p>
 
-<p>That's really the core of FSMs implemented as Erlang processes. There are things that could have been done differently: we could have passed state in the arguments of the state functions in a way similar to what we do with servers' main loop. We could also have added an <code>init</code> and <code>terminate</code> functions, handled code updates, etc.</p>
+<p>Như ví dụ trên, có thể nhận thấy rằng bản chất cốt lỗi của máy trạng thái là các tiến trình Erlang. Có rất nhiều thứ mà chúng ta có thể  thực hiện: vd như chúng ta có thể 
+    truyền các trạng thái vào trong đối số  của các hàm trạng thái theo cùng cách mà chúng ta làm với hàm lặp chính ( main loop ) của server hay thêm các hàm như <code>init</code> và <code>terminate</code> 
+    , xử  lí cập nhật mã, etc.     
+    That's really the core of FSMs implemented as Erlang processes. There are things that could have been done differently: we could have passed state in the arguments of the state functions 
+    in a way similar to what we do with servers' main loop. We could also have added an <code>init</code> and <code>terminate</code> functions, handled code updates, etc.</p>
 
-<p>Another difference between the dog and cat FSMs is that the cat's events are <em>synchronous</em> and the dog's events are <em>asynchronous</em>. In a real FSM, both could be used in a mixed manner, but I went for the simplest representation out of pure untapped laziness. There are other forms of event the examples do not show: global events that can happen in any state.</p>
+<p>Giữa máy trạng thái của một chú chó và một chú mèo có một số  điểm khác nhau đó là các sự kiện trong cat là các sự kiện mang tính <em>đồng bộ ( synchronous )</em>, ngược lại 
+    với chú chó là mang tính chất  <em>bất đồng bộ ( asynchronous )</em>. Trong một máy trạng thái thực sự, có thể  sử  dụng cả hai sự kiên này, nhưng từ sự lười biếng thuần túy không rõ ràng, 
+    tôi đã chọn biểu diễn đơn giản nhất có thể. Ngoài ra có một số  dạng nữa của sự kiện tôi đã không đưa trong trong ví dụ: các sự kiện toàn cục có thể  xảy ra ở bất kỳ trạng thái nào.  
 
-<p>One example of such an event could be when the dog gets a sniff of food. Once the <code>smell food</code> event is triggered, no matter what state the dog is in, he'd go looking for the source of food.</p>
+    Another difference between the dog and cat FSMs is that the cat's events are <em>synchronous</em> and the dog's events are <em>asynchronous</em>. In a real FSM, both could be used
+    in a mixed manner, but I went for the simplest representation out of pure untapped laziness. There are other forms of event the examples do not show: global events that can happen 
+    in any state.</p>
 
-<p>Now we won't spend too much time implementing all of this in our 'written-on-a-napkin' FSM. Instead we'll move directly to the <code>gen_fsm</code> behaviour.</p>
+<p>Một ví dụ về  một sự kiện xảy ra khi một chú chó đánh hơi thấy mùi thức ăn. Khi sự kiện <code>smell food</code> được kích hoạt, chú chó sẽ chạy đi tìm kiếm nơi có đồ  ăn.
+    One example of such an event could be when the dog gets a sniff of food. Once the <code>smell food</code> event is triggered, no matter what state the dog is in, he'd go looking 
+    for the source of food.</p>
+
+<p>Không như trước khi, Sau khi làm quen với OTP chúng ta sẽ không dành quá nhiều thời gian cho việc thực hiện tất cả các máy trạng thái trong bản phác thảo thôi sơ của chúng ta 
+    mà thay vào đó chúng ta sẽ sử  dụng ngay hành vi <code>gen_fsm</code> trong OTP để  thực hiện.
+    Now we won't spend too much time implementing all of this in our 'written-on-a-napkin' FSM. Instead we'll move directly to the <code>gen_fsm</code> behaviour.</p>
 
 
 <h3><a class="section" name="generic-finite-state-machines">Generic Finite-State Machines</a></h3>
 
-<p>The <code>gen_fsm</code> behaviour is somewhat similar to <code>gen_server</code> in that it is a specialised version of it. The biggest difference is that rather than handling <em>calls</em> and <em>casts</em>, we're handling <em>synchronous</em> and <em>asynchronous</em> <em>events</em>. Much like our dog and cat examples, each state is represented by a function. Again, we'll go through the callbacks our modules need to implement in order to work.</p>
+<p>Cách sử  dụng hành vi trong  <code>gen_fsm</code> khá giống với những gì chúng ta làm với <code>gen_server</code>, hay có thể  nói <code>gen_fsm</code> 
+    là một phiên bản đặc biệt hơn của <code>gen_server</code>. Điểm khác biệt lớn nhất giữa hai trạng thái này đó là việc xử  lí lời gọi đông bộ và bất đồng bộ qua 
+    hai hàm <em>calls</em> và <em>casts</em> trong gen_server sẽ được thực hiện qua <em></em>các sự kiện</em>  <em>synchronous</em> và <em>asynchronous</em>.
+    tương tự như trong ví dụ về  trạng thái của chú mèo và chú chó kia, chúng ta đã biểu điễn mỗi trạng bằng một hàm. Một lần nữa, chúng ta sẽ liệt kê các 
+    hàm callback cân thực hiện trong module của chúng ta như cách mà chúng ta làm với gen_server.  
+    The <code>gen_fsm</code> behaviour is somewhat similar to <code>gen_server</code> in that it is a specialised version of it. 
+    The biggest difference is that rather than handling <em>calls</em> and <em>casts</em>, we're handling <em>synchronous</em> and <em>asynchronous</em> <em>events</em>.
+     Much like our dog and cat examples, each state is represented by a function. Again, we'll go through the callbacks our modules need to implement in order to work.</p>
 
 <h4>init</h4>
 
-<p>This is the same <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#init/1">init/1</a> as used for generic servers, except the return values accepted are <code>{ok, StateName, Data}</code>, <code>{ok, StateName, Data, Timeout}</code>, <code>{ok, StateName, Data, hibernate}</code> and <code>{stop, Reason}</code>. The <code>stop</code> tuple works in the same manner as for <code>gen_server</code>s, and <code>hibernate</code> and <var>Timeout</var> keep the same semantics.</p>
+<p><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#init/1">init/1</a> tương tự giống với hàm init sử  dụng trong gen_server,
+    chỉ khác biệt duy nhất đó là kết quả trả về  trong gen_fsm có thay đổi một chút, chúng sẽ có dạng <code>{ok, StateName, Data}</code>, <code>{ok, StateName, Data, Timeout}</code>, 
+    <code>{ok, StateName, Data, hibernate}</code>, <code>{stop, Reason}</code>. Còn lại ý nghĩa sử  dụng của <code>stop</code>, <code>hibernate</code> and <var>Timeout</var>
+    tượng tự như <code>gen_server</code>.
 
-<p>What's new here is that <var>StateName</var> variable. <var>StateName</var> is an atom and represents the next callback function to be called.</p>
+    This is the same <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#init/1">init/1</a> as used for generic servers, 
+    except the return values accepted are <code>{ok, StateName, Data}</code>, <code>{ok, StateName, Data, Timeout}</code>, 
+    <code>{ok, StateName, Data, hibernate}</code> and <code>{stop, Reason}</code>. The <code>stop</code> tuple works in the same manner as for <code>gen_server</code>s, 
+    and <code>hibernate</code> and <var>Timeout</var> keep the same semantics.</p>
+
+<p>Vậy sự khác biệt trong kết quả trả về  với biến <var>StateName</var>  ở đây là gì ? 
+    Nó chỉ đơn giản là một atom dùng để  biểu diễn hàm callback hay nói một cách dễ  hiểu là trạng thái tiếp theo được gọi tới.
+    What's new here is that <var>StateName</var> variable. <var>StateName</var> is an atom and represents the next callback function to be called.</p>
 
 <img class="right" src="static/img/dog.png" width="171" height="220" alt="A samoyed dog barking" />
 
 <h4>StateName</h4>
 
-<p>The functions <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#StateName/2">StateName/2</a> and <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#StateName/3">StateName/3</a> are placeholder names and you are to decide what they will be. Let's suppose the <code>init/1</code> function returns the tuple <code>{ok, sitting, dog}</code>. This means the finite state machine will be in a <code>sitting</code> state. This is not the same kind of state as we had seen with <code>gen_server</code>; it is rather equivalent to the <code>sit</code>, <code>bark</code> and <code>wag_tail</code> states of the previous dog FSM. These states dictate a context in which you handle a given event.</p>
+<p>Nhìn vào tài liệu bạn sẽ thấy các hàm <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#StateName/2">StateName/2</a> và 
+    <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#StateName/3">StateName/3</a> được định nghĩa trong gen_fsm, 
+    về bản chất chúng chỉ là một tên khái quát chung thôi và bạn có thể  tùy ý quyết định việc thay thế  tên của chúng. Để  hiểu rõ 
+    Chúng ta sẽ giả sử  rằng hàm <code>init/1</code> sẽ trả về  một bộ có giá trị <code>{ok, sitting, dog}</code>.
+    Khi đó máy trạng thái của chúng ta sẽ hiển thị trạng thái là <code>sitting</code>, đây không phải cùng lại trạng thái mà chúng ta đã thấy trong <code>gen_server</code>
+    trước đó, nó gần với trạng thái <code>sit</code>, <code>bark</code> và <code>wag_tail</code> mà chúng ta đã làm ở ví dụ máy trạng thái mô tả hành vi của một chú chó hơn.
+    Các trạng thái này sẽ đưa ra một ngữ cảnh mà bạn sẽ xử  lí bằng một sự kiện cụ thể.
+    The functions <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#StateName/2">StateName/2</a> and 
+    <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#StateName/3">StateName/3</a> 
+    are placeholder names and you are to decide what they will be. Let's suppose the <code>init/1</code> function returns the tuple <code>{ok, sitting, dog}</code>. 
+    This means the finite state machine will be in a <code>sitting</code> state. This is not the same kind of state as we had seen with <code>gen_server</code>; 
+    it is rather equivalent to the <code>sit</code>, <code>bark</code> and <code>wag_tail</code> states of the previous dog FSM. These states dictate a context in which you handle a 
+    given event.</p>
 
-<p>An example of this would be someone calling you on your phone. If you're in the state 'sleeping on a Saturday morning', your reaction might be to yell in the phone. If your state is 'waiting for a job interview', chances are you'll pick the phone and answer politely. On the other hand, if you're in the state 'dead', then I am surprised you can even read this text at all.</p>
+<p>Một ví dụ nữa đó là trường hợp khi một ai đó gọi điện thoại cho bạn. Nếu đang đang trong trạng thái 'ngáy khò khò vào sáng thứ 7', bạn có thể phản ứng lại 
+    cuộc điẹn thoại đó bằng cách hét vào nó. nhưng nếu đó là một cuộc gọi trong trang thái 'chờ đợi một cuộc phỏng vấn cho công việc', thì ngay lập tức bạn 
+    sẽ thức dậy cầm lấy điện thoại và lịch sử  trả lời. Trái lại, nếu bạn trong trạng thái 'chết' rồi thì tôi thật sự ngạc nhiên khi bạn có thẻ đọc hết được 
+    tất các các dòng chữ này.
+    An example of this would be someone calling you on your phone. If you're in the state 'sleeping on a Saturday morning', your reaction might be to yell in the phone. 
+    If your state is 'waiting for a job interview', chances are you'll pick the phone and answer politely. On the other hand, if you're in the state 'dead', 
+    then I am surprised you can even read this text at all.</p>
 
-<p>Back to our FSM. The <code>init/1</code> function said we should be in the <code>sitting</code> state. Whenever the <code>gen_fsm</code> process receives an event, either the function <code>sitting/2</code> or <code>sitting/3</code> will be called. The <code>sitting/2</code> function is called for asynchronous events and <code>sitting/3</code> for synchronous ones.</p>
+<p>quay lại với máy trạng thái, hàm <code>init/1</code> sẽ đưa cho chúng ta trạng thái lên là <code>sitting</code>. Và bất cứ khi nào 
+    tiến trình trong <code>gen_fsm</code> nhận được một sự kiện, nó sẽ gọi tới hàm <code>sitting/2</code> hoặc <code>sitting/3</code>, 
+    trong đó đó hàm <code>sitting/2</code> se dùng với lời gọi bất đồng bộ còn hàm  <code>sitting/3</code> sẽ sử dụng nếu như bạn muốm đồng bộ lời gọi.
+    
+    Back to our FSM. The <code>init/1</code> function said we should be in the <code>sitting</code> state. Whenever the <code>gen_fsm</code> process receives an event, 
+    either the function <code>sitting/2</code> or <code>sitting/3</code> will be called. The <code>sitting/2</code> function is called for asynchronous events and <code>sitting/3</code> 
+    for synchronous ones.</p>
 
-<p>The arguments for <code>sitting/2</code> (or generally <code>StateName/2</code>) are <var>Event</var>, the actual message sent as an event, and <var>StateData</var>, the data that was carried over the calls. <code>sitting/2</code> can then return the tuples <code>{next_state, NextStateName, NewStateData}</code>, <code>{next_state, NextStateName, NewStateData, Timeout}</code>, <code>{next_state, NextStateName, NewStateData, hibernate}</code> and <code>{stop, Reason, NewStateData}</code>.</p>
+<p>Tham số  trong <code>sitting/2</code> ( hay nói chung chung là tham số  trong <code>StateName/2</code>) sẽ là các biến  <var>Event</var>, hay thực tế  các tin nhắc 
+    sẽ được coi như một sự kiện được gửi đi và biến <var>StateData</var> là dữ liệu mà sẽ được gửi thông qua lời gọi. Với hàm <code>sitting/2</code> nó có thể  
+    trả về  kết qúa giá trị như sau  <code>{next_state, NextStateName, NewStateData}</code>, <code>{next_state, NextStateName, NewStateData, Timeout}</code>, <code>{next_state, NextStateName, NewStateData, hibernate}</code>,
+    và <code>{stop, Reason, NewStateData}</code>.   
+    The arguments for <code>sitting/2</code> (or generally <code>StateName/2</code>) are <var>Event</var>, the actual message sent as an event, and <var>StateData</var>, 
+    the data that was carried over the calls. <code>sitting/2</code> can then return the tuples <code>{next_state, NextStateName, NewStateData}</code>, 
+    <code>{next_state, NextStateName, NewStateData, Timeout}</code>, <code>{next_state, NextStateName, NewStateData, hibernate}</code> and <code>{stop, Reason, NewStateData}</code>.</p>
 
-<p>The arguments for <code>sitting/3</code> are similar, except there is a <var>From</var> variable in between <var>Event</var> and <var>StateData</var>. The <var>From</var> variable is used in exactly the same way as it was for <code>gen_server</code>s, including <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#reply/2">gen_fsm:reply/2</a>. The <code>StateName/3</code> functions can return the following tuples:</p>
+<p>Tham số  trong <code>sitting/3</code> tương tự như trong <code>sitting/2</code>, Ngoài ra có một biến  <var>From</var>  sẽ được thêm vào giữa hai biến
+    <var>Event</var> and <var>StateData</var>, và biến này không có gì lạ bởi nó sẽ được sử  dụng tương tự như cách mà chúng ta sử  dụng biến này trong 
+    <code>gen_server</code>, bao gôm cả hàm <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#reply/2">gen_fsm:reply/2</a>.
+    dưới đây là danh sách các kết quả mà hàm <code>StateName/3</code> có thể  trả về:
+    The arguments for <code>sitting/3</code> are similar, except there is a <var>From</var> variable in between <var>Event</var> and <var>StateData</var>. 
+    The <var>From</var> variable is used in exactly the same way as it was for <code>gen_server</code>s, including 
+    <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#reply/2">gen_fsm:reply/2</a>. The <code>StateName/3</code> functions can return the following tuples:</p>
 
 <pre class="expand">
 {reply, Reply, NextStateName, NewStateData}
@@ -229,45 +318,109 @@ pet
 {stop, Reason, NewStateData}
 </pre>
 
-<p>Note that there's no limit on how many of these functions you can have, as long as they are exported. The atoms returned as <var>NextStateName</var> in the tuples will determine whether the function will be called or not.</p>
+<p>Chú ý là không có giới hạn số  lượng hàm trạng thái mà bạn có thể  định nghĩa miến sao là chút được công khai qua export. các giá trị kết qủa atom trả về  có dạng <var>NextStateName</var>
+    trong bộ dữ liệu được sử  dụng để  xác định các hàm hay trạng thái tiếp theo sẽ được gọi hoặc là nếu không thay đổi bạn có thể  giữ nguyên chúng.
+    Note that there's no limit on how many of these functions you can have, as long as they are exported. The atoms returned as <var>NextStateName</var> in the tuples 
+    will determine whether the function will be called or not.</p>
 
 
 <h4>handle_event</h4>
 
-<p>In the last section, I mentioned global events that would trigger a specific reaction no matter what state we're in (the dog smelling food will drop whatever it is doing and will instead look for food). For these events that should be treated the same way in every state, the <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#handle_event/3">handle_event/3</a> callback is what you want. The function takes arguments similar to <code>StateName/2</code> with the exception that it accepts a <var>StateName</var> variable in between them, telling you what the state was when the event was received. It returns the same values as <code>StateName/2</code>.</p>
+<p>Trong phần trước, tôi đã nhắc đến các sự kiện toàn cục, đây là các các sự kiện sẽ kích hoạt một phản ứng nhất định mà không phụ thuộc 
+    vào trạng thái hiện tại (vd đã đề  cập qua việc một chú cho khi đánh hơi thấy mùi thức ăn sẽ ngay lập tức mọi hoạt động nó đang làm và chạy tìm 
+    tìm kiếm nơi có thức ăn ngay ). Đối với các sự kiện như vậy nó lên được coi như nhau ở mỗi trạng thái và bạn sử  dụng hàm 
+    callback <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#handle_event/3">handle_event/3</a> để  kích hoạt các sự kiện như vậy.
+    hàm này sẽ chấp nhận các tham số  tương tự như hàm  <code>StateName/2</code> với ngoại lệ việc chấp nhận thêm một biến <var>StateName</var>  giữa chúng,
+    biến này sẽ hiển thị trạng thái của sự kiện đã nhận được. kế  quả trả về  của hàm này tương tự như kết quả khi sử  dụng hàm  <code>StateName/2</code>.
+
+    In the last section, I mentioned global events that would trigger a specific reaction no matter what state we're in (the dog smelling food will drop whatever it is doing and will 
+    instead look for food). For these events that should be treated the same way in every state, the 
+    <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#handle_event/3">handle_event/3</a> callback is what you want. 
+    The function takes arguments similar to <code>StateName/2</code> with the exception that it accepts a <var>StateName</var> variable in between them, 
+    telling you what the state was when the event was received. It returns the same values as <code>StateName/2</code>.</p>
 
 <h4>handle_sync_event</h4>
 
-<p>The <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#handle_sync_event/4">handle_sync_event/4</a> callback is to <code>StateName/3</code> what <code>handle_event/2</code> is to <code>StateName/2</code>. It handles synchronous global events, takes the same parameters and returns the same kind of tuples as <code>StateName/3</code>.</p>
+<p>Ham callback <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#handle_sync_event/4">handle_sync_event/4</a> được sử  dụng cho hàm 
+    <code>StateName/3</code> trong khi <code>handle_event/2</code> sẽ được dùng với hàm <code>StateName/2</code>. Nó có nhiệm vụ xử  lí các sự kiện toàn cục, bằng cách chấp nhận 
+    cùng tham số  và trả về  bộ dữ liệu cùng loại với hàm <code>StateName/3</code>. 
+    The <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#handle_sync_event/4">handle_sync_event/4</a> callback is to <code>StateName/3</code> 
+    what <code>handle_event/2</code> is to <code>StateName/2</code>. It handles synchronous global events, takes the same parameters and returns the same kind of tuples as <code>StateName/3</code>.</p>
 
-<p>Now might be a good time to explain how we know whether an event is global or if it's meant to be sent to a specific state. To determine this we can look at the function used to send an event to the FSM. Asynchronous events aimed at any <code>StateName/2</code> function are sent with <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#send_event/2">send_event/2</a>, synchronous events to be picked up by <code>StateName/3</code> are to be sent with <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#sync_send_event/2">sync_send_event/2-3</a>.</p>
+<p>Bây giờ chúng ta đã có thể  giải thích một sự kiện được coi là toàn cục có hay chăng ý nghĩa được gửi tới một trạng thái cụ thể  như thế  nào, và để  xác định nhiều này 
+    chúng ta có thể  xét các hàm được sử  dụng để  gửi một sự kiện tới máy trạng thái . Như chúng ta đã biết đối với các sự kiện bất đồng bộ , hàm 
+    <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#send_event/2">send_event/2</a> sẽ sư dụng cùng với các hàm có dạng <code>StateName/2</code> ,
+    ngước lại hàm <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#sync_send_event/2">sync_send_event/2-3</a> sẽ được sử  dụng cùng với các hàm <code>StateName/3</code>
+    cho cá sự kiện đồng bộ.
+    
+    Now might be a good time to explain how we know whether an event is global or if it's meant to be sent to a specific state. To determine this we can look at the function used to 
+    send an event to the FSM. Asynchronous events aimed at any <code>StateName/2</code> function are sent with 
+    <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#send_event/2">send_event/2</a>, synchronous events to be picked up by <code>StateName/3</code> are to be sent with
+    <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#sync_send_event/2">sync_send_event/2-3</a>.</p>
 
-<p>The two equivalent functions for global events are <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#send_all_state_event/2">send_all_state_event/2</a> and <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#sync_send_all_state_event/2">sync_send_all_state_event/2-3</a> (quite a long name).</p>
+<p>Ngoài ra còn có hai hàm có nghĩa tượng tự được sử  dụng cho các sự kiện toàn cục chung đó là hàm <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#send_all_state_event/2">send_all_state_event/2</a>
+    và  <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#sync_send_all_state_event/2">sync_send_all_state_event/2-3</a> ( một cái tên khá dài ).
+    The two equivalent functions for global events are <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#send_all_state_event/2">send_all_state_event/2</a> and 
+    <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#sync_send_all_state_event/2">sync_send_all_state_event/2-3</a> (quite a long name).</p>
 
 
 <h4>code_change</h4>
 
-<p>This works exactly the same as it did for <code>gen_server</code>s except that it takes an extra state parameter when called like <code>code_change(OldVersion, StateName, Data, Extra)</code>, and returns a tuple of the form <code>{ok, NextStateName, NewStateData}</code>.</p>
+<p>hành vi tiếp theo chúng xét đó là code_change, hàm này về  ý nghĩa không có gì thay đổi so với hàm chúng ta đã làm trong <code>gen_server</code>, tuy nhiên trong <code>gen_fms</code>
+    nó sẽ chấp nhận thêm một tham số  trạng thái nữa có dạng <code>code_change(OldVersion, StateName, Data, Extra)</code> và trả về  bộ dữ liệu có dạng <code>{ok, NextStateName, NewStateData}</code>.   
+    This works exactly the same as it did for <code>gen_server</code>s except that it takes an extra state parameter when called like 
+    <code>code_change(OldVersion, StateName, Data, Extra)</code>, and returns a tuple of the form <code>{ok, NextStateName, NewStateData}</code>.</p>
 
 
 <h4>terminate</h4>
 
-<p>This should, again, act a bit like what we have for generic servers. <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#terminate/3">terminate/3</a> should do the opposite of <code>init/1</code>.</p>
+<p>Một lần nữa, hàm này không có sự khác biệt, ý nghĩa và cách sử  dụng của nó tương tự như trong gen_server, và cũng tương tự hàm <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#terminate/3">terminate/3</a> 
+    sẽ đối nghịch chức năng của hàm <code>init/1</code>  
+    This should, again, act a bit like what we have for generic servers. <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_fsm.html#terminate/3">terminate/3</a> 
+    should do the opposite of <code>init/1</code>.</p>
 
 
 <h3><a class="section" name="a-trading-system-specification">A Trading System Specification</a></h3>
 
-<p>It's time to put all of this in practice. Many Erlang tutorials about finite-state machines use examples containing telephone switches and similar things. It's my guess that most programmers will rarely have to deal with telephone switches for state machines. Because of that, we're going to look at an example which is more fitting for many developers: we'll design and implement an item trading system for some fictional and non-existing video game.</p>
+<p>Như vậy chúng ta đã xét qua các hành vi trong </code>gen_fsm</code> rồi, giờ sẽ là lúc đi vào luyện tập. Nếu bạn tìm kiếm, bạn có thể  sẽ thấy có rất nhiều các bài hướng dẫn 
+    nói về  máy trạng thái cùng với ví dụ mẫu về  telephone switches hay tương tự. Theo suy đoán của tôi mà nói thì hầu hết các lập trình viên rất hiếm khi phải làm việc cùng với 
+    những thứ như vậy với máy trạng thái. Do đó để  gần gũi quen thuộc hơn chúng ta sẽ tìm kiếm một ví dụ khác mà phù hợp hơn đối với các lập trình viên, trong phần này chúng ta 
+    sẽ thiết kế  và triển khai một hệ thống giao dịch cho một số  trò chơi điện tử  ( video game ) không tồn tại, hư cấu. 
+    It's time to put all of this in practice. Many Erlang tutorials about finite-state machines use examples containing telephone switches and similar things. 
+    It's my guess that most programmers will rarely have to deal with telephone switches for state machines. Because of that, we're going to look at an example which 
+    is more fitting for many developers: we'll design and implement an item trading system for some fictional and non-existing video game.</p>
 
-<p>The design I have picked is somewhat challenging. Rather than using a broker through which players route items and confirmations (which, frankly, would be easier), we're going to implement a server where both players speak to each other directly (which would have the advantage of being distributable). </p>
+<p>với hệ thống mà tôi đã chọn này sẽ có một chút khó khăn được đưa ra. thay vì sử  dụng một nhà chung gian để  người chơi có thể  gửi vật dụng và 
+    xác định ( thực tế  là sử  dụng cách này sẽ dễ  dàng hơn ), thì thay vào đó chúng ta sẽ triển khai một server để  thông qua đó hai người chơi sẽ trao đổi trực tiếp 
+    nhau ( cách làm này phức tạp hơn nhưng sẽ có một lợi thế  đối với một hệ thống phân tán ).
 
-<p>Because the implementation is tricky, I'll spend a good while describing it, the kind of problems to be faced and the ways to fix them.</p>
+    The design I have picked is somewhat challenging. Rather than using a broker through which players route items and confirmations (which, frankly, would be easier),
+     we're going to implement a server where both players speak to each other directly (which would have the advantage of being distributable). </p>
 
-<p>First of all, we should define the actions that can be done by our players when trading. The first is asking for a trade to be set up. The other user should also be able to accept that trade. We won't give them the right to deny a trade, though, because we want to keep things simple. It will be easy to add this feature once the whole thing is done.</p>
+<p>Bởi vì sự phức tạp của hệ thống, tôi sẽ dành nhiều thời gian để  mô tả nó trước khi thực hiện, tôi sẽ đề  cập tới các loại vẫn đề  mà chúng ta sẽ 
+    gặp phải khi triển khai hệ thống này và cách khắc phục chúng. 
+    Because the implementation is tricky, I'll spend a good while describing it, the kind of problems to be faced and the ways to fix them.</p>
 
-<p>Once the trade is set up, our users should be able to negotiate with each other. This means they should be able to make offers and then retract them if they want. When both players are satisfied with the offer, they can each declare themselves as ready to finalise the trade. The data should then be saved somewhere on both sides. At any point in time, it should also make sense for any of the players to cancel the whole trade. Some <dfn title="A member of the common people; the populace">pleb</dfn> could be offering only items deemed unworthy to the other party (who might be very busy) and so it should be possible to backhand them with a well-deserved cancellation.</p>
+<p>Đầu tiên, chúng ta cần xác định các hành động, hành vi có thể  xảy ra giữa các người choi khi giao dịch với nhau. Khi hai người chơi muốn trao đổi vật dụng với nhau thì việc làm đầu tiên 
+    mà họ cần làm đó là yêu cầu để  thiết lập một giao dịch. Trong trường hợp đó các người chơi khác có thể  chấp nhận hay từ chối giao dịch này, tuy nhiên để  đơn giản trong ví dụ này 
+    chúng ta sẽ không cho phép họ từ chối giao dịch. Trong trường hợp bạn muốn chức năng này, thì chúng ta có thể  thêm vào sau khi hoàn thành hệ thống ban đầu.
 
-<p>In short, the following actions should be possible:</p>
+    First of all, we should define the actions that can be done by our players when trading. The first is asking for a trade to be set up. The other user should also be able to accept 
+    that trade. We won't give them the right to deny a trade, though, because we want to keep things simple. It will be easy to add this feature once the whole thing is done.</p>
+
+<p>Một khi giao dịch được thiết lập, người chơi của chúng ta có thể  thương lượng với nhau. Như vậy có nghĩa là họ có thể  đưa ra các đề  xuất hay rút lại các đề  xuất đó nếu họ muốn.
+    Khi cả hai người chơi hài lòng với đê xuất được đưa ta, đôi bên có thể  tuyên bố  sẵn sáng của họ để  kết thúc giao dịch. Các thông tin, dữ liệu giao dịch lên được lưu trữ 
+    trên cả hai phía ở bất kỳ thời điểm nào, bất kỳ cách nào đê bất kỳ người chơi nào cũng có thể  hủy toàn bộ giao dịch. Bởi vì sẽ có trường một <dfn title="A member of the common people; the populace">pleb</dfn> 
+    ( một thuật ngữ để  nói tới những người chơi bình thường ) có thể  sẽ cung cấp một số vật dụng không đáng tin cậy hay nói cách khác là lừa đảo cho bên kia ( chỉ những người 
+    có thể  khá bận rộn ), do đó những người chơi họ hoan toàn có thể  hủy giao dịch một cách thích đáng.
+
+    Once the trade is set up, our users should be able to negotiate with each other. This means they should be able to make offers and then retract them if they want. 
+    When both players are satisfied with the offer, they can each declare themselves as ready to finalise the trade. The data should then be saved somewhere on both sides. 
+    At any point in time, it should also make sense for any of the players to cancel the whole trade. Some <dfn title="A member of the common people; the populace">pleb</dfn> 
+    could be offering only items deemed unworthy to the other party (who might be very busy) and so it should be possible to backhand them with a well-deserved cancellation.</p>
+
+<p>Tóm lại, các hành động có thể  diễn ra giữa các người chơi với nhau trong một giao dịch có thể  như sau: 
+    In short, the following actions should be possible:</p>
 
 <ul>
     <li>ask for a trade</li>
@@ -278,11 +431,18 @@ pet
     <li>brutally cancel the trade</li>
 </ul>
 
-<p>Now, when each of these actions is taken, the other player's FSM should be made aware of it. This makes sense, because when Jim tells his FSM to send an item to Carl, Carl's FSM has to be made aware of it. This means both players can talk to their own FSM, which will talk to the other's FSM. This gives us something a bit like this:</p>
+<p>Bây giờ chúng ta đã xác định được các hành động rồi, vì vậy khí mỗi hành động được thực hiện, máy trạng thái của các người chơi lên nhận thức được các hành động này. 
+    Tức là nếu một ai đó tên là Jim ra lệnh với máy trạng thái của anh ta gửi môt vật dụng tới cho người nào đó tên Carl, lúc này máy trạng thái của Carl phải nhận thức 
+    được điều này. Hay nói một cách khác đó là cả hai người chơi sẽ giao tiếp, trao đổi với nhau thông qua máy trạng thái của họ và từ đó trao đổi giao tiếp với máy trạng thái của người khác.
+    Nó có thể  được mô tả thông qua một lược dồ  giống như sau:
+    Now, when each of these actions is taken, the other player's FSM should be made aware of it. This makes sense, 
+    because when Jim tells his FSM to send an item to Carl, Carl's FSM has to be made aware of it. This means both players can talk to their own FSM, 
+    which will talk to the other's FSM. This gives us something a bit like this:</p>
 
 <img class="center explanation" src="static/img/fsm_talk.png" width="336" height="55" alt="Jim &lt;--&gt; Jim's FSM  &lt;---&gt; Carl's FSM &lt;--&gt; Carl" />
 
-<p>The first thing to notice when we have two identical processes communicating with each other is that we have to avoid synchronous calls as much as possible. The reason for this is that if Jim's FSM sends a message to Carl's FSM and then waits for its reply while at the same time Carl's FSM sends a message over to Jim's FSM and waits for its own specific reply, both end up waiting for the other without ever replying. This effectively freezes both FSMs. We have a deadlock.</p>
+<p>Điều đầu tiên cần lưu ý đó là khi có hai tiến trình cần giao tiếp 
+    The first thing to notice when we have two identical processes communicating with each other is that we have to avoid synchronous calls as much as possible. The reason for this is that if Jim's FSM sends a message to Carl's FSM and then waits for its reply while at the same time Carl's FSM sends a message over to Jim's FSM and waits for its own specific reply, both end up waiting for the other without ever replying. This effectively freezes both FSMs. We have a deadlock.</p>
 
 <p>One solution to this is to wait for a timeout and then move on, but then there will be leftover messages in both processes' mailboxes and the protocol will be messed up. This certainly is a can of worms, and so we want to avoid it.</p>
 

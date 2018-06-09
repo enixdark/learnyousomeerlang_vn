@@ -1,0 +1,612 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="Content-Style-Type" content="text/css" />
+		<meta name="keywords" content="Erlang, function, higher order, anonymous, closure, funs, map, fold, filter, scope" />
+		<meta name="description" content="Higher order functions: how to pass functions as parameters to other functions, declare anonymous functions (funs), understanding scopes and the concept of closures." />
+        <meta name="google-site-verification" content="mi1UCmFD_2pMLt2jsYHzi_0b6Go9xja8TGllOSoQPVU" />
+		<link rel="stylesheet" type="text/css" href="static/css/screen.css%3Fv3.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="static/css/sh/shCore.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="static/css/sh/shThemeLYSE2.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="static/css/print.css" media="print" />
+		<link href="rss" type="application/rss+xml" rel="alternate" title="LYSE news" />
+		<link rel="icon" type="image/png" href="favicon.ico" />
+		<link rel="apple-touch-icon" href="static/img/touch-icon-iphone.png" />
+		<link rel="apple-touch-icon" sizes="72x72" href="static/img/touch-icon-ipad.png" />
+		<link rel="apple-touch-icon" sizes="114x114" href="static/img/touch-icon-iphone4.png" />
+		<title>Higher Order Functions | Learn You Some Erlang for Great Good!</title>
+	</head>
+	<body>
+		<div id="wrapper">
+			<div id="header">
+				<h1>Learn you some Erlang</h1>
+				<span>for great good!</span>
+			</div> <!-- header -->
+			<div id="menu">
+				<ul>
+					<li><a href="content.html" title="Home">Home</a></li>
+					<li><a href="faq.html" title="Frequently Asked Questions">FAQ</a></li>
+					<li><a href="rss" title="Latest News">RSS</a></li>
+					<li><a href="static/erlang/learn-you-some-erlang.zip" title="Source Code">Code</a></li>
+				</ul>
+			</div><!-- menu -->
+			<div id="content">
+            <div class="noscript"><noscript>Hey there, it appears your Javascript is disabled. That's fine, the site works without it. However, you might prefer reading it with syntax highlighting, which requires Javascript!</noscript></div>
+<h2>Higher Order Functions</h2>
+<h3><a class="section" name="get-functional">Let's get functional</a></h3>
+
+<img class="left" src="static/img/lambda.png" width="128" height="172" alt="A lambda symbol with a sexy mustache" title="lambdude!" />
+
+<p>Trong các chương trước chúng ta đã tiếp cận rất nhiều các thành phàn quan trong của ngôn ngữ lập trình rồi ( danh sách, đệ quy ),
+    ở chương này ta cũng tìm hiểu một thành phần cũng quan trong không kém.
+    Như bạn biết trong một số  ngôn ngữ đôi khi ta thấy định nghĩa một hàm, sau đó dùng hàm đó như một tham số  đầu vào cho một hàm khác.
+    nói cách khác, hàm sẽ được coi như một tham số , biến và có thể sử  dụng như bất kỳ các biến nào khác trong một hàm.
+    những hàm như thế  này được gọi dưới một cái tên là <em>higher order function</em>. <em>Higher order function</em>
+    là một hàm chấp nhận một hàm khác như một tham số  truyền vào. Higher order functions là một phương pháp trừu tượng mạnh mẽ 
+    và là công cụ tốt nhất trong Erlang.</p>
+
+<p>Hơn nữa, nguồn gôc của khai niệm này xuất phát từ toán học, cụ thể  là <a class="external" href="http://en.wikipedia.org/wiki/Lambda_calculus" title="Wikipedia to the rescue!">lambda calculus</a>. 
+    tôi sẽ không đi sâu vào lambda calculus bởi vì rất khó để  có thể  nắm vững được lý thuyết này trong thời gian ngắn và nó vượt xa khỏi những kiến thức mà chúng ta
+    cần trong chương này, tuy vậy tôi vẫn sẽ mô tả một cách ngắn gọn, nó như một hệ thống trong đó mọi thứ là hàm, thậm chí là số .
+    bởi vì bất kỳ những hàm nào, những hàm chấp nhận các hàm khác như một tham số và có thể  sử  dụng chùng cùng với các hàm khác!</p>
+
+<p>Vâng, có một chút lã lẫm và khó để  hình dung dựa trên lý thuyết , do đó chúng ta sẽ đi vào các ví dụ cụ thể  để  hiẻu rõ hơn:</p>
+
+<pre class="brush:erl">
+-module(hhfuns).
+-compile(export_all).
+
+one() -&gt; 1.
+two() -&gt; 2.
+
+add(X,Y) -&gt; X() + Y().
+</pre>
+
+<p>Hãy lưu lại vào một file module và biên dịch, sau đó mở shell lên và gõ:</p>
+
+<pre class="brush:eshell">
+1&gt; c(hhfuns).
+{ok, hhfuns}
+2&gt; hhfuns:add(one,two).
+** exception error: bad function one
+     in function  hhfuns:add/2
+3&gt; hhfuns:add(1,2).
+** exception error: bad function 1
+     in function  hhfuns:add/2
+4&gt; hhfuns:add(fun hhfuns:one/0, fun hhfuns:two/0).
+3
+</pre>
+
+<p>Thật khó hiểu? tại sao dòng lệnh số  2 lại không hoạt động ? Nếu bạn hiểu được nguyên tắc làm việc của việc dùng hàm như một tham số  trong Erlang, 
+    thì nó sẽ trở nên rõ ràng hơn. Như ta thấy ở dòng số  hai, atom <code>one</code> và <code>two</code> được truyền vào hàm <code>add/2</code>, 
+    ở phía trên chúng ta định nghĩa 2 <code>one/0</code> và <code>two/0</code> và sử  dụng hai atom này cho tên của hai hàm 
+    và gọi (<code>X() + Y()</code>). tuy nhiên trong Erlang , nếu tên của hàm mà được viết không cùng với một danh sách sách đối số  truyền vào thì 
+    trình dịch vẫn hiểu nó như một atom thường, do giải thích lí do tại sao trong thân hàm ở dòng lệnh số  hai không hoạt động.
+    Tương tự giải thích cho dòng lệnh số  3, ta truyền vào hai giá trị là kiểu dữ liệu số , so đó nó không thể  hoạt động được bởi vì hai giá trị đó không phải là 
+    hàm.</p>
+
+<p>Vì vây, chúng ta phải sử  dụng một phương pháp mới để  có thể  sử  dụng một hàm như một đôi số  truyền vào hàm khác và gọi nó bên trong hàm đó. 
+    Trong Erlang chúng ta sẽ sử  dụng công thức <code>fun Module:Function/Arity</code>: tượng tự như vd dòng lệnh thứ 4, 
+    khi sử  dụng công thức này , máy ảo sẽ ghi nhận nó như hôm hàm, và cho phép gán với một giá trị.</p>
+
+<p>Vậy những gì chúng ta sẽ nhận được từ việc sử  dụng các hàm theo cách này ? 
+    Để  hiêỉ hơn chúng ta sẽ đi xét một ví dự cụ thể. , chúng ta sẽ đinh nghĩa hai hàm <code>increment</code> và <code>decrement</code>
+    và đặt chúng trong module <code><a class="source" href="static/erlang/hhfuns.erl.html" title="final implementation">hhfuns</a></code> 
+    , hai hàm này sẽ ứng với tên gọi của nó, được dùng để  tăng giảm giá trị của các số  nguyen trong một danh sách lên một đơn vị, và ta sẽ sử  dụng đệ quy để  viêt chúng:</p>
+
+<pre class="brush:erl">
+increment([]) -&gt; [];
+increment([H|T]) -&gt; [H+1|increment(T)].
+
+decrement([]) -&gt; [];
+decrement([H|T]) -&gt; [H-1|decrement(T)].
+</pre>
+
+<p>Bạn có thể  nhin thấy sự tương đồng giữa hai hàm trên ? về  cơ bản chúng không khác nhau: duyêt một danh sách, 
+    ở mối phần tử  của danh gọi tới toán tử  <code>+</code> hay <code>-</code>, và tiếp tục lặp lại cho tới cuối dánh sách 
+    . Hầu như chúng không có gì thay đổi nhiều trong đoạn mã ngoại trừ việc áp dụng toán tử  ( hoặc có thể  là hàm ) và lời gọi đệ quy hai hàm khác nhau.
+    Còn lại các thành phần như làm việc với một danh sách bên trong lời gọi đệ quy là như nhau. 
+    Từ dó, chúng ta có thể  quy ước các thanh phần tương tự nhau như vậy vào một hàm chung , gọi là <code>map/2</code>, hàm này sẽ 
+    nhận một đầu vào là một hàm khác như một đối số :</p>
+
+<pre class="brush:erl">
+map(_, []) -&gt; [];
+map(F, [H|T]) -&gt; [F(H)|map(F,T)].
+
+incr(X) -&gt; X + 1.
+decr(X) -&gt; X - 1.
+</pre>
+
+<p>Giờ hãy biên dịch đoạn mã trên và mở shell lên để  kiểm tra:</p>
+
+<pre class="brush:eshell">
+1&gt; c(hhfuns).
+{ok, hhfuns}
+2&gt; L = [1,2,3,4,5].
+[1,2,3,4,5]
+3&gt; hhfuns:increment(L).
+[2,3,4,5,6]
+4&gt; hhfuns:decrement(L).
+[0,1,2,3,4]
+5&gt; hhfuns:map(fun hhfuns:incr/1, L).
+[2,3,4,5,6]
+6&gt; hhfuns:map(fun hhfuns:decr/1, L).
+[0,1,2,3,4]
+</pre>
+
+<p>Để  ý rằng kết qủa của hàm gọi từ module và hàm gọi từ higher older function là như nhau.
+    nhưng cách viết của higher older function mà bạn vừa tạo ra trông rất smart abstraction! 
+    bằng cách sử  dụng higher older function, mỗi khi bạn muốn áp dụng một hàm hay một biểu thử  cho mỗi một phần tử  trong danh sách 
+    bạn chỉ cần sử  dụng hàm đó nhu một tham số  truyền vào tới hàm <code>map/2</code> thay vì nhưng trước ta đưa ra chi tiết hàm cần gọi hàm bên trong. 
+    Tuy vậy, có một chút phiền phức khi mỗi lần muón truyền vào một hàm tới <code>map/2</code> ta lại phải định nghĩa tên một hàm, export , và biên dịch nó, etc.
+
+    However, it is a bit annoying to have to put every function we want to pass as a parameter to <code>map/2</code> in a module, name it, export it, then compile it, etc. 
+    In fact it's plainly unpractical. What we need are functions that can be declared on the fly...</p>
+
+
+<h3><a class="section" name="anonymous-functions">Hàm ẩn danh (Anonymous functions)</a></h3>
+
+<p>Anonymous functions , viết là <em>funs</em>, để giải quyết vấn đề  trên, đây là một hàm đặc biêt được dùng 
+    bên trong (inline) một module hay hàm ( sử  dụng cục bộ ) và không cân phải khai báo tên hàm,
+    . bởi vì chúng không được đặt tên do đó ngoài trừ việc không thể  sử  dụng chúng như một hàm đệ quy (how could they do it if they are anonymous?) ra còn lại 
+    chúng có hoạt động như một hàm thông thường được, cú pháp định nghĩa đối với anonymous functions như sau:</p>
+
+<pre class="brush:erl">
+fun(Args1) -&gt;
+    Expression1, Exp2, ..., ExpN;
+   (Args2) -&gt;
+    Expression1, Exp2, ..., ExpN;
+   (Args3) -&gt;
+    Expression1, Exp2, ..., ExpN
+end
+</pre>
+
+<p>Bạn có thấy thấy chúng không khác nhiều định nghĩa một hàm thông thường, và chúng có thể  đươc sử dụng theo các cách sau:</p>
+
+<pre class="brush:eshell">
+7&gt; Fn = fun() -&gt; a end.
+#Fun&lt;erl_eval.20.67289768&gt;
+8&gt; Fn().
+a
+9&gt; hhfuns:map(fun(X) -&gt; X + 1 end, L).
+[2,3,4,5,6]
+10&gt; hhfuns:map(fun(X) -&gt; X - 1 end, L).
+[0,1,2,3,4]
+</pre>
+
+<p>Giờ có lẽ bạn phần nào hiểu tạo tại sao nhiều người thích thú với lập trình hàm: 
+    đây là một trong những khẳ  năng tạo ra các dữ liệu trức tượng ở mức thấp của mã (low level of code). 
+    Khái niệm này giống với vòng lặp do đó chúng sẽ tập trung vào những gì chúng làm được hơn là tìm hiểu cách hoạt đống của chúng.</p>
+
+<p>Anonymous functions are already pretty dandy for such abstractions but they still have more hidden powers:</p>
+
+<pre class="brush:eshell">
+11&gt; PrepareAlarm = fun(Room) -&gt;
+11&gt;                      io:format("Alarm set in ~s.~n",[Room]),
+11&gt;                      fun() -&gt; io:format("Alarm tripped in ~s! Call Batman!~n",[Room]) end
+11&gt;                   end.
+#Fun&lt;erl_eval.20.67289768&gt;
+12&gt; AlarmReady = PrepareAlarm("bathroom").
+Alarm set in bathroom.
+#Fun&lt;erl_eval.6.13229925&gt;
+13&gt; AlarmReady().
+Alarm tripped in bathroom! Call Batman!
+ok
+</pre>
+
+
+<p>Gọi cho Batman đi! Chuyện quái gì đang xảy ra ở đây vậy ? 
+   Trước tiện , chúng ra khai báo một anonymous function và gán nó vào biến <var>PrepareAlarm</var>. 
+   để  ý rằng sau khi gán, hàm này vẫn chưa được thực thi: 
+   chỉ cho tới khi chúng ra gọi <code>PrepareAlarm("bathroom")</code> , nó mới được thực. 
+   <img class="left" src="static/img/batman.png" width="137" height="224" alt="Batman with a manly mustache" title="le batman" /> 
+   tuy nhiên hãy để  ý tại thời điểm ta gán tới biến, ở biểu thức thứ nhất lời gọi hàm<code>io:format/2</code> đã được thẩm định và thực hiện cùng với dòng chữ 
+   "Alarm set" đã được in ra. Nhưng ở biêủ thức thứ hai ( một anonymous function khác ) 
+   , nó sẽ trả về  một hàm gán và gán tới biến <var>AlarmReady</var>. 
+   Lưu ý rằng trong hàm này, giá trị của biến <var>Room</var> được lấy từ hàm 'cha' (<var>PrepareAlarm</var>). 
+   Chắc hẳn với những ai đã làm quen với một số  ngôn ngữ lập trình Prototype ( Lua , Javácript ) sẽ thấy quen thuộc ,đây là một trong những khái niệm liên qua tới <em>closures</em>.</p>
+
+<p>Để hiểu rõ ràng vè closures, đâu tiên ta phải hiểu phạm vị hoạt động ( scope ) của chúng trước đã. 
+    phạm vi hoạt động của một hàm có thể được hình dưng như nơi mà tất cá các biến và giá trị của chúng được lưu trữ 
+    . Ví dụ như trong hàm <code>base(A) -&gt; B = A + 1.</code>, biến <var>A</var> vf biến <var>B</var> là  một phần được định nghĩa trong hàm <code>base/1</code>. 
+    tức là ở bất cứ nơi nào trong hàm <code>base/1</code>, bạn đều có thể  gọi tới và sử  dụng biến <var>A</var> và biến <var>B</var> 
+    . Khi tôi nối 'bất cứ đâu', đó không phải là trò đùa, hãy nhìn ví dụ đây, ngay cả trong anonymous functions cũng có thể  được:</p>
+
+<pre class="brush:erl">
+base(A) -&gt;
+    B = A + 1,
+    F = fun() -&gt; A * B end,
+    F().
+</pre>
+
+<p>hay nhìn biến <var>B</var> và biến <var>A</var> vẫn nằm trong phạm vi của hàm <code>base/1</code>, 
+    và hàm <var>F</var> có thể  truy cập , sử  dụng được chúng. 
+    giải thích điều này là bởi vì hàm <var>F</var> đang kế  thừa các biến trong phạm vi định nghĩa của hàm <code>base/1</code>. 
+    Tương tự với hầu hết các loại kế thừa trong thực tế, con sẽ được thừa hưởng tất cả nhưng gì cha có nhưng ngược lại cha không thể 
+    có những gì mà con đang có:</p>
+
+<pre class="brush:erl">
+base(A) -&gt;
+    B = A + 1,
+    F = fun() -&gt; C = A * B end,
+    F(),
+    C.
+</pre>
+
+<p>Ở hàm trên, biến <var>B</var> được gán băng giá trị của <code>A + 1</code> và định nghĩa một anonymous function <var>F</var>, bên trong đó ta tại ra một biến 
+    <var>C</var>, và chúng ta sẽ sủ dụng hàm <var>F</var> ngay sau biểu thức định nghĩa của nó.Tuy nhiên, 
+    hay để  ý, biến <var>C</var> chỉ có phạm vi hoạt động bên trong thân của hàm <var>F</var>. 
+    ở biểu thức cuối trong thân hàm <code>base/1</code>, lỗi sẽ xảy ra nếu nó cố  truy cập vào biến <var>C</var>, 
+    bởi vì máy ảo nhìn nhận nó như một biến chưa được liên kết giá trị it ( unbound variable ).</p>
+
+<p>đây là một trong những điểm lưu ý về  phạm vi kế thừa của một It is important to note that the inherited scope follows the anonymous function wherever it is, 
+    thậm chí ngay cả khi nó được truyền vào một hàm khác:</p>
+
+<pre class="brush:erl">
+a() -&gt;
+    Secret = "pony",
+    fun() -&gt; Secret end.
+
+b(F) -&gt;
+    "a/0's password is "++F().
+</pre>
+
+<p>Hãy biên dịch và kiểm tra hàm trên</p>:</p>
+
+<pre class="brush:eshell">
+14&gt; c(hhfuns).
+{ok, hhfuns}
+15&gt; hhfuns:b(hhfuns:a()).
+"a/0's password is pony"
+</pre>
+
+<p>Who told <code>a/0</code>'s password? Well, <code>a/0</code> did. 
+    như đã giải thích ở trên, một anonymous function được khai báo bên trong hàm <code>a/0</code>, 
+    và hàm <code>b/1</code> vẫn có quyền truy cập vào anonymous function đó. 
+    Đây là một trong những đặc tính rất hữu ích, nó sẽ cho phép chúng ta mạng nội dung và các tham số  ra bên ngoài sử  dụng
+    ( giống như cách mà chúng ta đã làm với Batman ở ví dụ trước đó ).</p>
+
+<p>Các anonymous functions thường được sử  dụng để  lưu trạng thái khi bạn muốn to định nghĩa một hàm với nhiều đối số, nhưng một trong số  các đối số  này có giá trị
+    không đổi ( constant ), vd:</p>
+
+<pre class="brush:eshell">
+16&gt; math:pow(5,2).
+25.0
+17&gt; Base = 2.
+2
+18&gt; PowerOfTwo = fun(X) -&gt; math:pow(Base,X) end.
+#Fun&lt;erl_eval.6.13229925&gt;
+17&gt; hhfuns:map(PowerOfTwo, [1,2,3,4]).
+[2.0,4.0,8.0,16.0]
+</pre>
+
+<p>Như bạn thấy, bằng cách đặt lời gọi hàm <code>math:pow/2</code> vào bên trong một anonymous function cùng với một biến không đôi <var>Base</var> 
+   đã được gán giá trị, 
+   chúng ta có thể  sử  dụng <var>PowerOfTwo</var> như một biến truyền vào hàm <code>hhfuns:map/2</code> để  áp dụng cho mỗi phần tử của một 
+   danh sách số  nguyên.</p>
+
+<!-- Secret for you crazy people who read the html comments! Just copy/paste this or something! -->
+<!-- 
+<p>In fact, this [closure] principle alone is enough to let you implement basic classes and simple object-oriented programming. Take this <a class="source" href="http://learnyousomeerlang.com/static/erlang/oop.erl" title="final implementation">oop.erl</a> module as an overused 'dog is an animal' example:</p>
+
+<pre class="brush:erl">
+-module(oop).
+-export([animal/1, dog/1, cat/1]).
+
+%% all the method calls need to be in tuples when they have more than
+%% one argument so we can use functions of arity 1 for every call we make.
+
+animal(Name) -&gt;
+    fun(type) -&gt; "living thing";
+       (name) -&gt; Name;
+       (move) -&gt; Name++" moves around...";
+       ({eat, Item}) -&gt; Name++" eats "++Item;
+       (_) -&gt; "I'm sorry Dave, I can't do that."
+    end.
+
+dog(Name) -&gt;
+    Parent = animal(Name),
+    fun(talk) -&gt; Name++" says: Woof!";
+       ({chase, Animal}) when is_function(Animal) -&gt;
+            Name++" chases a "++Animal(type)++" named "++Animal(name)++" around";
+       (X) -&gt; Parent(X)
+    end.
+
+cat(Name) -&gt;
+    Parent = animal(Name),
+    fun(type) -&gt; "cat";
+       (talk) -&gt; Name++" says: Meow!";
+       (X) -&gt; Parent(X)
+    end.
+</pre>
+
+<p>And to use it:</p>
+
+<pre class="brush:eshell">
+16&gt; c(oop).
+{ok, oop}
+17&gt; Bird = oop:animal("Bird").
+#Fun&lt;oop.0.88943279&gt;
+18&gt; Bird(type).
+"living thing"
+19&gt; Bird({eat, worm}).
+"Bird eats worm"
+20&gt; Dog = oop:dog("Raptor-Dog").
+#Fun&lt;oop.1.133772145&gt;
+21&gt; Dog(talk).
+"Raptor-Dog says: Woof!"
+22&gt; Dog(name).
+"Raptor-Dog"
+23&gt; Cat = oop:cat("Sgt. McMittens").
+#Fun&lt;oop.2.66956814&gt;
+24&gt; Cat(type).
+"cat"
+25&gt; Dog({chase, Cat}).
+"Raptor-Dog chases a cat named Sgt. McMittens around"
+26&gt; Cat({play, "yarn"}).
+"I'm sorry Dave, I can't do that."
+</pre>
+
+<img class="right" src="http://learnyousomeerlang.com/static/img/raptor-dog.png" width="240" height="191" alt="A dog and a raptor: raptor-dog, the best kind of dog." />
+
+<p>Alright, this is not very impressive when we compare it to real OOP languages, but we still managed to cover concepts such as class inheritance, method overriding and constructors (albeit in a terribly basic manner). The important lesson here is that closures can be used to carry state around from function to function. <strong>Note that you should <em>not</em> write new Erlang programs based on that OOP example; nobody does that.</strong> It's an example and nothing more.</p> -->
+
+<p>Với một số  ngôn ngữ khác bạn được phép thay đổi phạm vi của biến trong,
+    nhưng với Erlang, chúng ta không được phép thay đổi giá trị khi nó đã có giá trị liên kết rồi do đó chương trình sẽ báo lỗi 
+    nếu bạn cố  gắng định nghĩa lại phạm vi của bién trong anonymous functions:</p>
+
+<pre class="brush:erl">
+base() -&gt;
+    A = 1,
+    (fun() -&gt; A = 2 end)().
+</pre>
+
+<p>Bởi vì ban đầu bạn định nghĩa một biên <var>A</var> và liên kết nó với một giá trị, sau đó định nghĩa anonymous function và gọi.  
+    Ta thấy anonymous function sẽ kế  thừa phạm vi của hàm <code>base/0</code>, 
+    Do đó nó cũng sẽ kế thừa biến <var>A</var>, trong hàm anonymous function bạn lại sử  dụng toán tử 
+    <code>=</code> để so sánh khớp biến <var>A</var> với giá trị 2 nhưng bién <var>A</var> đã được liên kết với giá trị trước đó rôi (liên kết với 1). 
+    Do đó nó không được phép và dẫn tới lỗi. 
+    tuy nhiên chúng ta vẫn có cách để  định nghĩa lại giá trị của một biến bằng cách sử  dụng hàm lồng nhau như sau:</p>
+
+<pre class="brush:erl">
+base() -&gt;
+    A = 1,
+    (fun(A) -&gt; A = 2 end)(2).
+</pre>
+
+<p>Giờ hãy thử  biên dịch và kiểm tra xem, nó sẽ hoạt động mà không nó bất kỳ lỗi nào, thay vào đó bạn sẽ chỉ nhận một cảnh báo <em>shadowing</em> 
+    (<em>"Warning: variable 'A' shadowed in 'fun'"</em>). 
+    Shadowing là thuật ngữ dùng để  mô tả tình huống định nghĩa một biến mới  mà tên của biến đó đã 
+    trùng với tên của biến đã được sử  dụng ở phạm vi gốc. Cánh báo này được đưa ra để  ngăn chặn các lỗi có thể  xảy ra ( thương là chính xác lỗi xảy ra)
+    do đó bạn cần cân nhắc việc tới việc đổi tên  các biến của bạn trong các trường hợp như vậy.</p>
+
+<div class="note update">
+    <p><strong>Update:</strong><br />
+    Tuy nhiên bắt đầu từ phiên bản 17.0 trở đi, Bạn có thể  định nghĩa <em>tên</em> cho anonymous functions
+    <p>Điều thú vị ở đây là mặc dù tên của hàm chỉ sử  dụng bên trong phạm vi hoạt động của hàm đó chứ không dùng ở các thành phần khác 
+        nhưng bằng vào việc đặt tên , ta có sử  dụng đệ quy đổi với các anonymous functions 
+        The main advantage of this is that it makes it possible to define anonymous recursive functions. 
+        vd, bằng cách dùng anonymous function kết hơp với đê quy chúng ta có thể tao ra một lặp vô hạn 
+        ( bạn sẽ thấy trong các chương sau vòng lặp vô hạn là môt trong những thành phần quan trọng trong Erlang ):</p>
+
+    <pre class="brush:eshell">
+18&gt; f(PrepareAlarm), f(AlarmReady).
+ok
+19&gt; PrepareAlarm = fun(Room) -&gt;
+19&gt;     io:format("Alarm set in ~s.~n",[Room]),
+19&gt;     fun Loop() -&gt;
+19&gt;         io:format("Alarm tripped in ~s! Call Batman!~n",[Room]),
+19&gt;         timer:sleep(500),
+19&gt;         Loop()
+19&gt;     end
+19&gt; end.
+#Fun&lt;erl_eval.6.71889879&gt;
+20&gt; AlarmReady = PrepareAlarm("bathroom").
+Alarm set in bathroom.
+#Fun&lt;erl_eval.44.71889879&gt;
+21&gt; AlarmReady().
+Alarm tripped in bathroom! Call Batman!
+Alarm tripped in bathroom! Call Batman!
+Alarm tripped in bathroom! Call Batman!
+...
+</pre>
+
+<p>Như ta thấy ở ví dụ trên chúng ta đã tạo ra một anonymous function đệ quy cùng với tên và gán tới một biến, biến này ta hay
+    tạm gọi là biến lặp <var>Lặp</var> , and within that scope, 
+    will be usable as any other similar variable pointing to an anonymous function. 
+    This should generally make a lot of operations in the shell a lot less painful moving on forward.</p>
+</div>
+
+<p>Tiếp theo chúng ta sẽ tạm thời 
+    We'll set the anonymous function theory aside a bit and we'll explore more common abstractions to avoid having to write more recursive functions, 
+    like I promised at the end of the previous chapter.</p>
+
+
+<img class="right" src="static/img/erland.png" width="267" height="238" alt="A map of Erland, the mystic Erlang island!" />
+
+<h3><a class="section" name="maps-filters-folds">Maps, filters, folds and more</a></h3>
+
+<p>Ở phần đầu của mục này , trước tiên tôi sẽ mô ta ngắn gọn trừu tượng cách để  viết hàm <code>map/2</code>, đồng thời tôi cũng chứng minh 
+    một hàm tương tự như vậy cũng có thể  sử dụng với mỗi phần tử  của bất kỳ kiểu danh sách nào. hàm <code>map/2</code> của chúng ta sẽ thực hiện như sau:</p>
+
+<pre class="brush:erl">
+map(_, []) -&gt; [];
+map(F, [H|T]) -&gt; [F(H)|map(F,T)].
+</pre>
+
+<p>Têy vậy cũng có rất nhiều cách trừu tượng tương tự để  xây dụng từ các hàm đệ quy. trước tiên chúng ra hay thử  ví dụ với hai hàm sau:</p>
+
+<pre class="brush:erl">
+%% only keep even numbers
+even(L) -&gt; lists:reverse(even(L,[])).
+
+even([], Acc) -&gt; Acc;
+even([H|T], Acc) when H rem 2 == 0 -&gt;
+    even(T, [H|Acc]);
+even([_|T], Acc) -&gt;
+    even(T, Acc).
+
+%% only keep men older than 60
+old_men(L) -&gt; lists:reverse(old_men(L,[])).
+
+old_men([], Acc) -&gt; Acc;
+old_men([Person = {male, Age}|People], Acc) when Age &gt; 60 -&gt;
+    old_men(People, [Person|Acc]);
+old_men([_|People], Acc) -&gt;
+    old_men(People, Acc).
+</pre>
+
+<p>Với vi dụ đâu tiên, hàm này sẽ nhận đầu vào là một dash sách chữ số  và lọc ra để  trả về  kết quả là danh sách số  chắn.
+    Hàm thứ hai tương tự nhận đầu vào là một danh sách bộ thông tin về  người có dạng <code>{Gender, Age}</code>, sau đó lọc và đưa ra kết quả ;à những người giới tính là nam và có đô tuổi
+    dưới 60. Mặc dù để  tìm sự tương đồng giữa hai hàm này khó hơn chút, nhưng chúng ta hãy xét một số  điểm chung giữa chúng trc, và hãy để  ý cả 
+    hai hàm này về  mặt chức năng thực hiện rất giống nhau, chúng cũng nhận đầu vào là một kiểu dữ liệu danh sách và trả về  các phần tử  qua một số  hoạt động kiểm tra 
+    (hay <em>dữ đoán</em>), những phần tử  còn lại cùng hoạt động kiểm tra không đúng thì loại bỏ. Từ góc nhìn tổng quát này, chúng ra có thể  rút ra được những thông tin cần thiết 
+    và quy ước thành một chức năng như sau:</p>
+
+<pre class="brush:erl">
+filter(Pred, L) -&gt; lists:reverse(filter(Pred, L,[])).
+
+filter(_, [], Acc) -&gt; Acc;
+filter(Pred, [H|T], Acc) -&gt;
+    case Pred(H) of
+        true  -&gt; filter(Pred, T, [H|Acc]);
+        false -&gt; filter(Pred, T, Acc)
+    end.
+</pre>
+
+<p>Tiếp đó, để  sử  dụng hàm <code>filter</code> này, chúng ra chỉ cần kiểm tra kết quả hoạt động.Nào hãy biên dịch file module 
+    To use the filtering function we now only need to get the test outside of the function. Compile the 
+    <code><a class="source" href="static/erlang/hhfuns.erl.html" title="final implementation">hhfuns</a></code> và chạy:</p>
+
+<pre class="brush:eshell">
+1&gt; c(hhfuns).
+{ok, hhfuns}
+2&gt; Numbers = lists:seq(1,10).
+[1,2,3,4,5,6,7,8,9,10]
+3&gt; hhfuns:filter(fun(X) -&gt; X rem 2 == 0 end, Numbers).
+[2,4,6,8,10]
+4&gt; People = [{male,45},{female,67},{male,66},{female,12},{unknown,174},{male,74}].
+[{male,45},{female,67},{male,66},{female,12},{unknown,174},{male,74}]
+5&gt; hhfuns:filter(fun({Gender,Age}) -&gt; Gender == male andalso Age &gt; 60 end, People).
+[{male,66},{male,74}]
+</pre>
+
+<p>Hai ví dụ trên chỉ cho chúng ta bằng cách sử  dụng hàm <code>filter/2</code>, lập tình viên sẽ không quan tâm tới việc đinh nghĩa  cho từng thành phần mà thay vào đó 
+    họ chỉ cần quan tâm tới việc tạo kết quả mong muốn từ một danh sách gốc hay nói cách khác họ chỉ cần xác đinh truyền vào điều kiện cần qua một hàm và một danh sách, sau đó lọc danh sách đó 
+    . Việc lặp qua một danh sách và loại bỏ những gi chúng ta không mong muốn không cón cần thiết nữa. 
+    điều này là rất quan trong cho việc code, lập trình viên sẽ chỉ cần quan tới tới phần càn thay đổi và bỏ qua những thanh phần giống nhau.</p>
+
+<p>Trong chương trước, chúng ta đã viết một số  ví dụ về  hàm đệ quy làm việc với kiểu dữ liệu danh sách, trong đó với mỗi phần tử của danh sách chúng ta sẽ tiến hành kiểm tra 
+    và đưa chúng về  một câu trả lời duy nhất. Cách làm này được gọi là <em>fold</em> và có thể sử  dụng như sau:</p>
+
+<pre class="brush:erl">
+%% find the maximum of a list
+max([H|T]) -&gt; max2(T, H).
+
+max2([], Max) -&gt; Max;
+max2([H|T], Max) when H &gt; Max -&gt; max2(T, H);
+max2([_|T], Max) -&gt; max2(T, Max).
+
+%% find the minimum of a list
+min([H|T]) -&gt; min2(T,H).
+
+min2([], Min) -&gt; Min;
+min2([H|T], Min) when H &lt; Min -&gt; min2(T,H);
+min2([_|T], Min) -&gt; min2(T, Min).
+
+%% sum of all the elements of a list
+sum(L) -&gt; sum(L,0).
+
+sum([], Sum) -&gt; Sum;
+sum([H|T], Sum) -&gt; sum(T, H+Sum).
+</pre>
+
+<img class="right" src="static/img/foldr.png" width="172" height="248" alt="A playing card with 'Joker' replaced by 'Foldr'. The joker has huge glasses, a hook and hairy legs" 
+title="Terrrrrible puns, ladies and gentlemen!" />
+
+<p>Để  hiểu hoạt , chúng ta sẽ tìm tất các những điểm chung và khác của các hoạt động trong cách ví dụ trên 
+    . Như đã đè cập , bằng cách cách cắt giảm, đưa một danh sách về  một giá trị duy nhất. 
+    Do đó, hoạt động <code>fold</code> chỉ lên duy trì một giá trị nhưng vẫn tiến lặp danh sách, chúng ta cũng không cần thiết để xây dựng một danh sách khác 
+    . Do chúng ta cũng không cần tới chốt canh, bởi vì không phải lúc nào cũng cần và nếu cần chúng ta có thê thay bằng hoạt động qua một hàm 
+    . Nhìn phương diện này, nó sẽ giống như việc tính tổng của một danh sách.</p>
+
+<p>Trong cả ba ví dụ trên còn một thành phần nữa mà chúng ta chưa đề cập tới, đó là 
+    giá trị trị khởi tạo ban đầu của mỗi hàm. 
+    như trong trường hợp của hàm <code>sum/2</code>, giá trị khởi tạo là 0, bởi vì với giá trị này phép tính <code>X = X + 0</code> là một phép tính với két quả không đổi. 
+    trong trường trường hợp tính tích, giá trị sẽ là một ưng với <code>X = X * 1</code>
+    . Với trường hợp của hàm <code>min/1</code> và hàm <code>max/1</code> , giá trị khởi tạo có thể  có hoặc không, 
+    bởi trong trường hợp nếu giá trị khởi tạo là 0, thì với đầu vào là một danh sách số  nguyên âm, chúng ta có thể sẽ nhận được kết quả sai. 
+    Vì vậy, thông thường trong một số  trường hợp ( không phai tất cả moj trường hợp đều đúng ) chúng ta có thể  sử  dụng phần tử  đầu tiên của danh sách như gía trị khởi tạo ban đầu.
+    Bằng việc lặp, đánh giá các phần từ trong danh sách chúng ta có thể  viết như sau:</p>
+
+<pre class="brush:erl">
+fold(_, Start, []) -&gt; Start;
+fold(F, Start, [H|T]) -&gt; fold(F, F(H,Start), T).
+</pre>
+
+<p>Tiếp đó hãy thử  kiểm tra:</p>
+
+<pre class="brush:eshell">
+6&gt; c(hhfuns).
+{ok, hhfuns}
+7&gt; [H|T] = [1,7,3,5,9,0,2,3].    
+[1,7,3,5,9,0,2,3]
+8&gt; hhfuns:fold(fun(A,B) when A &gt; B -&gt; A; (_,B) -&gt; B end, H, T).
+9
+9&gt; hhfuns:fold(fun(A,B) when A &lt; B -&gt; A; (_,B) -&gt; B end, H, T).
+0
+10&gt; hhfuns:fold(fun(A,B) -&gt; A + B end, 0, lists:seq(1,6)).
+21
+</pre>
+
+<p>Thật tuyêt, ba hàm trước đó chúng ta định nghĩa phía trên hay với bất kỳ hàm nào dùng cho việc cắt giảm một danh sách tới một phần tử, giá trị duy nhất giờ đều 
+    có thể  thực hiện thông qua hàm fold.</p>
+
+<p>What's funny there is that you can represent an accumulator as a single element (or a single variable), and an accumulator can be a list. Therefore, we can use a fold to build a list. This means fold is universal in the sense that you can implement pretty much any other recursive function on lists with a fold, even map and filter:</p>
+
+<pre class="brush:erl">
+reverse(L) -&gt;
+    fold(fun(X,Acc) -&gt; [X|Acc] end, [], L).
+
+map2(F,L) -&gt;
+    reverse(fold(fun(X,Acc) -&gt; [F(X)|Acc] end, [], L)).
+
+filter2(Pred, L) -&gt;
+    F = fun(X,Acc) -&gt;
+            case Pred(X) of
+                true  -&gt; [X|Acc];
+                false -&gt; Acc
+            end
+        end,
+    reverse(fold(F, [], L)).
+</pre>
+
+<p>And they all work the same as those written by hand before. How's that for powerful abstractions?</p>
+
+<p>Map, filters and folds are only one of many abstractions over lists provided by the Erlang standard library (see <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#map/2" title="unofficial, but cleaner doc">lists:map/2</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#filter/2" title="unofficial, but cleaner doc">lists:filter/2</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#foldl/3" title="unofficial, but cleaner doc">lists:foldl/3</a></code> and <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#foldr/3" title="unofficial, but cleaner doc">lists:foldr/3</a></code>). Other functions include <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#all/2" title="unofficial, but cleaner doc">all/2</a></code> and <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#any/2" title="unofficial, but cleaner doc">any/2</a></code> which both take a predicate and test if all the elements return true or if at least one of them returns true, respectively. Then you have <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#dropwhile/2" title="unofficial, but cleaner doc">dropwhile/2</a></code> that will ignore elements of a list until it finds one that fit a certain predicate, its opposite, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#takewhile/2" title="same doc, still cleaner!">takewhile/2</a></code>, that will keep all elements until there is one that doesn't return true to the predicate. A complimentary function to the two previous ones is <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#partition/2" title="not worth adding more of these">partition/2</a></code>, which will take a list and return two: one that has the terms which satisfy a given predicate, and one list for the others. Other frequently used lists functions include <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#flatten/1" title="here it goes again">flatten/1</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#flatlength/1" title="more function description">flatlength/1</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#flatmap/2" title="flatten &lt;3 map">flatmap/2</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#merge/1" title="Gotta merge em' all, pokelists!">merge/1</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#nth/2" title="woop de bop, still the same as other doc links in this paragraph">nth/2</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#nthtail/2" title="it's nth/2 but not really">nthtail/2</a></code>, <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#split/2" title="thank the lord it's over!">split/2</a></code> and a bunch of others.</p>
+
+<p>You'll also find other functions such as zippers (as seen in last chapter), unzippers, combinations of maps and folds, etc. I encourage you to read the <a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html">documentation on lists</a> to see what can be done. You'll find yourself rarely needing to write recursive functions by using what's already been abstracted away by smart people.</p>
+
+				<ul class="navigation">
+											<li><a href="recursion.html" title="Previous chapter">&lt; Previous</a></li>
+										
+					<li><a href="contents.html" title="Index">Index</a></li>
+					
+											<li><a href="errors-and-exceptions.html" title="Next chapter">Next &gt;</a></li>
+									</ul>
+			</div><!-- content -->
+			<div id="footer">
+				<a href="http://creativecommons.org/licenses/by-nc-nd/3.0/" title="Creative Commons License Details"><img src="static/img/cc.png" width="88" height="31" alt="Creative Commons Attribution Non-Commercial No Derivative License" /></a>
+				<p>Except where otherwise noted, content on this site is licensed under a Creative Commons Attribution Non-Commercial No Derivative License</p>
+			</div> <!-- footer -->
+		</div> <!-- wrapper -->
+		<div id="grass" />
+	<script type="text/javascript" src="static/js/shCore.js"></script>
+	<script type="text/javascript" src="static/js/shBrushErlang2.js%3F11"></script>
+	<script type="text/javascript">
+		SyntaxHighlighter.defaults.gutter = false;
+		SyntaxHighlighter.all();
+	</script>
+	</body>
+</html>

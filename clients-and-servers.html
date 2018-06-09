@@ -1,0 +1,533 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="Content-Style-Type" content="text/css" />
+		<meta name="keywords" content="Erlang, OTP, behaviour, gen_server, abstraction, generic, server, process, callback, module" />
+		<meta name="description" content="A second visit of the client-server pattern and how to make it generic, this time by the use of the gen_server OTP behaviour." />
+        <meta name="google-site-verification" content="mi1UCmFD_2pMLt2jsYHzi_0b6Go9xja8TGllOSoQPVU" />
+		<link rel="stylesheet" type="text/css" href="static/css/screen.css%3Fv3.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="static/css/sh/shCore.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="static/css/sh/shThemeLYSE2.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="static/css/print.css" media="print" />
+		<link href="rss" type="application/rss+xml" rel="alternate" title="LYSE news" />
+		<link rel="icon" type="image/png" href="favicon.ico" />
+		<link rel="apple-touch-icon" href="static/img/touch-icon-iphone.png" />
+		<link rel="apple-touch-icon" sizes="72x72" href="static/img/touch-icon-ipad.png" />
+		<link rel="apple-touch-icon" sizes="114x114" href="static/img/touch-icon-iphone4.png" />
+		<title>Clients and Servers | Learn You Some Erlang for Great Good!</title>
+	</head>
+	<body>
+		<div id="wrapper">
+			<div id="header">
+				<h1>Learn you some Erlang</h1>
+				<span>for great good!</span>
+			</div> <!-- header -->
+			<div id="menu">
+				<ul>
+					<li><a href="content.html" title="Home">Home</a></li>
+					<li><a href="faq.html" title="Frequently Asked Questions">FAQ</a></li>
+					<li><a href="rss" title="Latest News">RSS</a></li>
+					<li><a href="static/erlang/learn-you-some-erlang.zip" title="Source Code">Code</a></li>
+				</ul>
+			</div><!-- menu -->
+			<div id="content">
+            <div class="noscript"><noscript>Hey there, it appears your Javascript is disabled. That's fine, the site works without it. However, you might prefer reading it with syntax highlighting, which requires Javascript!</noscript></div>
+<h2>Clients and Servers</h2>
+<h3><a class="section" name="callback-to-the-future">Callback to the Future</a></h3>
+
+<img class="left" src="static/img/cbttf.png" width="260" height="238" alt="Weird version of Marty from Back to The Future" title="brrraaains (in the past)" />
+
+<p>Trong chương trước chúng ta đã  tìm hiểu về  OTP và làm quen với một ví dụ đơn giản cũng như ở cuối chương đã để  cập tới một hành vi sử  dụng trong OTP.
+  Trong chương này chúng ta sẽ làm quen với <code>gen_server</code>, nó là một trong những hành vi được sử  dụng nhiều nhất trong các ứng dụng. 
+  interface của <code>gen_server</code> khá giống với những gì chúng ta đã viết trong module <code>my_server</code> ở  
+  <a class="chapter" href="what-is-otp.html#the-basic-server">chương trước đó</a>. Nó cung cấp cho bạn một số  hàm để  sử  dụng 
+  The first OTP behaviour we'll see is one of the most used ones. 
+  Its name is <code>gen_server</code> and it has an interface a bit similar to the one we've written with <code>my_server</code> in
+   <a class="chapter" href="what-is-otp.html#the-basic-server">last chapter</a>; it gives you a few functions to use it and in exchange, 
+   your module has to already have a few functions <code>gen_server</code> will use.</p>
+
+<h4>init</h4>
+
+<p>Hàm đầu tiên mà chúng ta sẽ nói đến đó là hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#init/1">init/1</a></code>, hàm này thoạt nhìn 
+  giống với hàm 'init' mà chúng ta đã sử  dụng trong module <code>my_server</code>  trước đó, nó được dùng để  khởi tạo trạng thái ban đầu của server và thực hiện 
+  các công việc khác duy nhất một lần khi khởi tạo. Kêt quả sau khi được khởi tạo sẽ có một trong các dạng sau 
+  <code>{ok, State}</code>, <code>{ok, State, TimeOut}</code>, <code>{ok, State, hibernate}</code>, 
+  <code>{stop, Reason}</code> hoặc <code>ignore</code>   
+  The first one is an <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#init/1">init/1</a></code> function. 
+  It is similar to the one we've used with <code>my_server</code> in that it is used to initialize the server's state and do all of these one-time tasks that it will depend on. 
+  The function can return <code>{ok, State}</code>, <code>{ok, State, TimeOut}</code>, <code>{ok, State, hibernate}</code>, <code>{stop, Reason}</code> or <code>ignore</code>.</p>
+
+<p></p>Giá trị <code>{ok, State}</code> cho biết việc khởi tạo thành công và không cần phải giải thích gì nhiều, bạn chỉ cần hiểu là trạng thái biến <var>State</var>
+sẽ được truyền trực tiếp vào trong hàm lặp chính ( main loop ) của tiến trình như một trạng thái cần lưu và được sử  dụng về  sau. Biến  <var>TimeOut</var> được thêm vào 
+bộ trong kết quả trả về  như một cách để  xác định thời gian chờ trước khi server nhận được một tin nhắn thông báo. Trong trường hợp mà server phải đợi quá lâu vượt quá 
+thời gian chờ, một tin nhắc đặc biệt ( có dạng atom <code>timeout</code>) sẽ được gửi tới và được xử  lí trong hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#handle_info/2">handle_info/2</a></code>
+( chúng ta sẽ tìm hiểu hàm này một lát nữa).
+
+The normal <code>{ok, State}</code>, return value doesn't really need explaining past saying that <var>State</var> will be passed directly 
+to the main loop of the process as the state to keep later on. The <var>TimeOut</var> variable is meant to be added to the tuple whenever you need a deadline before which you expect 
+the server to receive a message. If no message is received before the deadline, a special one (the atom <code>timeout</code>) is sent to the server, which should be handled with 
+<code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#handle_info/2">handle_info/2</a></code> (more on this later.)</p>
+
+<p>Mặt khác, nếu bạn tin rằng nó sẽ mất nhiều thời gian trước khi nhận được phản hồi nhưng lại lo ngại về  vấn đề  bộ nhớ thì bạn có thể  thêm vào bộ một atom <code>hibernate</code>.
+  Bằng cách này nó sẽ giảm kích thước của trạng thái của tiến trình cho tới khi nó nhận được một thông báo. Còn nếu bạn vẫn còn nghi nghờ về  việc sử  dụng hibernation,
+  thì bạn có thể  hoàn toàn bỏ qua.
+  
+  On the other hand, if you do expect the process to take a long time before getting a reply and are worried about memory, you can add the <code>hibernate</code> atom to the tuple. 
+  Hibernation basically reduces the size of the process' state until it gets a message, at the cost of some processing power. 
+  If you are in doubt about using hibernation, you probably don't need it.</p>
+
+<p>Giá trị <code>{stop, Reason}</code> sữ được đưa ra để  thông báo về  một sự cố  sai sót trong quá trình khởi tạo.
+  Returning <code>{stop, Reason}</code> should be done when something went wrong during the initialization.</p>
+
+<div class="note">
+  <p><strong>Lưu ý:</strong> Đây là thông tin kỹ thuật chi tiết hơn của hibernation của tiến trình. Không có gì lo láng nếu một số  độc giả không hiểu về  tráng thái này 
+    hay không quan tâm bởi vì thấy nó không có ích gì cả. Khi một hàm BIF được gọi theo cấu trúc 
+    <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#hibernate/3">erlang:hibernate(M,F,A)</a>,
+    ngay lập tức call stack của tiến trình đang chạy sẽ được loại bỏ ( hàm sẽ không bao được trả về ). bộ dọn rác (garbage collection ) sẽ được kích hoạt,
+    và những gì còn lại là một continuous heap giảm tới bằng kích thước của dữ liệu trong tiến trình. Thực chất đó chỉ là nén tất cả các dữ liệu lại để  tiết kiết không 
+    gian bộ nhớ trong tiến trình mà thôi. 
+    here's a more technical definition of process hibernation. It's no big deal if some readers do not understand or care about it. When the BIF
+     <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#hibernate/3">erlang:hibernate(M,F,A)</a> is called, the call stack for the currently running process is 
+     discarded (the function never returns). The garbage collection then kicks in, and what's left is one continuous heap that is shrunken to the size of the data in the process. 
+     This basically compacts all the data so the process takes less place.</p>
+
+	<p>Một khi tiến trình nhận được tin nhắn thông báo, hàm <code>M:F</code> cùng với đối số  <var>A</var> sẽ được gọi là thực thi.
+    Once the process receives a message, the function <code>M:F</code> with <var>A</var> as arguments is called and the execution resumes.</p>
+</div>
+
+<div class="note">
+    <p><strong>Lưu ý:</strong> Tại thời điểm hàm <code>init/1</code> đang trong quá trình khởi tạo, các chức năng thực thi sẽ bị chặn lại 
+      đối với tiến trình mà sinh (spawn) ra server. Lí giải việc làm này à bởi vì để  đảm bảo mọi thứ diễn ra ổn định, nó cần đợi một tin nhắn thông báo 'ready' 
+      được gửi tự động từ module <code>gen_server</code>   
+      while <code>init/1</code> is running, execution is blocked in the process that spawned the server. 
+      This is because it is waiting for a 'ready' message sent automatically by the <code>gen_server</code> module to make sure everything went fine.</p>
+</div>
+
+
+<h4>handle_call</h4>
+
+<p>Tiếp theo chúng ta cần biết về  hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#handle_call/3">handle_call/3</a></code>
+  , hàm này được sử  dụng để  xử  lí các tin nhắn đồng bộ ( sớm thôi chúng ta sẽ xem cách sử  dụng chúng như thế  nào ), hàm này nhận 3 tham số  đầu vào: 
+  <var>Request</var>, <var>From</var>, và <var>State</var>, vâng nó khá giống với nhưng gì chúng ta đã làm trước đó với hàm <code>handle_call/3</code> trong module
+  <code>my_server</code>. Chỉ có một điều khác biệt lớn nhất giữa chúng đó là cách mà bạn sẽ phản hồi lại một thông báo tin nhắn ra sao. trong module 
+  <code>my_server</code> chúng ta đã sử  dụng một mẫu tổng quát chung đó là gọi tới <code>my_server:reply/2</code> cho việc phản hồi tới tiến trình.
+  Còn đối với <code>gen_server</code> có tới tận 8 cách khác nhau cho việc này dưới dạng các bộ dữ liệu.  
+  is used to work with synchronous messages (we'll see how to send them soon). It takes 3 arguments: <var>Request</var>, <var>From</var>, and <var>State</var>. 
+  It's pretty similar to how we programmed our own <code>handle_call/3</code> in <code>my_server</code>. 
+  The biggest difference is how you reply to messages. In our own abstraction of a server, it was necessary to use <code>my_server:reply/2</code> to talk back to the process. 
+  In the case of <code>gen_server</code>s, there are 8 different return values possible, taking the form of tuples.</p>
+
+<p>Vì có khá nhiều, lên chúng ta sẽ liệt kê chúng: Because there are many of them, here's a simple list instead:</p>
+
+<pre class="expand">
+{reply,Reply,NewState}
+{reply,Reply,NewState,Timeout}
+{reply,Reply,NewState,hibernate}
+{noreply,NewState}
+{noreply,NewState,Timeout}
+{noreply,NewState,hibernate}
+{stop,Reason,Reply,NewState}
+{stop,Reason,NewState}
+</pre>
+
+<p>Trong tất cả các mẫu này thì <var>Timeout</var> và <code>hibernate</code> tương tự như trong hàm <code>init/1</code>.
+  Tiếp đó đối với các mẫu có <var>Reply</var>, nó sẽ luôn được gửi tới những người mà đã thực hiện lời gọi tới server.
+  Hãy để  ý là chúng ta có tới tận 3 mẫu <code>noreply</code>, đối với các mẫu này khi ban sử  dụng, phần chung của server sẽ giả định rằng 
+  bản thân bạn đang xử  lí việc gửi thông báo tin nhắn phản hồi. Và nó có thể  được xử  lí cùng với hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#reply/2">gen_server:reply/2</a></code>,
+  cách dùng hàm này tượng tự như những gì chúng ta đã làm với hàm <code>my_server:reply/2</code>.
+   
+  For all of these, <var>Timeout</var> and <code>hibernate</code> work the same way as for <code>init/1</code>. 
+  Whatever is in <var>Reply</var> will be sent back to whoever called the server in the first place. Notice that there are three possible <code>noreply</code> options. 
+  When you use <code>noreply</code>, the generic part of the server will assume you're taking care of sending the reply back yourself. This can be done with 
+  <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#reply/2">gen_server:reply/2</a></code>,
+   which can be used in the same way as <code>my_server:reply/2</code>.</p>
+
+<p>Phần lớn trường hợp, bạn chỉ cần phải sử  dụng mẫy <code>reply</code>, tuy nhiên vẫn có một số  lí do nhất định để  sử  dụng mẫu <code>noreply</code>: 
+  khi bạn muốn một tién trình khác gửi phản hồi tới cho bạn hay khi bạn muốn gửi một tin nhắn xác nhận ( ví dự như 'hey !Tôi đã nhận được tinh nhắn rồi') 
+  nhưng vẫn muốn xử  lí nó sau đó ( không phản hồi tại thời điểm này ), etc. Nếu bạn càn thực hiện các hành động như vậy, thì chắc chắn việc sử  dụng <code>gen_server:reply/2</code> 
+  là cần thiết vì nếu bạn gọi một hàm khác, nó sẽ gây phải chờ và có thể  dẫn tới crash server.  
+  Most of the time, you'll only need the <code>reply</code> tuples. There are still a few valid reasons to use <code>noreply</code>: whenever you want another process 
+  to send the reply for you or when you want to send an acknowledgement ('hey! I received the message!') but still process it afterwards (without replying this time), etc.
+  If this is what you choose to do, it is absolutely necessary to use <code>gen_server:reply/2</code> because otherwise the call will time out and cause a crash.</p>
+
+
+<h4>handle_cast</h4>
+
+<p>Không có gì ngạc nhiên , nếu như hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#handle_cast/2">handle_cast/2</a></code> giống với 
+  nhưng gì chúng ta đã làm trong module <code>gen_server:reply/2</code>, nó vẫn sẽ nhận 2 tham số  đầu vào là 2 biến cho <var>Message</var> và <var>State</var>, 
+  và sử  dụng cho việc gửi các tin nhắn bất đồng bộ. Sau cùng những gì bạn cần làm còn lại khá giống với những gì bạn vừa thấy trong hàm <code>handle_call/3</code>.
+  Chỉ có một 
+  callback works a lot like the one we had in <code>my_server</code>: 
+  it takes the parameters <var>Message</var> and <var>State</var> and is used to handle asynchronous calls. You do whatever you want in there, 
+  in a manner quite similar to what's doable with <code>handle_call/3</code>. Tuy nhiên mặc khác có một sư khác biệt đó là nó sẽ bạn chỉ 
+  trả về  các bộ dữ liệu mà không kèm với thông tin phản hồi: 
+   , only tuples without replies are valid return values:</p>
+
+<pre class="expand">
+{noreply,NewState}
+{noreply,NewState,Timeout}
+{noreply,NewState,hibernate}
+{stop,Reason,NewState}
+</pre>
+
+
+<h4>handle_info</h4>
+
+<p>Tôi đã từng đề  cập tới vân để  server của chúng ta đã bỏ qua các tin nhắn mà không khớp với mẫu interface của chúng ta đúng không ?
+  Đúng vậy, tuy nhiên giờ chúng ta có thể  dễ  dàng giải quyết chúng với hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#handle_info/2">handle_info/2</a></code>
+  . Cách dùng hàm này khá giống với những gì chúng ta dùng với hàm <code>handle_cast/2</code> trước đó cùng với việc trả về  bộ dữ liệu tương tự, chỉ khác một điều đó là callback 
+  chỉ hoạt động đối với các thông báo tin nhắc mà được gửi trực tiếp cùng với toán tử  <code>!</code> và một số  hàm đặc biệt giống như timeout trong <code>init/1</code>,
+  hay monitors' notifications, <code>'EXIT'</code> signals. 
+  You know how I mentioned our own server didn't really deal with messages that do not fit our interface, 
+  right? Well <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#handle_info/2">handle_info/2</a></code> is the solution. 
+  It's very similar to <code>handle_cast/2</code> and in fact returns the same tuples. The difference is that this callback is only there for messages that were sent directly with the 
+  <code>!</code> operator and special ones like <code>init/1</code>'s <code>timeout</code>, monitors' notifications and <code>'EXIT'</code> signals. </p>
+
+
+<h4>terminate</h4>
+
+<p>hàm callback <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#terminate/2">terminate/2</a></code> này sẽ được sử  dụng 
+  khi một trong các hàm <code>handle_Something</code> trả về  bộ dữ liệu có dạng <code>{stop, Reason, NewState}</code>, <code>{stop, Reason, Reply, NewState}</code>.
+  Như bạn thấy, nó sẽ chấp nhận 2 tham số  đầu vào đó là  <var>Reason</var> và <var>State</var> tương ứng với các giá trị từ bộ dữ liệu <code>stop</code>.
+  is called whenever one of the three <code>handle_Something</code> functions returns a tuple of the form <code>{stop, Reason, NewState}</code> or 
+  <code>{stop, Reason, Reply, NewState}</code>. It takes two parameters, <var>Reason</var> and <var>State</var>, corresponding to the same values from the <code>stop</code> tuples.</p>
+
+<p>hàm <code>terminate/2</code> cũng được gọi khi tiến trình cha ( tiến trình mà sinh ra tiên trình hiện tại ) châm dứt, Nhưng chỉ trong trường hợp mà <code>gen_server</code> 
+  trapping exits
+  will also be called when its parent (the process that spawned it) dies, if and only if the <code>gen_server</code> is trapping exits.</p> 
+
+<div class="note">
+  <p><strong>Lưu ý:</strong> Nếu có bất kỳ lí do nào khác ngoài <code>normal</code>, <code>shutdown</code> hay <code>{shutdown, Term}</code> , thì hàm 
+    <code>terminate/2</code> cũng sẽ được gọi và OTP framework sẽ nhìn nhận nó như một trường hợp lỗi và tiến hành bắt đầu ghi nhận một số  thông tin cho bạn.
+    if any reason other than <code>normal</code>, <code>shutdown</code> hay <code>{shutdown, Term}</code> 
+    is used when <code>terminate/2</code> is called, the OTP framework will see this as a failure and start logging a bunch of stuff here and there for you.</p>
+</div>
+
+<p>Có thể  nói rằng hàm <code>terminate/2</code> là một sự nghịch đảo đối với hàm <code>init/1</code>, mỗi hành vi diễn ra trong <code>init/1</code> 
+  sẽ có một hành vi trái ngược với nó trong <code>terminate/2</code>. Hình dung nó như một người vệ cho server của bạn, nó sẽ có nhiệm vụ giúp khóa cửa lại sau khi đảm bảo 
+  rằng tất cả mọi người đã đi ra ngoài, không còn một ai ở bên trong nữa. Dĩ nhiên là bản thân máy ảo cũng thực hiện chức năng này qua việc xóa bỏ tất cả các 
+  <a class="docs" href="http://erldocs.com/18.0/stdlib/ets.html">ETS tables</a> và đóng tất cả các <a class="external" href="http://www.erlang.org/doc/tutorial/c_port.html">ports</a>
+  lại ,etc. Một lưu ý nữa đó là giá trị trả về  của hàm này không nhất thiết phải quan tâm tới bởi vì chương trình sẽ dừng thực thi mã sau khi gọi hàm này.
+   This function is pretty much the direct opposite of <code>init/1</code> so whatever was done in there should have its opposite in <code>terminate/2</code>. 
+  It's your server's janitor, the function in charge of locking the door after making sure everyone's gone. 
+  Of course, the function is helped by the VM itself, which should usually delete all <a class="docs" href="http://erldocs.com/18.0/stdlib/ets.html">ETS tables</a>, 
+  close all <a class="external" href="http://www.erlang.org/doc/tutorial/c_port.html">ports</a>, etc. for you. Note that the return value of this function doesn't really matter, 
+  because the code stops executing after it's been called.</p>
+
+
+<h4>code_change</h4>
+
+<p>như trong chương trước đó chúng ta đã học cách viết một hàm dùng cho việc nâng cấp chương trình, tương tự trong gen_server cũng hỗ  trợ hành vi này, 
+  bằng cách sử  dụng hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#code_change/3">code_change/3</a></code>.
+  Hàm này được sử  dụng dưới dạng <code>code_change(PreviousVersion, State, Extra)</code>, trong đó biến <var>PreviousVersion</var> là một thuật ngữ dùng để  
+  chỉ phiên bản trong trường hợp nâng cấp (nếu bạn không nhớ hãy xem lại chương <a class="chapter" href="modules.html#more-about-modules">More About Modules</a>), hay 
+  <code>{down, Version}</code> tương ứng với trường hợp hạ cấp ( chỉ cần tải nạp đoạn mã ở bản trước đó vào ). Biến <var>State</var> được dùng để  lưu trữ tất cả các 
+  trang thái của server do đó nó luôn sẵn có để  bạn có thể chuyển đổi. 
+  is there to let you upgrade code. 
+  It takes the form <code>code_change(PreviousVersion, State, Extra)</code>. Here, the variable <var>PreviousVersion</var> is either the version term itself 
+  in the case of an upgrade (read <a class="chapter" href="modules.html#more-about-modules">More About Modules</a> again if you forget what this is), or <code>{down, Version}</code> 
+  in the case of a downgrade (just reloading older code). The <var>State</var> variable holds all of the current's server state so you can convert it.</p>
+
+<p>Hãy hình dùng rằng tại một thời điểm chúng ta sử  dụng kiểu cấu trúc orddict để  lưu trữ tất cả các dữ liệu. tuy nhiên, Một thời gian sau đó, khi lượng dữ liệu tăng lên, 
+  cấu trúc orddict sẽ càng trở lên chậm hơn so chúng ta buộc phải quyết dịnh thay đổi sang một kiểu cấu trúc từ điển phổ  thông, và để  an toàn hơn, tránh gây ra lỗi crash server trong lần gọi 
+  hàm tiếp theo khi chuyển đổi kiểu giữa hai kiểu cấu trúc, tất cả những gì bạn phải làm đó là trả về một trạng tháu mới cùng với dạng <code>{ok, NewState}</code>.
+
+  Imagine for a moment that we used an orddict to store all of our data. However, as time goes on, the orddict becomes too slow and we decide to change it for a regular dict. 
+  In order to avoid the process crashing on the next function call, the conversion from one data structure to the other can be done in there, safely. 
+  All you have to do is return the new state with <code>{ok, NewState}</code>.</p>
+
+<img class="right" src="static/img/kitty.png" width="277" height="323" alt="a cat with an eye patch" />
+
+<p>Còn lại biến <var>Extra</var> , nó thực sự không quan trọng khiến chúng ta phải bận tâm, hầu hết trong các trường hơp nó được sử  dụng để  hỗ  trợ triển khai trong các ứng dựng OTP lớn,
+  nới mà bạn sẽ sử  dụng các công cụ đặc biệt để  nâng cấp toàn bộ máy ảo, do đó trong phạm vi của cuốn sách này chúng ta không thực sự phải dùng tới nó.
+
+  The <var>Extra</var> variable isn't something we'll worry about for now. It's mostly used in larger OTP deployment, where specific tools exist to upgrade entire releases on a VM.
+   We're not there yet.</p>
+
+<p>Bây giờ chúng ta đã xem xét hết tất cả các hàm callback cần phải định nghĩa rồi. Đừng lo lắng nếu bạn cảm thấy có chút bối rối, khó hiểu, bởi vì đôi lúc chúng ta phải đi đường vòng 
+  khi tìm hiểu về  OTP framework, khi mà muốn hiểu được <var>A</var> của nó thì bạn phải hiểu <var>B</var>, nhưng để  để  sử  dụng được trong <var>B</var>, bạn phải quay trở lại để  
+  nhìn <var>A</var>, thật sự rất vòng vèo gây khó chịu do đó cách tốt nhất để  tránh những nhầm lẫn này đó là thực hiện ví dụ về  gen_server.
+  So now we've got all the callbacks defined. Don't worry if you're a bit lost: the OTP framework is a bit circular sometimes, 
+  where to understand part <var>A</var> of the framework you have to understand part <var>B</var>, but then part <var>B</var> requires to see part <var>A</var> to be useful.
+   The best way to get over that confusion is to actually implement a gen_server.</p>
+
+
+<h3><a class="section" name="beam-me-up-scotty">.BEAM me up, Scotty!</a></h3>
+
+<p>Chúng ta sẽ thực hiện ví dụ qua một module được gọi là <code><a class="source" href="static/erlang/kitty_gen_server.erl.html">kitty_gen_server</a></code>. Module này 
+  sẽ thực hiện các chức năng tương tự giống với module <code>kitty_server2</code> mà chúng ta đã làm trước đó cùng với một ít thay đổi trong API.
+  Nào hãy bắt đầu tao mới một module đã viết những đoạn mã sau vào:   
+  This is going to be the <code><a class="source" href="static/erlang/kitty_gen_server.erl.html">kitty_gen_server</a></code>. 
+  It's going to be mostly similar to <code>kitty_server2</code>, with only minimal API changes. First start a new module with the following lines in it:</p>
+
+<pre class="brush:erl">
+-module(kitty_gen_server).
+-behaviour(gen_server).
+</pre>
+
+<p>Hãy thử  biện dịch và ngay lập tức bạn sẽ nhin thấy gióng như dưới đây: 
+  And try to compile it. You should get something like this:</p>
+
+<pre class="brush:eshell">
+1&gt; c(kitty_gen_server).
+./kitty_gen_server.erl:2: Warning: undefined callback function code_change/3 (behaviour 'gen_server')
+./kitty_gen_server.erl:2: Warning: undefined callback function handle_call/3 (behaviour 'gen_server')
+./kitty_gen_server.erl:2: Warning: undefined callback function handle_cast/2 (behaviour 'gen_server')
+./kitty_gen_server.erl:2: Warning: undefined callback function handle_info/2 (behaviour 'gen_server')
+./kitty_gen_server.erl:2: Warning: undefined callback function init/1 (behaviour 'gen_server')
+./kitty_gen_server.erl:2: Warning: undefined callback function terminate/2 (behaviour 'gen_server')
+{ok,kitty_gen_server}
+</pre>
+
+<p>Ok, công cụ biện dịch hoạt động nhưng kèm theo đó là một số  cảnh báo về  một số  hàm callback không được dịnh nghĩa. Lí giải điều này đó là bởi vì đó là những hàm 
+  yêu cầu hay nói một cách cụ thể là những hành vi bắt buộc trong <code>gen_server</code>. Hành vi trong <code>gen_server</code> là một cách cơ bản để  xác định 
+  các hàm, chức năng mà một module mong muốn một module khác phải có. Hành vi cũng là một hợp đồng gắn kết giữa các phần đúng và phần lỗi trong đoạn mã của bạn.
+  The compilation worked, but there are warnings about missing callbacks. This is because of the <code>gen_server</code> behaviour. 
+  A behaviour is basically a way for a module to specify functions it expects another module to have. The behaviour is the contract sealing the deal between the well-behaved 
+  generic part of the code and the specific, error-prone part of the code (yours).</p>
+
+<div class="note">
+    <p><strong>Lưu ý:</strong> cả hai cách khai báo là  'behavior' và 'behaviour đều được chấp nhận trong Erlang.
+      both 'behavior' and 'behaviour' are accepted by the Erlang compiler.</p>
+</div>
+
+<p>Để  khai báo hành vi rất đơn giản, chỉ cần xuất hàm bằng tên <code>behaviour_info/1</code> và làm như sau: 
+  Defining your own behaviours is really simple. You just need to export a function called <code>behaviour_info/1</code> implemented as follows:</p>
+
+<pre class="brush:erl">
+-module(my_behaviour).
+-export([behaviour_info/1]).
+
+%% init/1, some_fun/0 and other/3 are now expected callbacks
+behaviour_info(callbacks) -&gt; [{init,1}, {some_fun, 0}, {other, 3}];
+behaviour_info(_) -&gt; undefined.
+</pre>
+
+<p>Đó là những gì mà chúng ta phải làm, bạn chỉ cần đặt đoạn mã <code>-behaviour(my_behaviour).</code> trong module của bạn và thực hiện chúng, nếu bạn quên thì có thể 
+  dựa trên những cảnh bảo từ trình biên dịch để  thêm vào. Bây giờ chúng ta sẽ quay trở lại module kitty server.
+
+  And that's about it for behaviours. You can just use <code>-behaviour(my_behaviour).</code> in a module implementing them to get compiler warnings if you forgot a function. 
+  Anyway, back to our third kitty server.</p>
+
+<p>hàm đầu tiên chúng ta cần thực hiện đó là hàm  <code>start_link/0</code>, nó có thể  viết như sau:
+  The first function we had was <code>start_link/0</code>. This one can be changed to the following:</p>
+
+<pre class="brush:erl">
+start_link() -&gt; gen_server:start_link(?MODULE, [], []).
+</pre>
+
+<p>Trong đó hãy để  ý thám số  đầu tiên của là một callback module, và tham số  thứ hai truyền vào là một danh sách các tham số  sẽ truyền vào hàm  <code>init/1</code> , và tham số  tiếp theo 
+  như một lựa chọn để sử  dụng cho mục đích gỡ lỗi vì vậy tôi sẽ không đề  cập chi tiết lúc này. Ngoài ra bạn cũng có thể  thêm một  <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#start_link/4">tham số  thứ tư</a>
+  vào đầu vị trí để  sử  dụng như một tên dịnh danh đăng ký cho server. Một Lưu ý nữa là trong bản trước đó của kitty server, 
+  chúng ta chỉ đơn giản trả về  một đinh danh tiến trình ( pid ), tuy nhiên với gen_server, chúng ta phải trả về  dưới dạng <code>{ok, Pid}</code>.
+  The first parameter is the callback module, the second one is the list of parameters to pass to <code>init/1</code> and the third one is about debugging options 
+  that won't be covered right now. You could add a <a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#start_link/4">fourth parameter</a> in the first position, 
+  which would be the name to register the server with. Note that while the previous version of the function simply returned a pid, this one instead returns <code>{ok, Pid}</code>.</p>
+
+<p>Các hàm tiếp theo chúng ta sẽ xét đến là: Next functions now:</p>
+
+<pre class="brush:erl">
+%% Synchronous call
+order_cat(Pid, Name, Color, Description) -&gt;
+   gen_server:call(Pid, {order, Name, Color, Description}).
+
+%% This call is asynchronous
+return_cat(Pid, Cat = #cat{}) -&gt;
+    gen_server:cast(Pid, {return, Cat}).
+
+%% Synchronous call
+close_shop(Pid) -&gt;
+    gen_server:call(Pid, terminate).
+</pre>
+
+<p>Lưu ý là đối với tham số  thứ ba trong <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#call/2">gen_server:call/2-3</a></code> được sử  dụng cho 
+  việc xác định thời gian chờ trước khi có tín hiệu phản hồi, trong trường hợp bạn không thiết lập thời gian ( hoặc truyền vào đó một atom <code>infinity</code>), nó sẽ được mặc là thời gian là 5 giây. 
+  . Nếu sau thời gian chờ mà không có bất kỳ một phản hồi nào lại, lời gọi sẽ tụ động chấm dứt bằng cách đưa ra một crash. 
+   All of these calls are a one-to-one change. Note that a third parameter can be passed to 
+  <code><a class="docs" href="http://erldocs.com/18.0/stdlib/gen_server.html#call/2">gen_server:call/2-3</a></code> to give a timeout. 
+  If you don't give a timeout to the function (or the atom <code>infinity</code>), the default is set to 5 seconds. If no reply is received before time is up, the call crashes.</p>
+
+<p>Bây giờ chúng ta đã  có thể  thêm các hàm callback trong gen_server rồi, dựa trên cấy trúc bảng sau sẽ đưa ra mối quan hệ giữa 
+  các lời gọi hàm và hàm callback trong gen_server: 
+  Now we'll be able to add the gen_server callbacks. The following table shows the relationship we have between calls and callbacks:</p>
+
+<table>
+  <thead>
+    <tr>
+      <td>gen_server</td>
+      <td>YourModule</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>start/3-4</code>
+      </td>
+      <td>
+        <code>init/1</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>start_link/3-4</code>
+      </td>
+      <td>
+        <code>init/1</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>call/2-3</code>
+      </td>
+      <td>
+        <code>handle_call/3</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>cast/2</code>
+      </td>
+      <td>
+        <code>handle_cast/2</code>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+<p>Ngoải ra vẫn còn một số  hàm callback nữa, chúng sẽ được sử  dụng cho các trường hợp đặc biêt: 
+  And then you have the other callbacks, those that are more about special cases:</p>
+
+<ul>
+    <li><code>handle_info/2</code></li>
+    <li><code>terminate/2</code></li>
+    <li><code>code_change/3</code></li>
+</ul>
+
+<p>Nào, hãy bắt đầu điều chỉnh lại các đoạn mã trong module để  phù hợp với mô hình: <code>init/1</code>, <code>handle_call/3</code> và <code>handle_cast/2</code>
+  Let's begin by changing those we already have to fit the model: <code>init/1</code>, <code>handle_call/3</code> and <code>handle_cast/2</code>.</p>
+
+<pre class="brush:erl">
+%%% Server functions
+init([]) -&gt; {ok, []}. %% no treatment of info here!
+
+handle_call({order, Name, Color, Description}, _From, Cats) -&gt;
+    if Cats =:= [] -&gt;
+        {reply, make_cat(Name, Color, Description), Cats};
+       Cats =/= [] -&gt;
+        {reply, hd(Cats), tl(Cats)}
+    end;
+handle_call(terminate, _From, Cats) -&gt;
+    {stop, normal, ok, Cats}.
+
+handle_cast({return, Cat = #cat{}}, Cats) -&gt;
+    {noreply, [Cat|Cats]}.
+</pre>
+
+<p>Một lần nữa, không có nhiều thay đổi ở đây, may mắn hơn là đoạn mã giờ trông ngắn gọn hơn nhờ vào sự trừu tượng thông minh.
+  Bây giờ chúng ta sẽ xét một số  hàm  callback mới, hàm đàu tiên chúng ta xét đó là hàm <code>handle_info/2</code>. Trong module kitty server này, chức năng tương đối nhỏ và 
+  mục đích của chúng ta chỉ để  mình họa do đó sẽ không sử  dụng các hệ thống ghi log mà thay vào đó chỉ đơn giản xuất ra màn hình các dòng thông báo tin nhắc không biết trước 
+  là đủ.  
+  Again, very little has changed there. In fact, the code is now shorter, thanks to smarter abstractions. Now we get to the new callbacks. 
+  The first one is <code>handle_info/2</code>. Given this is a toy module and we have no logging system pre-defined, just outputting the unexpected messages will be enough:</p>
+
+<pre class="brush:erl">
+handle_info(Msg, Cats) -&gt;
+    io:format("Unexpected message: ~p~n",[Msg]),
+    {noreply, Cats}.
+</pre>
+
+<p>Hàm tiếp theo chúng ta sẽ xét đó là <code>terminate/2</code>, cơ bản không có gì thay đổi nhiều so vơi hàm riêng <code>terminate/1</code> mà chúng ta đã có từ trước đó: 
+  The next one is the <code>terminate/2</code> callback. It will be very similar to the <code>terminate/1</code> private function we had:</p>
+
+<pre class="brush:erl">
+terminate(normal, Cats) -&gt;
+    [io:format("~p was set free.~n",[C#cat.name]) || C &lt;- Cats],
+    ok.
+</pre>
+
+<p>Hàm cuối cùng chúng ta xét đó là <code>code_change/3</code>:
+  And then the last callback, <code>code_change/3</code>:</p>
+
+<pre class="brush:erl">
+code_change(_OldVsn, State, _Extra) -&gt;
+    %% No change planned. The function is there for the behaviour,
+    %% but will not be used. Only a version on the next
+    {ok, State}. 
+</pre>
+
+<p>Hãy nhớ đừng công khai hàm <code>make_cat/3</code> để  sử  dụng bên ngoài module:
+   Just remember to keep in the <code>make_cat/3</code> private function:</p>
+
+<pre class="brush:erl">
+%%% Private functions
+make_cat(Name, Col, Desc) -&gt;
+    #cat{name=Name, color=Col, description=Desc}.
+</pre>
+
+<p>Tât cả định nghĩa cho module này đã xong, giờ chúng ta có thể  kiểm tra nó:
+  And we can now try the brand new code:</p>
+
+<pre class="brush:eshell">
+1&gt; c(kitty_gen_server).
+{ok,kitty_gen_server}
+2&gt; rr(kitty_gen_server).
+[cat]
+3&gt; {ok, Pid} = kitty_gen_server:start_link().
+{ok,&lt;0.253.0&gt;}
+4&gt; Pid ! &lt;&lt;"Test handle_info"&gt;&gt;.
+Unexpected message: &lt;&lt;"Test handle_info"&gt;&gt;
+&lt;&lt;"Test handle_info"&gt;&gt;
+5&gt; Cat = kitty_gen_server:order_cat(Pid, "Cat Stevens", white, "not actually a cat").
+#cat{name = "Cat Stevens",color = white,
+     description = "not actually a cat"}
+6&gt; kitty_gen_server:return_cat(Pid, Cat).
+ok
+7&gt; kitty_gen_server:order_cat(Pid, "Kitten Mittens", black, "look at them little paws!").
+#cat{name = "Cat Stevens",color = white,
+     description = "not actually a cat"}
+8&gt; kitty_gen_server:order_cat(Pid, "Kitten Mittens", black, "look at them little paws!").
+#cat{name = "Kitten Mittens",color = black,
+     description = "look at them little paws!"}
+9&gt; kitty_gen_server:return_cat(Pid, Cat).
+ok       
+10&gt; kitty_gen_server:close_shop(Pid).
+"Cat Stevens" was set free.
+ok
+</pre>
+
+<img class="right" src="static/img/mittens.png" width="156" height="132" alt="pair of wool mittens" />
+
+<p>Oh , tuyệt vời nó hoạt động rất chính xác! Oh and hot damn, it works!</p>
+
+<p>Vậy tổng kết lại chúng ta đã học được bài học gì từ hanh trình này? Có lẽ nó giống với lúc trước đó là sự phân tách từ các phần cụ thể  ra thành phần chung là một ý tưởng tuyệt vời.
+  Việc làm này sẽ giúp cho công việc bảo trì các đoạn mã, ứng dụng trở lên đỡ phức tạp, đơn giản và an toàn hơn, nó cũng giúp giảm lỗi gặp phải trong quá trình kiểm tra. Kể cả trong trường 
+  vẫn còn lỗi thì việc sửa chúng cũng dễ  dàng hơn. Mặc dù các server chung chỉ là một trong nhưng mâu trừu tượng có sẵn nhưng chúng là một trong các mẫu được sử  dụng nhiều nhất, và chúng 
+  ta sẽ thường xuyên bắt gặp các mẫy trừ tượng này và hành vi của chúng trong các chương tiếp theo.
+  So what can we say about this generic adventure? Probably the same generic stuff as before: separating the generic from the specific is a great idea on every point. Maintenance is simpler, 
+  complexity is reduced, the code is safer, easier to test and less prone to bugs. 
+  If there are bugs, they are easier to fix. Generic servers are only one of the many available abstractions, but they're certainly one of the most used ones. 
+  We'll see more of these abstractions and behaviours in the next chapters.</p>
+				<ul class="navigation">
+											<li><a href="what-is-otp.html" title="Previous chapter">&lt; Previous</a></li>
+										
+					<li><a href="contents.html" title="Index">Index</a></li>
+					
+											<li><a href="finite-state-machines.html" title="Next chapter">Next &gt;</a></li>
+									</ul>
+			</div><!-- content -->
+			<div id="footer">
+				<a href="http://creativecommons.org/licenses/by-nc-nd/3.0/" title="Creative Commons License Details"><img src="static/img/cc.png" width="88" height="31" alt="Creative Commons Attribution Non-Commercial No Derivative License" /></a>
+				<p>Except where otherwise noted, content on this site is licensed under a Creative Commons Attribution Non-Commercial No Derivative License</p>
+			</div> <!-- footer -->
+		</div> <!-- wrapper -->
+		<div id="grass" />
+	<script type="text/javascript" src="static/js/shCore.js"></script>
+	<script type="text/javascript" src="static/js/shBrushErlang2.js%3F11"></script>
+	<script type="text/javascript">
+		SyntaxHighlighter.defaults.gutter = false;
+		SyntaxHighlighter.all();
+	</script>
+	</body>
+</html>

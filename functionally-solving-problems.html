@@ -1,0 +1,757 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="Content-Style-Type" content="text/css" />
+		<meta name="keywords" content="Erlang, problems, function, RPN calculator, shortest path, recursion, parsing, test case, fold, file" />
+		<meta name="description" content="Using Erlang to solve sequential programming problems. In this chapter we write a reverse polish notation calculator and write a program to find the shortest path between Heathrow and London." />
+        <meta name="google-site-verification" content="mi1UCmFD_2pMLt2jsYHzi_0b6Go9xja8TGllOSoQPVU" />
+		<link rel="stylesheet" type="text/css" href="static/css/screen.css%3Fv3.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="static/css/sh/shCore.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="static/css/sh/shThemeLYSE2.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="static/css/print.css" media="print" />
+		<link href="rss" type="application/rss+xml" rel="alternate" title="LYSE news" />
+		<link rel="icon" type="image/png" href="favicon.ico" />
+		<link rel="apple-touch-icon" href="static/img/touch-icon-iphone.png" />
+		<link rel="apple-touch-icon" sizes="72x72" href="static/img/touch-icon-ipad.png" />
+		<link rel="apple-touch-icon" sizes="114x114" href="static/img/touch-icon-iphone4.png" />
+		<title>Functionally Solving Problems | Learn You Some Erlang for Great Good!</title>
+	</head>
+	<body>
+		<div id="wrapper">
+			<div id="header">
+				<h1>Learn you some Erlang</h1>
+				<span>for great good!</span>
+			</div> <!-- header -->
+			<div id="menu">
+				<ul>
+					<li><a href="content.html" title="Home">Home</a></li>
+					<li><a href="faq.html" title="Frequently Asked Questions">FAQ</a></li>
+					<li><a href="rss" title="Latest News">RSS</a></li>
+					<li><a href="static/erlang/learn-you-some-erlang.zip" title="Source Code">Code</a></li>
+				</ul>
+			</div><!-- menu -->
+			<div id="content">
+            <div class="noscript"><noscript>Hey there, it appears your Javascript is disabled. That's fine, the site works without it. However, you might prefer reading it with syntax highlighting, which requires Javascript!</noscript></div>
+<h2>Functionally Solving Problems</h2>
+
+<div class="note" style="margin-top:2.5em">
+<p>Giống như việc uống một cốc nước ép trái cây giải khát, sau một hôi tập luyên. 
+    Trong chương này tôi sẽ không đưa ra bất kỳ một lí thuyết mới nào mà thay vào đó tôi sẽ chỉ cho bạn thấy một số 
+    cách vận dụng những gì mà chúng ta đã thấy trước đó.
+    Các vân đề  trong chương này phần lớn sẽ dựa trên cuốn sách  
+    <a class="external" href="http://learnyouahaskell.com/functionally-solving-problems" title="Miran's chapter">Learn You a Haskell</a>
+    của tác giả Miran. Đối với các ví dụ, tôi cũng sử  dụng cách giải quyết tương tự, do đó đối với độc giả hiếu kỳ , 
+    họ có thể  xem và so sánh các đoạn mã giữa Erlang và Haskell theo ý họ muốn.
+    và nếu bạn làm điều đó, bạn chắc chắn sẽ đi đến kết luận chung việc hay ngôn ngữ với hai cú pháp khác nhau nhưng cách giải quyết khá giống nhau.
+    lí giải cho việc này là bởi vì hai ngôn ngữ này đều dựa trên khái niệm cơ bản về  hàm, do đó có thể dễ dang chuyển đổi sang các ngôn ngữ lập trình hàm khác nhưng 
+    về  mặt logic vẫn không đổi.</p>
+</div>
+
+
+<h3><a class="section" name="rpn-calculator">Reverse Polish Notation Calculator</a></h3>
+
+<p>Trong toán học hay trong lập trình, phần lớn moi người đều được học cách viết các biểu thức số  học 
+    cùng với các toán tử  đặt giữa các con số  (<code>(2 + 2) / 5</code>). Nó cũng là cách mà các máy tính số  thực hiện với việc chèn các 
+    biểu thức toán học theo thứ tự như vậy, và ở trường chắc hẳn bạn cũng được dạy như vậy.
+    tuy nhiên nếu để  ý bạn sẽ thấy cách làm này có một nhược điểm là bạn phải biết được độ yêu tiên của các toán tử hay nói cách dễ dàng là thư tự thực hiện của các phép tính, 
+    chắc hẳn trong toán học bạn cũng biết rằng thứ tự yêu tiên của các phép nhân, chia thì cao hơn các phép công trừ.</p>
+
+<p>Ngoài ra có một cách viết khác nữa mà ít người biết tới, cách viết này còn gọi với cái tên là <em>tiền tố ( prefix notation)</em> hoặc <em>balan ( Polish notation)</em>, 
+    với cách viết này, các toán tử  sẽ được viết trước các toán hạng. ví dụ <code>(2 + 2) / 5</code> sẽ viết thành <code>(/ (+ 2 2) 5)</code>. 
+    nếu chúng ta nói phép cộng <code>+</code> và phép chia <code>/</code> luôn cần 2 đối số , thì <code>(/ (+ 2 2) 5)</code> có thể  viết một cách đơn giản thành<code>/ + 2 2 5</code>
+    .</p>
+
+<p>tuy vậy, trong cách viết balan còn một công thức nghịch đảo hay gọi là <em>ngịch đảo balan ( Reverse Polish notation )</em> (or just <em>RPN</em>) và chúng ta sẽ tập trung vào
+    nó ở phần này. Ở công thức này sẽ đối nhịch với công thức tiền tố: các toán hạng sẽ viết trước các toán tử. chúng ta sẽ xét ví dụ trước, thay vì viết <code>/ + 2 2 5</code>
+    , nó sẽ được viết thành  <code>2 2 + 5 /</code>. Một số ví dụ nữa như <code>9 * 5 + 7</code>, <code>10 * 2 * (3 + 4) / 2</code> sẽ viết thành 
+    <code>9 5 * 7 +</code> and <code>10 2 * 3 4 + * 2 /</code>. Thực sự mà nói thì , các công thức này đã được sử  dụng trong rất nhiều trong những gian đoạn sớm của mô hình tính toán 
+    của máy tính, hơn nữa cách viết này không se tiết kiệm bộ nhớ hơn các cách viết thông thường.
+    which is the opposite of prefix notation: the operator follows the operands. The same example as above in RPN would be written <code>2 2 + 5 /</code>. 
+    . In fact some people still carry RPN calculators around. We'll write one of these.</p>
+
+<p>Trước khi bắt đầu, với những ai mới làm quen , thì tốt hơn là việc hiểu được cách đọc của biểu thức RPN sẽ rất có lợi.
+    Để  đọc và hiểu rõ, bước đầu tiên ta cần làm đó là tìm các toán tử , và dựa trên tính chất số  học với các phép tính và nhóm chúng vào các toán hạng
+    cùng với đối số  của mỗi toán tử  (như ở trên ta hiểu phép chia, cộng sẽ nhận hai tham số  đầu vào):</p>
+
+<pre class="expand">
+10 4 3 + 2 * -
+10 (4 3 +) 2 * -
+10 ((4 3 +) 2 *) -
+(10 ((4 3 +) 2 *) -)
+(10 (7 2 *) -)
+(10 14 -)
+-4
+</pre>
+
+<p>Tuy vậy có một cách dễ  dang hơn khi làm việc với máy tính hay máy tính cầm tay đó là sử  dụng tạo ra ngăn xếp <em>stack</em> của tất cả các toán hạng,
+    Vd cho một biểu thức có dạng <code>10 4 3 + 2 * -</code>, bước đâu tiên là tạo ngăn xếp, và đi tưng phần tử  theo thứ tự từ trái sang phải,
+    toán hạng đầu tiên ta thấy được là số  <samp>10</samp>, do đó chúng ta sẽ đẩy nó vào stack, tiếp dó vẫn là một toán hạng có giá trị là <samp>4</samp>, vì vậy 
+    chúng ta tiếp tục đẩy nó vào ngăn xếp tương tự làm thế với bước 3 với toán hạng <samp>3</samp>, ngắn xếp sẽ tăng thêm một.
+    Và giờ nhìn vào hình minh hoa ngăn xếp của chúng ta sẽ nhu sau:</p>
+
+<img class="center explanation" src="static/img/stack1.png" width="95" height="113" alt="A stack showing the values [3 4 10]" /> 
+
+<p>tiếp tục tới phần tử , ký tự tiếp theo, ta thấy đó là một toán tử  <code>+</code>. 
+    như đã quy ước lúc đâu , ta có thể  coi toán tử  <code>+</code> như một hàm nhận 2 tham số  đầu vào. 
+    Do đó để  sử  dụng được toán tử  này chúng ta cần phải có 2 tham số  tức là cần 2 toán hạng, vậy chúng ta sẽ 
+    lấy từ stack ra:</p>
+
+<img class="center explanation" src="static/img/stack2.png" width="336" height="137" alt="Drawing showing the operands 3 and 4 taken from the stack, used in the postfix exppression '3 4 +' and returning 7 on top of the stack" />
+
+<p>Chúng ta sẽ lấy toán hai toán hạng gần nhất trong stack ra đó là toán hạng <samp>4</samp> và <samp>3</samp>, sau thực hiện chúng với toán tử  <code>+</code>, chúng ta sẽ được kết quả của phép công này là 
+    <samp>7</samp> ( hãy nhớ trong stack sử  dụng quy FILO do đó những phần từ nào vào sau thì sẽ được lấy ra trước) 
+    , từ kết quả này chung ta sẽ đẩy lại vảo stack (yuck, chúng ta sẽ không lưu giữ những con số  filthy numbers floating around!), 
+    và stack giờ sẽ có dạng <samp>[7,10]</samp> và biểu thức ban đầu của chúng ta giờ chỉ còn <code>2 * -</code>. 
+    Chúng ta sẽ tiếp tục xét, phần tử  tiếp theo là một toán hạng <samp>2</samp> do đó sẽ đẩy nó vào stack. 
+    tiếp tục, chúng ta có toán tử  <code>*</code>, tương tự toán tử  <code>+</code>, nó sẽ cần đầu vào hay toán hạng. Do đó một lần nữa chúng ta sẽ lấy từ stack ra:</p>
+
+<img class="center explanation" src="static/img/stack3.png" width="340" height="134" alt="Drawing showing the operands 2 and 7 taken from the stack, used in '7 2 *', which returns 14 and pushes it on top of the stack." />
+
+<p>Sau khi có được kêt quả từ phép nhân toán hạng <samp>2</samp> với <samp>7</samp>, chúng ta được kết qủa là <samp>14</samp>, chúng ta sẽ lại đẩy nó vào lại stack 
+  . Giờ chỉ còn lại toán tử <code>-</code>, tương tự nó cũng cần 2 toán hạng. O Glorious luck! còn đúng 2 toán hạng trong stack, vậy hay sử dụng chúng thôi!</p>
+
+<img class="center explanation" src="static/img/stack4.png" width="275" height="97" alt="Drawing of the operands 14 and 10 taken from the stack into the operation '10 14 -' for the result '-4'" />
+
+<p>Cuối cùng chúng ta đã có kết quả từ việc thực hiện phép tính bằng quy tắc ngịch đảo Balan. 
+  Cách làm này tương đối rõ ràng và chỉ cần một lượng phân tích cú pháp nhỏ trước khi bắt đầu tính toán đó là lí do vì sao các máy tính cầm tay cũ có thể  sử  dụng
+  phương pháp này. ngoài ra cũng có một số  lí do khác cho việc sử  dụng RPN, nhưng chúng ta sẽ không đề  cập tới vì nó nằm ngoài phạm vi cần cho hướng dẫn này,
+  và nếu muốn bạn tìm hiẻu chi tiết, bạn có thể  xem  <a class="external" href="http://en.wikipedia.org/wiki/Reverse_Polish_notation">Wikipedia article</a>  
+  And so we have our result. This stack-based approach is relatively fool-proof and the low amount of parsing needed to be done before starting to calculate results 
+  explains why it was a good idea for old calculators to use this. There are other reasons to use RPN, 
+  but this is a bit out of the scope of this guide, so you might want to hit the <a class="external" href="http://en.wikipedia.org/wiki/Reverse_Polish_notation">Wikipedia article</a> 
+  instead.</p>
+
+<p>Một khi chúng ta giải quyêt được các vấn đề  phức tạp thì việc viết các đoạn mã cho vấn đề  này không khó.
+    Trong vd trên việc khó nhất là chỉ ra các bước cần làm theo theo để  đạt được kết quả cuối cùng và như bạn thấy chúng ta đã làm được điều đo.
+
+    Writing this solution in Erlang is not too hard once we've done the complex stuff. 
+    It turns out the tough part is figuring out what steps need to be done in order to get our end result and we just did that.
+    Nào giờ hay tạo một file mời và đặt tên nó là <code><a class="source" href="static/erlang/calc.erl.html" title="the file itself">calc.erl</a></code>.</p>
+
+<p>Đừng lo lắng về  cách mà chúng ta sẽ biểu diễn một biểu thức toán học, hãy làm mọi thứ một cách đơn giản thôi, 
+    việc đầu tiên thường làm là ta có thể  sẽ nhâp một chuỗi ký tự để  biểu diễn biểu thức toán học như: <code>"10 4 3 + 2 * -"</code>,
+    hãy để  ý ở chuỗi này có phân cách các toán tử  và toán hạng bởi dấu cách, Mặc dù đây không phải nằm trong vấn đề  cần giải quyết lúc trước mà chúng
+    ta nói tới nhưng rất cần thiết đối với một trước cho một thuật toán tách từ ( tokenizer ) đơn giản để  xử  lí trước khi tiến tới vấn đề chính cần giải quyết 
+    .Sau khi xư lí những chúng ta muốn có được sẽ là một danh sách thuật ngữ term có dạng  <code>["10","4","3","+","2","*","-"]</code>.
+
+    The first part to worry about is how we're going to represent a mathematical expression. To make things simple, 
+    we'll probably input them as a string: <code>"10 4 3 + 2 * -"</code>. This string has whitespace, 
+    which isn't part of our problem-solving process, but is necessary in order to use a simple tokenizer. 
+    What would be usable then is a list of terms of the form <code>["10","4","3","+","2","*","-"]</code>.
+    Chúng ta đã đưa ra vấn đề  cần giaỉ quyết rồi, giờ hãy chuyển nó vào trong hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/string.html#tokens/2" 
+        title="non-official doc">string:tokens/2</a></code>:</p>
+
+<pre class="brush:eshell">
+1&gt; string:tokens("10 4 3 + 2 * -", " ").
+["10","4","3","+","2","*","-"]
+</pre>
+
+<p>Kết quả biểu diễn chính xác với những gì mà chúng ta đã nêu trên. 
+    tiếp theo chúng ta sẽ đinh nghĩa ngẵn xếp (stack). 
+    Vậy chúng ta sẽ làm như thế  nào ? Bạn hãy để ý rằng kiểu danh sách của Erlang hoạt động tương đối giống với định nghĩa của stack.
+    Bằng cách sử  dụng ký tự (<code>|</code>) trong <code>[Head|Tail]</code>, bạn sẽ tạo ra một hành vi giống với việc đẩu một dữ liệu vào đâu/đỉnh stack 
+    (<var>Tail</var>, trong trường hợp này sẽ là trạng thái hiện tại của ngăn xếp ). Do đó chúng ta không cần phải định nghĩa cấu trúc stack làm gì nưa, chỉ cần thao tác với danh sách 
+    là dủ rồi.</p>
+
+<p>Giờ chúng ta sẽ tới vần đọc biểu thức, như phần trước, chúng ta đã có giải pháp để  giải quyết vấn đề  này bằng cách thử  công do đó sẽ chỉ cần làm tương tự.
+    . Chúng ta sẽ đọc hay nói cách khác duyệt mỗi phần tử trong danh sách, kiểm tra xem nếu nó là chữ số  
+    thì đẩy nó vào stack. ngước lại nếu nó là hàm hay toán tử  thì đẩy tất cả giá trị cần ra khỏi ngăn xếp tính toán được kết quả sau đó đẩy lại vào ngăn xếp. 
+    tổng quát lại , việc cần làm chỉ đơn giản là duyệt biểu thức bởi một vòng lặp và tính tổng kết quả. Nó khá giống với việc mà chúng ta đã làm với hàm 'fold' 
+    và đây là cách xử  lí tốt nhất!</p>
+
+<p>Những gì chúng ta cần làm lúc này là cần một chức năng giống như hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/lists.html#foldl/3">lists:foldl/3</a></code> 
+    , chức năng này sẽ áp dụng cho mỗi toán tử và toán hạng của một biểu thức.
+    Vởi vì nó sẽ hoạt động trong một fold, do đó nó cần nhận vào 2 đối số: đối số đầu tiên sẽ là phần tử  của biểu thức và đối số  thứ 2 sẽ là stack.</p>
+
+<p>Nào chúng ta sẽ bắt đầu viết mã trong file module <code><a class="source" href="static/erlang/calc.erl.html">calc.erl</a></code>. 
+    trước tiên chúng ta sẽ viết hàm có chức năng lọc, loại bỏ các ký tự cách hay ký tự rỗng trong danh sách:</p>
+
+<pre class="brush:erl">
+-module(calc).
+-export([rpn/1]).
+
+rpn(L) when is_list(L) -&gt;
+    [Res] = lists:foldl(fun rpn/2, [], string:tokens(L, " ")),
+    Res.
+</pre>
+
+<p>Tiếp theo, chúng ta sẽ thực hiện hàm <code>rpn/2</code>. 
+    Một điều lưu ý là bởi vì mỗi toán tử và toán hạng từ biểu thức cuối cùng luôn được đặt vào đầu stack, do
+    đó các kết quả sẽ luộn được đặt ở đầu stack. Vì vậy chúng ta sẽ cần lấy giá trị cuối cùng ra khỏi stack và trả về cho người dùng.
+    Đó là lí do vì sao chúng ta sử  dụng khớp mẫu <code>[Res]</code> với danh sách để  lấy kết quả và trả về  <var>Res</var>.</p>
+    
+
+    Note that because each operator and operand from the expression ends up being put on top of the stack, 
+    the solved expression's result will be on that stack. 
+    We need to get that last value out of there before returning it to the user. This is why we pattern match over <code>[Res]</code> and only return <var>Res</var>.</p>
+    
+<p>Được rồi giờ hãy tới phần khó hơn. hàm <code>rpn/2</code> sẽ được dùng để  xử  lí từ stack với tất cả các giá trị được đẩy vào nó.
+    Tiêu đê của hàm có thể sẽ có dạng sau <code>rpn(Op,Stack)</code> và giá trị trả về  của nó lên là  <code>[NewVal|Stack]</code>.
+    Khi ta nhận bất cứ chữ số  nàò, hoat động sẽ được thục hiện như:
+    
+    will need to handle the stack for all values passed to it. The head of the function will probably look like <code>rpn(Op,Stack)</code> and its return value like 
+    <code>[NewVal|Stack]</code>. When we get regular numbers, the operation will be:</p>
+
+<pre class="brush:erl">
+rpn(X, Stack) -&gt; [read(X)|Stack].
+</pre>
+
+<p>Trong đó hàm <code>read/1</code> là hàm có chức năng chuyển đổi kiểu dư liệu chuỗi sang kiểu dữ liệu số  nguyên hay số  phức.
+    Buòn thay là không có một hàm xây dựng sẵn nào để  làm việc này với cả hai kiểu dữ liệu số  trong Erlang cả. vì vậy chúng ta sẽ phải viết:</p>
+
+<pre class="brush:erl">
+read(N) -&gt;
+    case string:to_float(N) of
+        {error,no_float} -&gt; list_to_integer(N);
+        {F,_} -&gt; F
+    end.
+</pre>
+
+<p>Trong đó hàm <code><a class="docs" href="http://erldocs.com/18.0/stdlib/string.html#to_float/1" title="NO! don't click this! I explain it in this very sentence!">string:to_float/1</a>
+</code> sẽ chuyển từ kiểu dũ liệu dạng chuối vd như <samp>"13.37"</samp> sang kiểu số  thích hợp . 
+        Tuy vậy, trong trường hợp nếu nó không phải là kiểu dữ liệu số  phúc thì ngay lập tức nó sẽ trả về một lỗi ngoại lệ <code>{error,no_float}</code>,
+        và trong trường hợp nếu nó xảy ra , chúng ta sẽ gọi tơi hàm <code>list_to_integer/1</code> để chuyển sang số nguyên.</p>
+
+<p>Quay trở lại hàm <code>rpn/2</code>. 
+    Như đã nó lúc trước tất cả những ký tự là chữ số chúng ta sẽ đặt vào bên trong stack. 
+    Tuy nhiên, trường hợp mặc đinh bởi vì mẫu của chúng ta sẽ khớp với tất cả (xem lại chương <a class="chapter local" href="syntax-in-functions.html#pattern-matching">Pattern Matching</a>),
+    do đó các toán tử  cũng sẽ được đẩy vào stack. để tránh xảy ra, chúng ta sẽ đăt tất cả các trường hợp mẫu càn khớp lên phía truóc.
+    Chúng ta sẽ thử  với phép cộng trước tiên:</p>
+
+<pre class="brush:erl">
+rpn("+", [N1,N2|S]) -&gt; [N2+N1|S];
+rpn(X, Stack) -&gt; [read(X)|Stack].
+</pre>
+
+<p>Cps thể  dễ  dàng nhìn thấy , bất cứ khi nào nhận được chuỗi <code>"+"</code>, 
+    chúng ta se cần hai phần tử  thuộc kiểu số  từ stack ( quy ước là <var>N1</var>,<var>N2</var>) và tính tổng chúng lại, được kết quả 
+    thì đảy chúng lạ vào stack. Điều này cũng chính xác với logic mà chúng ta đã đưa ra bằng phương pháp thủ công. Hãy thử  chạy chương trình xem nó có hoạt động không :</p>
+
+<pre class="brush:eshell">
+1&gt; c(calc).
+{ok,calc}
+2&gt; calc:rpn("3 5 +").
+8
+3&gt; calc:rpn("7 3 + 5 +").
+15
+</pre>
+
+<p>Oh! chính xác, như vậy tất cả những gì còn lại là bạn thêm những mẫu như vậy cho các toán tử  còn lại:</p>
+
+<pre class="brush:erl">
+rpn("+", [N1,N2|S]) -&gt; [N2+N1|S];
+rpn("-", [N1,N2|S]) -&gt; [N2-N1|S];
+rpn("*", [N1,N2|S]) -&gt; [N2*N1|S];
+rpn("/", [N1,N2|S]) -&gt; [N2/N1|S];
+rpn("^", [N1,N2|S]) -&gt; [math:pow(N2,N1)|S];
+rpn("ln", [N|S])    -&gt; [math:log(N)|S];
+rpn("log10", [N|S]) -&gt; [math:log10(N)|S];
+rpn(X, Stack) -&gt; [read(X)|Stack].
+</pre>
+
+<p>Lưu ý một điều là với những hàm mà chỉ yêu cầu nhận 1 tham số  đầu vào như hàm logarithms sẽ chỉ cần đẩy một phần tư khỏi stack.
+    
+    Note that functions that take only one argument such as logarithms only need to pop one element from the stack. 
+    phần còn lại như một cách để luyện tập hơn, độc giả có thể  thêm một số  hàm vd như 'sum' hay 'prod' để trả về tổng hay tích của tât cả các phần tử .
+    Nếu bạn có thắc mắc gì hay chưa giải quyết được , bạn có tham khảo tại <code><a class="source" href="static/erlang/calc.erl.html">calc.erl</a></code>, chúng đã được tôi thực hiện
+    tuy nhiên bạn có thể  thực hiện hay chỉnh sửa theo ý của bạn.  
+    It is left as an exercise to the reader to add functions such as 'sum' or 'prod' which return the sum of all the elements read so far or the products of them all. 
+    To help you out, they are implemented in my version of <code><a class="source" href="static/erlang/calc.erl.html">calc.erl</a></code> already.</p>
+
+<p>Và để  chắc chắn tất cả các hàm mà chúng ta viết trước đó hoạt động chính xác như mong đợi của chúng ta, hãy viết các đoạn mã kiểm thử  ( unittest ) đơn giản. 
+    Trong Erlang toán tử  <code>=</code> cũng có thể  xử dụng thay thế  cho hàm <em>assertion</em>. 
+    Assertions lên lập tức crash ngay khi các kết quả giá trị của nó không khớp với các giá trị mà chúng ta muốn.
+    Đó chính xác là những gì chúng ta cần khi áp dụng unittest. Tất nhiên trong Erlang cũng có rất nhiều các công cụ kiểm thử  khác vd như 
+    <a class="docs" href="http://erlang.org/doc/apps/common_test/write_test_chapter.html" title="Common Test's user guide">Common Test</a>,
+     <a class="docs" href="http://erlang.org/doc/apps/eunit/chapter.html" title="EUnit's user guide">EUnit</a>. '
+    Và chúng ta xem tìm hiểu chúng trong các phần sau, còn hiện tại hãy đơn giản mọi thứ, và toán tử <code>=</code> là đủ rồi:</p>
+
+<pre class="brush:erl">
+rpn_test() -&gt;
+    5 = rpn("2 3 +"),
+    87 = rpn("90 3 -"),
+    -4 = rpn("10 4 3 + 2 * -"),
+    -2.0 = rpn("10 4 3 + 2 * - 2 /"),
+    ok = try
+        rpn("90 34 12 33 55 66 + * - +")
+    catch
+        error:{badmatch,[_|_]} -&gt; ok
+    end,
+    4037 = rpn("90 34 12 33 55 66 + * - + -"),
+    8.0 =  rpn("2 3 ^"),
+    true = math:sqrt(2) == rpn("2 0.5 ^"),
+    true = math:log(2.7) == rpn("2.7 ln"),
+    true = math:log10(2.7) == rpn("2.7 log10"),
+    50 = rpn("10 10 10 20 sum"),
+    10.0 = rpn("10 10 10 20 sum 5 /"),
+    1000.0 = rpn("10 10 20 0.5 prod"),
+    ok.
+</pre>
+
+<p>các hàm kiểm thử  lên kiểm tra tất cả các hoạt động của hàm đó , 
+    và nếu như không có bất kỳ mội ngoại lệ nào xảy ra, thì chứng tỏ rằng hàm mà chúng ta viết hay logic của chúng ta hoạt động chính xác.
+    Giờ chúng ta sẽ đi xét các thành phần bên trong hàm kiểm thử này.
+    4 dòng đầu tiên là 4 biểu thứ đê kiểm tra chức năng số  học cơ bản và nó hoạt động chính xác,
+    ở dong thứ 5 là một trường hợp kiểm tra mà tôi chưa nhắc tới, trong trường hợp biểu thức hoạt động không chính xác 
+    với nhưng gì ta mong muốn, chúng ta sẽ sử  dụng mẫu <code>try ... catch</code> để  dự kiến rằng sẽ 
+    có một lỗi được ném ra.
+    The test function tries all operations; if there's no exception raised, the tests are considered successful. 
+    The first four tests check that the basic arithmetic functions work right. 
+    The fifth test specifies behaviour I have not explained yet. The <code>try ... catch</code> 
+    expects a badmatch error to be thrown because the expression can't work:</p>
+
+<pre class="expand">
+90 34 12 33 55 66 + * - +
+90 (34 (12 (33 (55 66 +) *) -) +)
+</pre>
+
+<p>trước khi kết thúc hoạt động trong hàm <code>rpn/1</code>, hai giá trị, toán hạng <samp>-3947</samp> và <samp>90</samp> vẫn còn trong stack 
+    và không còn bất kỳ toán tử  nào để  thực hiện với toán hạng <samp>90</samp> nũa lên. 
+    Khi đó để  giải quyết vấn đề  này ta có 2 phương án lựa chọn: phương án đầu tiên đó là bỏ qua và chỉ lấy giá trị ở đỉnh của stack ( đây sẽ được coi là kết quả
+    cuối cùng sau khi đã thực hiện phép tính) hoặc phương án hai dó là đưa ra lỗi để  crash chương trình vì các phép toán số  học này sai.
+    một phần do Erlang cho phép crash chương trình ( let it crash ) do đó trong truòng hợp này chúng ta sẽ phải lựa chọn một phương án.
+    Phân tích đoạn bạn bạn sẽ thấy thanh phần gây lên crash ở đây là đoạn <code>[Res]</code> trong hàm <code>rpn/1</code>, ở đoạn mã này 
+    yêu cầu đảm bảo là chỉ còn duy nhất một phần tử  còn lại trong stack để  khớp và gán với biến, đó chính là kết quả cuối cùng sau khi được tính.
+    either ignore it and only take the value on top of the stack (which would be the last result calculated) or crash because the arithmetic is wrong. 
+    Given Erlang's policy is to let it crash, it's what was chosen here. The part that actually crashes is the <code>[Res]</code> in <code>rpn/1</code>. 
+    That one makes sure only one element, the result, is left in the stack.</p>
+
+<p>Tiếp đó ở các dòng tiếp theo, một số  đoạn kiểm tra có dạng <code>true = FunctionCall1 == FunctionCall2</code> 
+    , xét theo độ ưu tiên toán tử  <code>==</code> cao hơn toán <code>=</code> do đó phái bên phải toán tử  <code>=</code> 
+    sẽ thục hiện truóc tiên, ngoài ra phía bên trái ta cần một kết quả mong muốn thay vì một lời gọi hàm. 
+    cấu trúc này vẫn sẽ hoạt động như một assert bình thường bởi vì kết quả cuối cùng chúng ta so sánh cuối cùng là <samp>true</samp>.</p>
+
+<p>Ngoài ra tôi cũng sẽ thêm một số  trường hợp kiểm thử  nữa cho phép tính tổng và tích để bạn có thể  luyện tập và thực hiện chúng.
+    Nếu tất cả các trường hợp đều đúng bạn sẽ thấy điều sau:</p>
+
+<pre class="brush:eshell">
+1&gt; c(calc).
+{ok,calc}
+2&gt; calc:rpn_test().
+ok
+3&gt; calc:rpn("1 2 ^ 2 2 ^ 3 2 ^ 4 2 ^ sum 2 -").
+28.0
+</pre>
+
+<p>Như bạn thấy <samp>28</samp> bằng với kết quả của phép tính <code>sum(1² + 2² + 3² + 4²) - 2</code></p>
+
+<p>Trong trường hợp lỗi xảy ra do do các toán tử , biểu thức không rõ ràng, cuối hàm tính mà vẫn còn nhiều giá trị trong stack, 
+    sẽ tốt hơn khi máy tính ( module calc của chúng ta ) lên đưa một ngoại lệ rõ ràng vd như <code>badarith</code>
+    errors hơn là chỉ đưa ra lỗi chung chung như <code>badmatch</code>. Điều này chắc chắn sẽ giúp bạn gỡ lỗi dễ  ràng hơn. 
+    It would certainly make debugging easier for the user of the calc module.</p>
+
+
+<h3><a class="section" name="heathrow-to-london">Heathrow to London</a></h3>
+
+<p>Tiếp theo chúng ta sẽ đi xét một ví dụ được lấy từ <a class="external" href="http://learnyouahaskell.com/functionally-solving-problems#heathrow-to-london">Learn You a Haskell</a>. 
+    Gải thiêt sẽ đặt ra cho bạn như sau: Bạn đang trên một chuyến bay và nó sẽ đáp cánh tại sân bay Heathrow trong một vài giời tới, sau khi đáp cánh bạn muốn tới London nhanh nhất có thể 
+    vì người chú giàu có của bạn sắp mất, và bạn muốn là người đầu tiên có mặt để  được hưởng tài sản của chú mình.</p>
+
+<p>Để  di chuyển từ Heathrow tới London, bạn có thể  chọn một trong hai con đường, và chúng đều được thông với nhau ( 
+    có  một số  đoạn rẽ , phố  nhỏ để  bạn có thể  di chuyển qua lại giữa hai con đường này). Tuy nhiên bởi vị giới hạn tốc độ cho phép khi di chuyển và ách tắc giao thông 
+    lên một số  đường hay phố  nếu di chuyển sẽ mất nhiều thời gian hơn. Để chắc chắn rằng bạn sẽ tơi sớm nhất có thể , lên trước khi máy bay hạ cánh, 
+    bạn quyết định tìm ra đường đi tốt nhất để có thể nhanh chóng tới nhà chú mình được. Dưới dây là sơ đồ  minh họa trên máy tính xác tay của bạn:</p>
+
+<img class="center explanation" src="static/img/road1.png" width="494" height="172" alt="A little map with a main road 'A' with 4 segments of length 50, 5, 40 and 10, B with 4 
+segments of length 10, 90, 2 and 8, where each of these segments are joined by paths 'X' of length 30, 20, 25 and 0." />
+
+<p>Từ lúc trở thánh một fan của Erlang sau khi đọc một số  sách trực tuyến, chắc chắn bạn sẽ quuêts định giải 
+    quyết các vấn đề  bằng Erlang. Và để  dễ  dàng hơn cho vd mà ta làm cùng với bản đồ , bạn có thể  tạo một file và đặt tên nó là <a class="source" href="static/erlang/road.txt">road.txt</a> và 
+    nhập các dữ liệu càn thiết vào:</p>
+
+<pre class="expand">
+50
+10
+30
+5
+90
+20
+40
+2
+25
+10
+8
+0
+</pre>
+
+<p>Thông tin về  đường và phố  được đặt theo mẫu: <code>A1, B1, X1, A2, B2, X2, ..., An, Bn, Xn</code>, 
+    Trong đó <var>X</var> là một trong những con đường nối giữa A và B. Chúng ta sẽ quy ước giá trị <samp>0</samp> ở phân đoạn cuối cùng của <var>X</var>,
+    bởi vì ở điểm đích khi đó việc di chuyển giữa các con đường không có ý nghĩa gì nữa cả. Dữ liệu sẽ được tổ  chức trong một bộ gồm 3 phần tủe có dạng nhu sau  <code>{A,B,X}</code>.</p>
+
+<p>Tiếp đó bạn nhận ra rằng nếu bạn không biết làm thế  nào để giải quyết vấn đề  này bằng cách thủ công thì 
+    thật sự không có giá trị gì khi cố gắng giải quyết nó bằng Erlang cả.
+    Do đó để  phân tích vấn đề này, chúng ta sẽ sử  dụng đệ quy với những gì đã được học về  nó.  
+    The next thing you realize is that it's worth nothing to try to solve this problem in Erlang 
+    when you don't know how to solve it by hand to begin with. 
+    In order to do this, we'll use what recursion taught us.</p>
+
+<p>Khi viết một hàm đệ quy, điều đầu tiên bạn phải làm là chỉ ra được điều kiện dừng ( base case ) của nó. 
+    với bài toán này thì việc tìm điểm dừng sẽ bắt đâu từ việc phân tích một bộ. 
+    Vì thế  chúng ta sẽ đi xet một trường hợp đơn giản trước đã.
+    Đầu tiên nếu chúng ta phải chọn lựa giữa <var>A</var>, <var>B</var> ( trong trường hợp băng qua <var>X</var> 
+    tại thời điểm này là ko có nhiều ý nghĩa vì chúng ta đang xét tại thời điểm xuất phát):</p>
+
+<img class="center explanation" src="static/img/road2.png" width="244" height="130" alt="Only two paths A and B: A of length 10 and B of length 15." />
+
+<p>Do đó giờ việc làm của bạn lúc này chỉ đơn giản là chọn lựa ra con đường ngắn nhất để  đi từ A hay B. 
+    Nếu bạn có kiến thức tốt về  đệ quy, bạn chắc cũng biết việc chúng ta phải làm là tập trung về  trường hợp cơ sở. Tức là sau mỗi bước chúng ta sẽ giảm việc lựa chọn giữa A
+    và B cho bước tiếp theo. 
+    If you've learned your recursion right, you know that we ought to try and converge towards the base case. This means that on each step we'll take, 
+    we'll want to reduce the problem to choosing between A and B for the next step.</p>
+
+<p>Nào giờ chúng ta sẽ mở rộng bản đồ  hơn và bắt đầu lại:</p>
+
+<img class="center explanation" src="static/img/road3.png" width="290" height="123" alt="Path A: 5, 10. Path B: 1, 15. Crossover path X: 3." title="No idea why you'd need to switch paths in a bathroom." />
+
+<p>Ah! Thật thú vị ! Vậy làm cách nào để  chúng ta có thể  giảm lựa chọn <code>{5,1,3}</code> tới việc chỉ còn chọn lựa giữa A và B.
+    Hãy xác định xem có bao nhiều cách để  chọn A. Để  xác định điềm giao cắt giữa  <var>A1</var> và <var>A2</var> ( Tôi sẽ tạm gọi là <em>điểm</em> <var>A1</var> ),
+    Tôi thể  đi trực tiếp từ đường <var>A1</var> (<samp>5</samp>) hoăc đi từ đường <var>B1</var> và sau đó băng qua đường <var>X1</var> (<samp>3</samp>). Để  ý xem trong trường hợp này mặc dù 
+    ban phải rườm rà hơn khi đi từ đường <var>B1</var> (<samp>1</samp>) và sau đó băng qua <var>X1</var> (<samp>3</samp>) nhưng rõ ràng viêc đi vậy vậy sẽ nhanh hơn là xuất phát từ 
+    <var>A1</var> ( <samp>5</samp>) vì rõ ràng (<samp>5</samp>) thì dài hơn (<samp>4</samp>).
+    do đó quãng đường ngắn nhất cho tùy chọn A là <code>[B, X]</code>. Vậỵ còn lựa chọn B ? tương tự ban cũng có thể  xuất phát từ <var>A1</var> (<samp>5</samp>) sau đó băng qua 
+    <var>X1</var> (<samp>3</samp>) hay đi trức tiếp từ <var>B1</var> (<samp>1</samp>).</p>
+
+<p>Thật tốt! Như vậy ta đã có lựa chọn đâu điên với quãng đường dài <samp>4</samp> đến giao điểm đầu tiên của A ( điểm A1 ) với việc chọn con đường <code>[B, X]</code> 
+    và quãng đường có độ dài là <samp>1</samp> từ ví trí <code>[B]</code> đến điểm B1 ( giao điểm của <var>B1</var> và <var>B2</var> ).
+    Tiếp theo chúng ta sẽ tiếp tục di chuyển để  điểm A2 ( điểm thứ 2 của A hay điểm giao giữa A2 và điểm đích hoặc <var>X2</var>) và điểm B2 ( giao giữa <var>B2</var> và <var>X2</var>).
+    Để đưa ra quyết định, tôi đề  nghị chúng ta sẽ làm giống trước đó. Rõ ràng là bạn không có nhiều lựa chọn khi tôi là người viết hướng dẫn này, vì thế chúng ta sẽ tiếp tục.</p>
+
+<p>Tất cả các cách để  lựa chon đường đi trong trường hợp này tương tự như cách mà chúng ta làm lúc trước 
+    . Chúng ta sẽ lại bắt đầu từ điểm A hay chính xac là từ ví trí bắt đầu của A2 ( sau khi lựa chọn quang đường <code>[B, X]</code>),
+    tương tự chúng ta tơi điểm A2 bằng cách đi trục tiếp từ A2, do đó quãng đường chúng ta có được lúc này là <samp>14</samp> (<code>14 = 4 + 10</code>) hoặc 
+    đi tới <var>B2</var> sau đó tói <var>X2</var> từ  <code>[B]</code>, khi đó tổng quãng đường của lựa chọn này là   <samp>16</samp> (<code>16 = 1 + 15 + 0</code>),
+    rõ ràng nhìn vào kết quả bạn thấy đoạn đường <code>[B, X, A]</code> thì gần hơn so với  <code>[B, B, X]</code>.</p>
+
+<img class="center explanation" src="static/img/road3.2.png" width="364" height="149" alt="Same drawing as the one above, but with the paths drawn over." />
+
+<p>Hay cũng có thể  đi tới điểm tiếp nối của B bằng cách đi tới <var>A2</var> từ <code>[B, X]</code> rồi sau đó băng quang <var>X2</var> , tổng quáng đường sẽ là  
+    <samp>14</samp> (<code>14 = 4 + 10 + 0</code>), hoặc đi trực tiêp tới điểm <var>B2</var> từ <code>[B]</code> với tổng quãng đường là <samp>16</samp> (<code>16 = 1 + 15</code>). 
+    chúng ta có quãng đường tốt nhất cho lưạ chọn đầu tiên là <code>[B, X, A, X]</code>.</p>
+
+<p>Vậy là việc chọn đường đã xử lí xong, cuối cùng chúng ta còn lại hai tuyến A hoặc B với độ dài quãng đường của cả hai là <samp>14</samp>. 
+    Chọn bất kỳ một trong hai tuyến nào cũng đều được. Sự lựa chọn cuồi cùng sẽ luôn là hai quãng đường có cùng chiều dài và chiều dài của X ở cuối phần đoạn luôn là 0 
+    . Bằng cách giải quyết bằng đệ quy, chúng ta sẽ luôn đảm bảo tìm đường quãng đường ngăn nhất. Không tệ phải không ?</p>
+
+<p>Subtly enough, Chúng ta đã đưa ra những logic cơ bản trong việc xây dụng một hàm đệ quy. Bạn có thể  thực hiện logic trên nếu muốn nhưng tôi đã 
+    từng nói rằng chúng ta sẽ không phải tự viết, định nghĩa quá nhiều hàm đệ quy, do đó lần này chúng ta sẽ sử  dụng hàm 'fold'.</p>    
+    we've given ourselves the basic logical parts we need to build a recursive function. You can implement it if you want, 
+    but I promised we would have very few recursive functions to write ourselves. We'll use a fold.</p>
+
+<div class="note">
+<p><strong>Lưu ý:</strong> Trong các chương trước mặc dù tôi đã chỉ ra cách sử  dụng hàm 'fold' với kiểu dũ liệu danh sách,
+    tuy nhiên chúng ta chưa tìm hiểu hết, hàm 'fold' còn biểu hiện cho một khái niệm rộng hơn của việc lặp dữ liệu có cấu trúc cùng với một bộ lưu trữ.
+    đơn cử  như fold còn có thể  làm việc được với cấu trúc dữ liệu cây, từ điển (dictionary) , mảng ( array ) , bảng ( database table), etc.</p>
+
+<p>It is sometimes useful when experimenting to use abstractions like maps and folds; 
+    they make it easier to later change the data structure you use to work with your own logic.</p>
+</div>
+
+<p>Vậy hiện giờ chúng ta đang ở đâu? Ah, vâng! Chúng ta đang ở bước chuẩn bị một file dùng làm đầu vào cho chương trình. 
+    Dĩ liên để  thao tác được với file chúng ta cần công, và trong Erlang <a class="docs" href="http://erldocs.com/18.0/kernel/file.html">file module</a> là công cụ tốt nhất thao tác với file
+    . trong module này chưa rất nhiều các hàm thông dụng để  thao tác với file (cài cặt quyền ( setting permissions ), di chuyển flle, đổi tên hay xóa file , etc.)</p>
+
+<p>Tất nhiên nó cũng có các hàm thông dụng cho việc đoc/ghi file như: <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#open/2" title="Oh, look! another link cloud!">
+    file:open/2</a></code> và <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#close/1" title="Man I wonder what I can say on that one">file:close/1</a></code> 
+    để  mở và đóng file, <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#read/2" title="probably something like 'official link to unofficial doc'">
+    file:read/2</a></code> để  đọc, lấy nội dung của một file ( bao gồm cả kiểu chuỗi hoặc nhị phân ), 
+    <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#read_line/1" title="It's boring but true...">file:read_line/1</a></code> để  đoc một dòng trong file ,
+    <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#position/3" title="Is this what we call reading between the lines?">file:position/3</a></code> để  di chuyển con trỏ, nhaỷ tới ví trị 
+    cần tìm khi mở một file, etc.</p>
+
+<p>Ngoài ra, Có một số  các hàm rút gọn hơn cho vấn để  đọc ghi như 
+    <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#read_file/1" title="Maybe it is a subliminal message?">file:read_file/1</a></code> 
+    (mở và đọc nội dung ở dạng nhị phân opens and reads the contents as a binary), 
+    <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#consult/1" title="JOIN THE NAVY">file:consult/1</a>
+    </code> (mở và phân tích file dạng Erlang terms) or <code><a class="docs" href="http://erldocs.com/18.0/kernel/file.html#pread/2" 
+        title="And 5 cents added to my bank account">file:pread/2</a></code> (thay đổi vị trí con trỏ hiện tại trong file) and <code><a class="docs" 
+            href="http://erldocs.com/18.0/kernel/file.html#pwrite/2" title="Finally, this is over. I'm so sorry.">pwrite/2</a></code> (thay đổi ví trí trong file và ghi dũe liệu vào file).</p>
+
+<p>Với tất cả các lựa chọn sẵn có nhưng vậy , bạn có thể  dễ  dàng tìm kiếm các hàm để  đọc file <a class="source" href="static/erlang/road.txt">road.txt</a>. 
+    Trong ví dụ này vì quãng đường của chúng ta tương đối nhỏ và không có nhiều dữ liêu cho lên chúng ta sẽ gọi hàm <code>file:read_file("road.txt").'</code> cho việc đọc file:</p>
+
+<pre class="brush:eshell">
+1&gt; {ok, Binary} = file:read_file("road.txt").
+{ok,&lt;&lt;"50\r\n10\r\n30\r\n5\r\n90\r\n20\r\n40\r\n2\r\n25\r\n10\r\n8\r\n0\r\n"&gt;&gt;}
+2&gt; S = string:tokens(binary_to_list(Binary), "\r\n\t ").
+["50","10","30","5","90","20","40","2","25","10","8","0"]
+</pre>
+
+<p>Chủ ý rằng trong trường hợp này tôi đã thêm một ký tự cách (<code>" "</code>) và ký tự tab (<code>"\t"</code>) 
+    để  file có thể  viêt được dưới dạng <samp>"50 10 30 5 90 20 40 2 25 10 8 0"</samp>. 
+    dựa trên một danh sách mà chúng ta đã chuyển hóa từ chuỗi trong file, chúng ta sẽ cần phải chuyển các phần tử  dạng chuối sang kiểu dữ liệu số nguyện. Do đo 
+    chúng ta sẽ làm tương tự những gì mà chúng ta đã làm với ví dụ RPN calculator ở phần trước:</p>
+
+<pre class="brush:eshell">
+3&gt; [list_to_integer(X) || X &lt;- S].
+[50,10,30,5,90,20,40,2,25,10,8,0]
+</pre>
+
+<p>Hãy tạo ra một module mới và đặt tên nó là <a class="source" href="static/erlang/road.erl.html">road.erl</a> và thêm đoạn logic sau:</p>
+
+<pre class="brush:erl">
+-module(road).
+-compile(export_all).
+
+main() -&gt;
+    File = "road.txt",
+    {ok, Bin} = file:read_file(File),
+    parse_map(Bin).
+
+parse_map(Bin) when is_binary(Bin) -&gt;
+    parse_map(binary_to_list(Bin));
+parse_map(Str) when is_list(Str) -&gt;
+    [list_to_integer(X) || X &lt;- string:tokens(Str,"\r\n\t ")].
+</pre>
+
+<p>mặc dù trong Erlang không có hàm <code>main</code> như một số ngôn ngữ khác tuy nhiên chúng ta có thể  
+    quy ước việc sử  dụng hàm <code>main/0</code> như một entrypoint, trong ví dụ này chúng ta sẽ sử  dụng nó cho việc đọc nội dung của file 
+    và truyền dữ liệu đã đọc được vào cho hàm <code>parse_map/1</code> để  phân tích. 
+    bởi vì hàm <code>file:read_file/1</code> sẽ lấy nội dung từ <a class="source" href="static/erlang/road.txt">road.txt</a>, 
+    cho lên kết quả mà chúng ta nhận được sẽ là dạng nhị phân. 
+    Do đó để  giải quyết trường hợp này, chúng ta sẽ tạo ra một hàm <code>parse_map/1</code> trong đó nó sẽ kiểm tra để  khớp với cả trường hợp dữ liệu truyền vào là 
+    kiểu danh sách hay kiểu nhị phân. Trong trường hợp kiểu dữ liệu là nhị phân, chúng ta sẽ chỉ cần chuyển đổi nó sang kiểu danh sách và sau đó gọi lại hàm 
+    <code>parse_map/1</code> cùng với đầu vào là dữ liệu đã được chuyển từ nhị phân sang kiểu danh sách.</p>
+
+<p>Bước tiếp theo chúng ta cần phải phân tích để  chuyển dữ liệu vào trong các tập con có dạng <code>{A,B,X}</code>. 
+    trong các ngôn ngữ lập trình hàm khác có một số  hàm có chức năng tách, chọn từng cụm phần tử  của một danh sách 
+    vào một tập con , tuy vậy đáng tiếc thay là Erlang không hỗ  trợ việc này, do dó không có cách nào để  lấy từng phần 3 phần tử  của một danh sách cả ,
+    do đó chúng ta sẽ phải tự xây dựng hàm để  xử  lí việc này, vì thao tác với kiểu dữ liệu danh sách cho lên chúng ta sẽ sử  dụng đệ quy cùng khớp mẫu để  viêt hàm này:</p>
+
+<pre class="brush:erl">
+group_vals([], Acc) -&gt;
+    lists:reverse(Acc);
+group_vals([A,B,X|Rest], Acc) -&gt;
+    group_vals(Rest, [{A,B,X} | Acc]).
+</pre>
+
+<p>Như bạn thấy chúng ta thực hiện hàm <code>group_vals</code> cùng với đệ quy đuôi, tiếp đó chúng ta chỉ cần điều chỉnh lại một chút hàm <code>parse_map/1</code>:</p>
+
+<pre class="brush:erl">
+parse_map(Bin) when is_binary(Bin) -&gt;
+    parse_map(binary_to_list(Bin));
+parse_map(Str) when is_list(Str) -&gt;
+    Values = [list_to_integer(X) || X &lt;- string:tokens(Str,"\r\n\t ")],
+    group_vals(Values, []).
+</pre>
+
+<p>Nêú chúng ta biện dịch tất cả lại với nhau , chúng ta sẽ có được một con đường như sau:</p>
+
+<pre class="brush:eshell">
+1&gt; c(road).
+{ok,road}
+2&gt; road:main().
+[{50,10,30},{5,90,20},{40,2,25},{10,8,0}]
+</pre>
+
+<p>Tuyệt, trông có về  chính xác những gì mà chúng ta mong đợi rồi đó. 
+    Ah yes, that looks right. We get the blocks we need to write our function that will then fit in a fold. For this to work, finding a good accumulator is necessary.</p>
+
+<p>Để  chọn ra một biến lưu trữ ( accumulator ), cách tôt nhất là tưởng tượng rằng bản thân chúng ta đang 
+    ở giữa thuật toán đạng chạy. Áp dụng với bài toán nay, chúng ta sẽ coi rằng chúng ta đang cố tìm ra con 
+    dường ngắn nhất giữa cho bộ ba ở vị trí thứ hai trong danh sách (<code>{5,90,20}</code>). Để  quyết định xem con đường nào là tốt nhất,
+    tôi sẽ phải cần kết quả từ bộ ba trước đó. May mắn thay là cách giải quyết vấn đề  này chúng ta thực hiện trước đó rồi, 
+    bởi vì chúng ta không cần một biến lưu trữ ( accumulator ) và đã biết được các logic trước đó ròi, do đó trong trường hợp với điểm A:
+     the method I find the easiest to use is to imagine myself in the middle of the algorithm while it runs. For this specific problem, 
+     I'll imagine that I'm currently trying to find the shortest path of the second triple (<code>{5,90,20}</code>).
+      To decide on which path is the best, I need to have the result from the previous triple. Luckily, we know how to do it, 
+      because we don't need an accumulator and we got all that logic out already. So for A:</p>
+
+<img class="center explanation" src="static/img/road1.2.png" width="506" height="249" alt="Visual re-explanation of how to find the shortest path" title="biggest image on this site (except the squid) yet!" />
+
+<p>và đường đi ngẵng nhất với B là:</p>
+
+<img class="center explanation" src="static/img/road1.3.png" width="506" height="236" alt="Visual re-explanation of how to find the shortest path" title="I do love copy/pasting." />
+
+<p>Dựa vào cách giải quyết mà ta suy luận lúc trước, thì đoạn đường tốt nhất có thể  chọn tử  ví trí xuất phát A là <code>[B, X]</code>. 
+    Độ dài quãng đường khi đó là 40. Còn từ B, quãng đường chỉ đơn giản là <code>[B]</code> với độ dài là 10. 
+    sau khi đã lựa chọn được bước đàu tiên, và dựa trên quyết định trước đó chúng ra có thể  sử  dụng 
+    kết quả đó đẻ tìm ra tuyến đường tốt nhất cho A và B bằng cách lặp lại logic trước đó. Chúng ta cũng cần cách để 
+    hiển thị dữ liệu tuyến đường cho người dùng. Vì có hay tuyến đương chung ta cần hiển thị ( một cho tuyến A và một cho tuyến B ) và tổng độ dài 
+    tính được của mỗi tuyến, vì vậy chúng ta có thể biểu diễn tổng độ dài đó dưới dạng <code>{{DistanceA, PathA}, {DistanceB, PathB}}</code>.
+    Bằng cách này, mỗi lần lặp trong hàm 'fold' sẽ có quyền truy cập vào tât cả các trạng thái và xây dựng két quả ở bước cuối cho người dùng   
+     
+    We can use this information to find the next best paths for A and B by reapplying the same logic, 
+    but counting the previous ones in the expression. 
+    The other data we need is the path traveled so we can show it to the user.
+     Given we need two paths (one for A and one for B) and two accumulated lengths, our accumulator can take the form <code>{{DistanceA, PathA}, {DistanceB, PathB}}</code>. 
+     That way, each iteration of the fold has access to all the state and we build it up to show it to the user in the end.</p>
+
+<p>Giở hàm của chúng ta đã có tât các tham số  cân thiết cho bài toán này rồi: một bộ ba phân tử  <code>{A,B,X}</code> và một biến lưu trữ có dạng 
+    <code>{{DistanceA,PathA}, {DistanceB,PathB}}</code>.</p>
+
+<p>Hãy chuyển chúng vào trong hàm mà ta sẽ viết và nhận được kết quả 
+    Putting this into code in order to get our accumulator can be done the following way:</p>
+
+<pre class="brush:erl">
+shortest_step({A,B,X}, {{DistA,PathA}, {DistB,PathB}}) -&gt;
+    OptA1 = {DistA + A, [{a,A}|PathA]},
+    OptA2 = {DistB + B + X, [{x,X}, {b,B}|PathB]},
+    OptB1 = {DistB + B, [{b,B}|PathB]},
+    OptB2 = {DistA + A + X, [{x,X}, {a,A}|PathA]},
+    {erlang:min(OptA1, OptA2), erlang:min(OptB1, OptB2)}.
+</pre>
+
+<p>Ở đây biến <var>OptA1</var> sẽ biến đầu tiến cho tuyến A  (bắt đầu từ <var>A</var>) và biến <var>OptA2</var>
+    như một lựa chọn thứ hai ( bắt đầu từ <var>B</var> và bằng qua <var>X</var> ).
+    điều tương tự các biến <var>OptB1</var> và <var>OptB2</var> cho tuyến B.
+    sau khi tính toán kết quả cuối cùng chúng ta sẽ trả về  tổng độ dài các tuyến đường đã chọn cùng với các lựa chọn di chuyển, 
+    
+    gets the first option for A (going through <var>A</var>), <var>OptA2</var> the second one (going through <var>B</var> then <var>X</var>). 
+    The variables <var>OptB1</var> and <var>OptB2</var> get the similar treatment for point B. Finally, we return the accumulator with the paths obtained.</p>
+
+<p>Đối với vấn đề  lưu trữ các kết quả con đường mà chọn ở đoạn mã trên, chú ý là tôi quyết định sử  dụng mẫu <code>[{x,X}]</code>  thay vì sủ dụng  <code>[x]</code>, lí giải cho việc làm này 
+    là nhìn vào mẫu mới mà tôi sử  dụng, người dùng có thể  nhìn ra được độ dài quãng đường của mỗi quãng.
+    Một điều nữa là việc hiển thị các tuyến đường đa chọn sẽ theo thứ tự ngượi lại ( (<code>{x,X}</code> sẽ đặt trước <code>{b,B}</code> )
+    , đó là bởi vì chúng ta đang sử  dụng 'fold', đây là một phép đệ quy đuôi so đó các kết quả khi sử  dụng với kiểu dữ liệu danh sách phải nghịch đảo lại.
+    About the paths saved in the code above, note that I decided to use the form <code>[{x,X}]</code> rather than <code>[x]</code> for the simple reason that
+     it might be nice for the user to know the length of each segment. 
+     The other thing I'm doing is that I'm accumulating the paths backwards (<code>{x,X}</code> comes before <code>{b,B}</code>.) 
+     This is because we're in a fold, which is tail recursive: the whole list is reversed, 
+     so it is necessary to put the last one traversed before the others.</p>
+
+<p>Cuối cùng, tôi sử  dụng hàm <code>erlang:min/2</code> để  tìm ra tuyến đường ngắn nhất giữa các kết quả các tuyến. 
+    Việc áp dụng hàm so sanh này cho kiểu dữ liệu bộ có vẻ khó hiểu, nhưng hay nhìn lại chương về  các kiểu dữ liệu chúng ta đã học trước đó thì bạn sẽ thấy
+     trong Erlang mọi kiểu dữ liệu đều có thể so sánh được với nhau! Trong trường hợp này , vì phần tử đầu tiên của bộ là độ dài tổng quáng đương, do đó chúng ta sẽ 
+     sắp xếp dựa trên phần tử  này.
+    It might sound weird to use such a comparison function on tuples, but remember that every Erlang term can be compared to any other! 
+    Because the length is the first element of the tuple, we can sort them that way.</p>
+
+<p>Giờ những gì còn lại là chúng ta áp dụng chúng với hàm 'fold':</p>
+
+<pre class="brush:erl">
+optimal_path(Map) -&gt;
+    {A,B} = lists:foldl(fun shortest_step/2, {{0,[]}, {0,[]}}, Map),
+    {_Dist,Path} = if hd(element(2,A)) =/= {x,0} -&gt; A;
+                      hd(element(2,B)) =/= {x,0} -&gt; B
+                   end,
+    lists:reverse(Path).
+</pre>
+
+<p>cuối cùng sau khi chạy xong hàm 'fold', kết quả mà nhận nhận được cho tuyến A và B lên giống nhau, ngoại trừ kết quả của quãng đường cuói cùng <code>{x,0}</code>.
+   chúng ta sẽ sử  dụng biểu thức <code>if</code> để  tìm kiếm phần tử  hay con đường đã chọn cuối cùng của cả hai tuyến đường  
+    At the end of the fold, both paths should end up having the same distance, except one's going through the final <code>{x,0}</code> segment.
+     The <code>if</code> looks at the last visited element of both paths and returns the one that doesn't go through <code>{x,0}</code>. 
+     Picking the path with the fewest steps (compare with <code>length/1</code>) would also work. Once the shortest one has been selected, 
+     it is reversed (it was built in a tail-recursive manner; you <strong>must</strong> reverse it). You can then display it to the world,
+      or keep it secret and get your rich uncle's estate. To do that, you have to modify the main function to call <code>optimal_path/1</code>. Then it can be compiled.</p>
+
+<pre class="brush:erl">
+main() -&gt;
+    File = "road.txt",
+    {ok, Bin} = file:read_file(File),
+    optimal_path(parse_map(Bin)).
+</pre>
+
+<p>Oh, nhìn xem! Thật chính xác những gì chúng ta mong muốn!</p>
+
+<pre class="brush:eshell">
+1&gt; c(road).
+{ok,road}
+2&gt; road:main().
+[{b,10},{x,30},{a,5},{x,20},{b,2},{b,8}]
+</pre>
+
+<p>Hay nhìn một cách trực quan hơn với hình vẽ</p>
+
+<img class="center explanation" src="static/img/road1.4.png" width="426" height="157" alt="The shortest path, going through [b,x,a,x,b,b]" />
+
+<p>Tuy vậy việc chạy chương trình thật sư bất tiện, mỗi lần chúng ta lại phải vô shell biện dịch và gọi hàm cần chạy, 
+    Vì vậy có một cách thực sự hữu ích hơn để  chạy chương trình mà không phải truy cập vào shell. để  thực hiện nó chúng ta sẽ cần thay đỏi lại hàm main một chút:</p>
+
+<pre class="brush:erl">
+main([FileName]) -&gt;
+    {ok, Bin} = file:read_file(FileName),
+    Map = parse_map(Bin),
+    io:format("~p~n",[optimal_path(Map)]),
+    erlang:halt().
+</pre>
+
+<p>Như bạn thấy chúng ta sẽ cật nhập thêm một tham số  cho hàm main để  nó có thể  nhận các tham số  từ dòng lệnh, 
+    đồng thời ở cuối hàm main chúng ta sẽ thêm một dòng lệnh gọi tới hàm <code><a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#halt/0" 
+        title="Unofficial and pretty Erlang documentation">erlang:halt/0</a></code>, việc làm này là để  thống báo cho máy ảo Erlang biết chương trình của chúng ta 
+        sẽ chấm dứt sau khi thực hiên xong các công việc cần làm. Tiếp nữa tôi cũng chuyển lời gọi hàm  <code>optimal_path/1</code> vào bên trong hàm <code>io:format/2</code> 
+        để  có thể  hiển thị được thông điệp ra ngoài ngoài màn hình dòng lệnh thay vì chỉ hiển thị trong shell.
+    because that's the only way to have the text visible outside the Erlang shell.</p>
+
+<p>Tất cả những gì chúng ta đã làm trước đó tôi đã tổng hợp lại tại file <a class="source" href="static/erlang/road.erl.html">road.erl</a> (minus comments):</p>
+
+<pre class="brush:erl">
+-module(road).
+-compile(export_all).
+
+main([FileName]) -&gt;
+    {ok, Bin} = file:read_file(FileName),
+    Map = parse_map(Bin),
+    io:format("~p~n",[optimal_path(Map)]),
+    erlang:halt(0).
+
+%% Transform a string into a readable map of triples
+parse_map(Bin) when is_binary(Bin) -&gt;
+    parse_map(binary_to_list(Bin));
+parse_map(Str) when is_list(Str) -&gt;
+    Values = [list_to_integer(X) || X &lt;- string:tokens(Str,"\r\n\t ")],
+    group_vals(Values, []).
+
+group_vals([], Acc) -&gt;
+    lists:reverse(Acc);
+group_vals([A,B,X|Rest], Acc) -&gt;
+    group_vals(Rest, [{A,B,X} | Acc]).
+
+%% Picks the best of all paths, woo!
+optimal_path(Map) -&gt;
+    {A,B} = lists:foldl(fun shortest_step/2, {{0,[]}, {0,[]}}, Map),
+    {_Dist,Path} = if hd(element(2,A)) =/= {x,0} -&gt; A;
+                      hd(element(2,B)) =/= {x,0} -&gt; B
+                   end,
+    lists:reverse(Path).
+
+%% actual problem solving
+%% change triples of the form {A,B,X}
+%% where A,B,X are distances and a,b,x are possible paths
+%% to the form {DistanceSum, PathList}.
+shortest_step({A,B,X}, {{DistA,PathA}, {DistB,PathB}}) -&gt;
+    OptA1 = {DistA + A, [{a,A}|PathA]},
+    OptA2 = {DistB + B + X, [{x,X}, {b,B}|PathB]},
+    OptB1 = {DistB + B, [{b,B}|PathB]},
+    OptB2 = {DistA + A + X, [{x,X}, {a,A}|PathA]},
+    {erlang:min(OptA1, OptA2), erlang:min(OptB1, OptB2)}.
+</pre>
+
+<p>And running the code:</p>
+
+<pre class="brush:eshell">
+$ erlc road.erl
+$ erl -noshell -run road main road.txt
+[{b,10},{x,30},{a,5},{x,20},{b,2},{b,8}]
+</pre>
+
+<p>And yep, it's right! It's pretty much all you need to do to get things to work. 
+    You could make yourself a bash/batch file to wrap the line into a single executable, or you could check out
+     <a class="docs" href="http://erlang.org/doc/man/escript.html">escript</a> to get similar results.</p>
+
+<p>As we've seen with these two exercises, solving problems is much easier when you break them off in small parts that you can solve individually 
+    before piecing everything together. It's also not worth much to go ahead and program something without understanding it. 
+    Finally, a few tests are always appreciated. They'll let you make sure everything works fine and will let you change the code without changing the results at the end.</p>
+				<ul class="navigation">
+											<li><a href="errors-and-exceptions.html" title="Previous chapter">&lt; Previous</a></li>
+										
+					<li><a href="contents.html" title="Index">Index</a></li>
+					
+											<li><a href="a-short-visit-to-common-data-structures.html" title="Next chapter">Next &gt;</a></li>
+									</ul>
+			</div><!-- content -->
+			<div id="footer">
+				<a href="http://creativecommons.org/licenses/by-nc-nd/3.0/" title="Creative Commons License Details"><img src="static/img/cc.png" width="88" height="31" alt="Creative Commons Attribution Non-Commercial No Derivative License" /></a>
+				<p>Except where otherwise noted, content on this site is licensed under a Creative Commons Attribution Non-Commercial No Derivative License</p>
+			</div> <!-- footer -->
+		</div> <!-- wrapper -->
+		<div id="grass" />
+	<script type="text/javascript" src="static/js/shCore.js"></script>
+	<script type="text/javascript" src="static/js/shBrushErlang2.js%3F11"></script>
+	<script type="text/javascript">
+		SyntaxHighlighter.defaults.gutter = false;
+		SyntaxHighlighter.all();
+	</script>
+	</body>
+</html>

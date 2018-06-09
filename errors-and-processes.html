@@ -1,0 +1,870 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="Content-Style-Type" content="text/css" />
+		<meta name="keywords" content="Erlang, exception, error, exit, trap_exit, link, monitor, restart, crash, process" />
+		<meta name="description" content="Error management with multiple processes in Erlang: links, monitors, exit signals (and how to trap them), the logic behind being able to give names to processes." />
+        <meta name="google-site-verification" content="mi1UCmFD_2pMLt2jsYHzi_0b6Go9xja8TGllOSoQPVU" />
+		<link rel="stylesheet" type="text/css" href="static/css/screen.css%3Fv3.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="static/css/sh/shCore.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="static/css/sh/shThemeLYSE2.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="static/css/print.css" media="print" />
+		<link href="rss" type="application/rss+xml" rel="alternate" title="LYSE news" />
+		<link rel="icon" type="image/png" href="favicon.ico" />
+		<link rel="apple-touch-icon" href="static/img/touch-icon-iphone.png" />
+		<link rel="apple-touch-icon" sizes="72x72" href="static/img/touch-icon-ipad.png" />
+		<link rel="apple-touch-icon" sizes="114x114" href="static/img/touch-icon-iphone4.png" />
+		<title>Errors and Processes | Learn You Some Erlang for Great Good!</title>
+	</head>
+	<body>
+		<div id="wrapper">
+			<div id="header">
+				<h1>Learn you some Erlang</h1>
+				<span>for great good!</span>
+			</div> <!-- header -->
+			<div id="menu">
+				<ul>
+					<li><a href="content.html" title="Home">Home</a></li>
+					<li><a href="faq.html" title="Frequently Asked Questions">FAQ</a></li>
+					<li><a href="rss" title="Latest News">RSS</a></li>
+					<li><a href="static/erlang/learn-you-some-erlang.zip" title="Source Code">Code</a></li>
+				</ul>
+			</div><!-- menu -->
+			<div id="content">
+            <div class="noscript"><noscript>Hey there, it appears your Javascript is disabled. That's fine, the site works without it. However, you might prefer reading it with syntax highlighting, which requires Javascript!</noscript></div>
+<h2>Errors and Processes</h2>
+
+<h3><a class="section" name="links">Links</a></h3>
+
+<p>Trong Erlangm, link ( liên kết ) được định nghĩa là một mối liên hệ đặc biệt được tạo ra giữa hai tiến trình với nhau.
+    Khi mối liên hệ này được thiết lập, nếu một trong hai tiến trình chấm dứt do những lỗi ngoại lệ ( throw, error và exit. Xem lại chương <a class="chapter" href="errors-and-exceptions.html">Errors and Exceptions</a>) bất ngờ được ném ra 
+    thì tiến trình còn lại cũng sẽ tự động chấm dứt. 
+    
+    A link is a specific kind of relationship that can be created between two processes. 
+    When that relationship is set up and one of the processes dies from an unexpected throw, 
+    error or exit (see <a class="chapter" href="errors-and-exceptions.html">Errors and Exceptions</a>), the other linked process also dies.</p>
+
+<p>Đây là một khái niệm hữu ý dựa trên luận điêm lỗi trong đó các tiến trình lên sớm nhanh chóng được dừng lại nếu gặp lỗi: 
+    Khi một tiến trình gặp một lỗi gây crash nhưng các thành phần, tiến trình phụ thuộc nó vẫn hoạt động thì các tiến trình đó lên 
+    cũng phải xử  lí dựa trên sự chấm dứt của tiến trình mà chúng phụ thuốc vào. Vì vậy cách tốt nhất thông thường là chấp nhận chấm dứt chúng và tiến hành 
+    khởi động lại toàn bộ nhóm các tiến trình đó. Đó chính xác là những gì mà liên kết ( link ) thực hiện. 
+
+    This is a useful concept from the perspective of failing as soon as possible to stop errors: 
+    if the process that has an error crashes but those that depend on it don't, then all these depending processes now have to deal with a dependency disappearing. 
+    Letting them die and then restarting the whole group is usually an acceptable alternative. Links let us do exactly this.</p>
+
+<p>Trong Erlang để  tạo ra một liên kết ( link ) giữa hai tiến trình với nhau bởi hàm 
+    <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#link/1" title="Not the Zelda kind of link">link/1</a>, hàm này sẽ 
+    nhận một đinh danh pid như một đối số . Khi gọi hàm này, nó sẽ sẽ tạo ra một liên kêt giưa tiến trình hiện tại và tiến trình ứng với đinh danh <var>Pid</var>.
+    để  khử  mối liên kết giữa hai tiến trình, ta sử  dụng hàm <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#unlink/1" title="Even more unlike Zelda">unlink/1</a>.
+    Khi hai tiến trình được liên kết với nhau, nếu một tiến trình bị crash thì ngay lập tức một tin nhắn sẽ được gửi đi cùng với thông tin cụ thể về  lỗi xảy ra.
+    Trong trường hợp tiến trình chấm dứt bởi điều kiện tự nhiên ( vd như: chấm dứt khi kết thúc một hàm  ) thì sẽ không bất kỳ tin nhắn nào được gửi đi vì đây không phải là lỗi.
+    Trước tiên tôi sẽ giới thiêu một số  hàm mà chúng ta sẽ viết trong ví dụ này, nào hãy tạo ra một file module mới, dặt tên là 
+    <a class="source" href="static/erlang/linkmon.erl.html">linkmon.erl</a> và gõ các đoạn mã sau:
+
+    To set a link between two processes, Erlang has the primitive function 
+    <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#link/1" title="Not the Zelda kind of link">link/1</a>, 
+    which takes a Pid as an argument. When called, the function will create a link between the current process and the one identified by <var>Pid</var>. 
+    To get rid of a link, use <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#unlink/1" title="Even more unlike Zelda">unlink/1</a>. 
+    When one of the linked processes crashes, a special kind of message is sent, with information relative to what happened. 
+    No such message is sent if the process dies of natural causes (read: is done running its functions.) I'll first introduce this new function as part of 
+    <a class="source" href="static/erlang/linkmon.erl.html">linkmon.erl</a>:</p>
+
+<pre class="brush:erl">
+myproc() -&gt;
+    timer:sleep(5000),
+    exit(reason).
+</pre>
+
+<p>Hàm đầu tiên chúng ta viết có chức năng chính là ném ra một ngoại lệ exit sau 5 giay kể  từ lúc gọi ( chúng sẽ sử  dụng để  phân tách đợi tiến trình 
+    mới sau lệnh khởi tạo ( spawn ) sau mỗi 5 giây), 
+    ban sẽ thấy một lối được ném ra với thông báo lỗi 'reason' khi một liên kết ( link ) dược tạo ra giữa hai tiến trình.
+      
+    If you try the next following calls (and wait 5 seconds between each spawn command), you should see the shell crashing for 'reason' only
+     when a link has been set between the two processes.</p>
+
+<pre class="brush:eshell">
+1&gt; c(linkmon).
+{ok,linkmon}
+2&gt; spawn(fun linkmon:myproc/0).
+&lt;0.52.0&gt;
+3&gt; link(spawn(fun linkmon:myproc/0)).
+true
+** exception error: reason
+</pre>
+
+<p>Dưới dây là hình minh họa:</p>
+
+<img class="center explanation" src="static/img/link-exit.png" width="337" height="178" alt="A process receiving an exit signal" />
+
+<p>Tuy nhiên, đoạn tin nhắc <code>{'EXIT', B, Reason}</code> này không thể  bắt được trong biểu thức <code>try ... catch</code>, do đó chúng ta cần sử  dụng một cơ chế  khác dể  làm đièu này, chúng ra sẽ đi chi tiết vào 
+    xủ lí lỗi này trong các phần sau.
+    However, this <code>{'EXIT', B, Reason}</code> message can not be caught with a <code>try ... catch</code> as usual. Other mechanisms need to be used to do this. We'll see them later.</p>
+
+<p>Lưu ý một điều quan trọng nữa là các liên kết thông thường rất ít khi khởi tạo mỗi liên kết giữa chỉ hai tiến trình với nhau mà 
+    chúng ta có thể  tổ  chức thành một nhóm các tiến trình cũng như việc chúng sẽ chấm dứt cùng nhau.
+      It's important to note that links are used to establish larger groups of processes that should all die together:</p>
+
+<pre class="brush:erl">
+chain(0) -&gt;
+    receive
+        _ -&gt; ok
+    after 2000 -&gt;
+        exit("chain dies here")
+    end;
+chain(N) -&gt;
+    Pid = spawn(fun() -&gt; chain(N-1) end),
+    link(Pid),
+    receive
+        _ -&gt; ok
+    end.
+</pre>
+
+<p>Ở ví dụ trên, chúng ta tạo ra một hàm <code>chain/1</code>, hàm này 
+    sẽ nhận một tham số  đầu vào là kiểu số  nguyên <var>N</var>, khi gọi hàm cùng <var>N</var> giá trị xác định, 
+    nó sẽ tạo mới <var>N</var> các tiến trình và liên kết các tiến trình đó với tiến trình hiện tại.
+
+
+     This function will take an integer <var>N</var>, start <var>N</var> processes linked one to the other. 
+     In order to be able to pass the <var>N-1</var> argument to the next 'chain' process (which calls <code>spawn/1</code>), 
+     I wrap the call inside an anonymous function so it doesn't need arguments anymore. Calling <code>spawn(?MODULE, chain, [N-1])</code> would have done a similar job.</p>
+
+<p>Vd dưới đây tôi sẽ tạo ra nhiều tiến trình và liên kết chúng với nhau đồng thời chấm dứt chúng ngay sau khi 
+    3 tiến trình mới được tạo ra và liên kết với tiến trình hiện tại. 
+    
+    Here, I'll have many processes linked together, dying as each of their successors exits:</p>
+
+<pre class="brush:eshell">
+4&gt; c(linkmon).               
+{ok,linkmon}
+5&gt; link(spawn(linkmon, chain, [3])).
+true
+** exception error: "chain dies here"
+</pre>
+
+<p>Như bạn thấy, các dòng thông báo về  tín hiệu chấm dứt của các tiến trình sẽ được hiển thi trong shell.
+    Dưới đây là hình vẽ mô tả quá trình tạo ( spawn ) các tiến trình và chấm dứt chúng.
+    And as you can see, the shell does receive the death signal from some other process. Here's a drawn representation of the spawned processes and links going down:</p>
+
+<pre class="expand">
+[shell] == [3] == [2] == [1] == [0]
+[shell] == [3] == [2] == [1] == *dead*
+[shell] == [3] == [2] == *dead*
+[shell] == [3] == *dead*
+[shell] == *dead*
+*dead, error message shown*
+[shell] &lt;-- restarted
+</pre>
+
+<p>Sau khi tiến trinh gọi tới hàm <code>linkmon:chain(0)</code>, lỗi sẽ được ném ra cho một chuỗi các tiến trình được liên kết với nhau 
+    cho tới khi tiến tiền hiện tại hay tiến trình shell chấm dứt. Lỗi crash có thể  xảy ra ở bất cứ đâu trong nhóm các tiến trình được liên kết với nhau, tuy nhiên vì các liên 
+    kết được tạo ra là hai chiều do đó bạn chỉ cần chấm dứt một trong số chúng là toàn bộ những tiến trình còn lại cũng sẽ chấm dứt theo.
+
+    After the process running <code>linkmon:chain(0)</code> dies, the error is propagated down the chain of links until the shell process itself dies because of it.
+    The crash could have happened in any of the linked processes; because links are bidirectional, you only need one of them to die for the others to follow suit.</p>
+
+<div class="note">
+    <p><strong>Lưu ý:</strong> Nếu bạn muốn chấm dứt một tiến trình khác trong shell, bạn có sử  dụng hàm  <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#exit/2" title="Erlang's handgun">exit/2</a>,
+        hvà gọi theo cấu trúc sau <code>exit(Pid, Reason)</code>. Hãy thử  nó nếu bạnsss muốn:
+        If you wanted to kill another process from the shell, you could use the function 
+        <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#exit/2" title="Erlang's handgun">exit/2</a>, 
+        which is called this way: <code>exit(Pid, Reason)</code>. 
+        Try it if you wish.</p>
+</div>
+
+<div class="note">
+    <p><strong>Lưu ý:</strong> Các liên kết ( Links ) không thể  tích lữy được. Nếu bạn gọi tới hàm <code>link/1</code> 15 lần của cùng hai tiến trình, thì vẫn chỉ có duy nhất 
+        một liên kêt dược tạo ra giữa chúng và chỉ cần gọi duy nhất một lần hàm <code>unlink/1</code> để  gỡ bỏ liên kết là đủ.
+         can not be stacked. If you call <code>link/1</code> 15 times for the same two processes, only one link will still exist between them and a single call to 
+         <code>unlink/1</code> will be enough to tear it down.</p>
+</div>
+
+<p>Một đièu quan trọng cần lưu ý nữa là hàm <code>link(spawn(Function))</code> hay <code>link(spawn(M,F,A))</code> sẽ thực hiện trong một vài bước.
+    đôi khi một tiến trình chấm dứt trước khi nó thiết lập liên kết thì nó sẽ kích hoạt một số  hành vi không mong muốn. Để  tránh rủi ro này, 
+    hàm <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#spawn_link/1" title="Not the Spawn from comic books (or Zelda)">spawn_link/1-3</a> được thêm vào 
+    . Cách sử  dụng hàm này tương tự như hàm <code>spawn/1-3</code>, nó tương tư việc tạo ra một tiến trình và liên kết giữa các tiến trình với nhau bằng  <code>link/1</code>,
+    nhưng thay vì phải từng bước thì nó sẽ thực hiện mội chuỗi các hoạt động một cách tự dộng ( tất các hoạt động được kết hợp thành một lệnh duy nhất và kết quả 
+    của nó có thể  là thành công hay thất bại hay không có bất cứ kết quả nào cả). Cách làm này thường được coi là an toàn hơn. Ngoài ra bạn cũng có thể  lưu các cặp dấu ngoặc đơn.
+    
+    chỉ có điều nó sẽ tạo ra một tiến trình và các liên kết trong trường hợp  
+    Its important to note that <code>link(spawn(Function))</code> or <code>link(spawn(M,F,A))</code> happens in more than one step. 
+    In some cases, it is possible for a process to die before the link has been set up and then provoke unexpected behavior. 
+    For this reason, the function <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#spawn_link/1" title="Not the Spawn from comic books (or Zelda)">spawn_link/1-3</a> 
+    has been added to the language. It takes the same arguments as <code>spawn/1-3</code>, creates a process and links it as if <code>link/1</code> had been there, 
+    except it's all done as an atomic operation (the operations are combined as a single one, which can either fail or succeed, but nothing else). 
+    This is generally considered safer and you save a set of parentheses too.</p>
+
+<img class="right" src="static/img/ackbar.jpg" width="307" height="281" alt="Admiral Ackbar" title="It's a trap! (that took forever to trace)" />
+
+<h3><a class="section" name="its-a-trap">It's a Trap!</a></h3>
+
+<p>Chúng ta sẽ quay lại tìm hiểu về  liên kết ( links ) và các tiến trình đã bị chấm dứt. các lỗi sẽ được truyền từ tiến trình này tới tiến trinh 
+    khác thông qua một phương thức tương tự như việc truyền các tin nhắc với nhau, nhưng thay vì sử  truyền các tin nhắn thông thường với nhau thì chúng 
+    sử  dụng một kiểu tin nhắn đặc biệt được gọi là tin hiệu ( signal ). Các tín hiệu exit là những tin nhắn 'bí mật' được tự động thực hiện trên các tiến trình,
+    nó sẽ tự động chấm dứt chúng trong quá trình thực hiện. 
+    
+    Now to get back to links and processes dying. 
+    Error propagation across processes is done through a process similar to message passing, 
+    but with a special type of message called signals. Exit signals are 'secret' 
+    messages that automatically act on processes, killing them in the action.</p>
+
+<p>Tôi đã đề  cập rât nhiều lần về  một ứng dụng được coi là ổn đinh phụ thuộc vào khả năng chấm dứt và hồi phục nhanh chóng các tiến trình. 
+    Sau khi tìm hiểu ở các phàn trên, chúng ta có thể  sử  dụng các liên kết ( links ) để  chấm dứt các tiến trình nhưng vậy làm thế  nào để  khôi phục chúng.</p>   
+    I have mentioned many times already that in order to be reliable, an application needs to be able to both kill and restart a process quickly. 
+    Right now, links are alright to do the killing part. What's missing is the restarting.</p>
+
+<p>Để  làm điều này , trước tiên chúng ta cần phải biết nguyên nhân khiến một tiến trình bị chấm dứt. và để  biết nguyên nhân này trước khi chấm dứt một tiến trình này chúng 
+    ta có thẻ thêm một tầng logic nữa thông qua một khái niệm được gọi là <em>system processes</em>
+    vào đầu các liên kết ( links ) ( giống như chúng ta phủ một lớp kem lên trên một cái bánh ).
+    các system processes vê bản chất vẫn chỉ là các tiến trình bình thường nhưng chúng có thêm một chức năng đó là
+    chuyển đổi các tín hiệu exit về  dang các tin nhắc thông thường. Để  sử  dụng chúng ta chỉ cần gọi hàm <code>process_flag(trap_exit, true)</code>
+    và đặt chúng bên trong một hàm, tiến trình đang chạy. Không có nhiều điều gì để  để  nói nhiều hơn một ví dụ, vì thế  chúng ta sẽ đi vào một ví dụ cụ thể .
+    Trong ví trước chúng ta đã tạo ra các liên kết và chấm dứt chúng, do đó trong ví dụ này chúng ta sẽ sửa đổi một chút và thêm một 
+    system proccess vào chương trình ( shell ).
+
+    In order to restart a process, we need a way to first know that it died. 
+    This can be done by adding a layer on top of links (the delicious frosting on the cake) with a concept called 
+    <em>system processes</em>. System processes are basically normal processes, 
+    except they can convert exit signals to regular messages. 
+    This is done by calling <code>process_flag(trap_exit, true)</code> in a running process. 
+    Nothing speaks as much as an example, so we'll go with that. I'll just redo the chain example with a system process at the beginning:</p>
+
+<pre class="brush:eshell">
+1&gt; process_flag(trap_exit, true).
+true
+2&gt; spawn_link(fun() -&gt; linkmon:chain(3) end).
+&lt;0.49.0&gt;
+3&gt; receive X -&gt; X end.
+{'EXIT',&lt;0.49.0&gt;,"chain dies here"}
+</pre>
+
+<p>Ah! Bây giờ mọi thứ trở lên thú vị hơn rồi phải không, chúng ta sẽ lại mô tả lại quá trình xảy ra bằng hình vè minh họa:
+      Now things get interesting. To get back to our drawings, what happens is now more like this:</p>
+
+<pre class="expand">
+[shell] == [3] == [2] == [1] == [0]
+[shell] == [3] == [2] == [1] == *dead*
+[shell] == [3] == [2] == *dead*
+[shell] == [3] == *dead*
+[shell] &lt;-- {'EXIT,Pid,"chain dies here"} -- *dead*
+[shell] &lt;-- still alive!
+</pre>
+
+<p>Như bạn thấy cơ chế  này cho phép các tiến trình được phục hồi lại nhanh chóng ngay sau khi chúng chấm dưt.
+    Bằng cách viết một chương trình sử  dụng system processes, nó giúp chúng ta dễ  dàng hơn trong việc tạo ra một tiến trình có 
+    chức năng kiểm tra, quản lí trạng thái của các tiến trình khác giúp cho việc phục hồi các tiến trình trong trường hợp xảy ra lỗi khiến chúng 
+    chấm dứt. Chúng ta sẽ nói về  điều này chi tiết hơn trong chương tiếp theo, khi chúng ta thực sự áp dụng kỹ thuật này.
+
+     
+    And this is the mechanism allowing for a quick restart of processes. By writing programs using system processes, 
+    it is easy to create a process whose only role is to check if something dies and then restart it whenever it fails. 
+    We'll cover more of this in the next chapter, when we really apply these techniques.</p>
+
+<p>Bay giờ tôi sẽ quay trở lại nói về  các hàm ngoại lệ đã đề  cập trong chương <a class="chapter" href="errors-and-exceptions.html">exceptions chapter</a> 
+    và cách áp dụng chúng vào trong các tiến trình cùng với trap exits.
+    Trước tiên chúng ta sẽ thử  nghiệm mà không sử  dụng system process. Trong thử  nghiệm này tôi sẽ dưa ra các kết quả từ các lỗi throws, error và exits bất ngờ 
+    trong các tiên trình lân cận.
+    
+    For now, I want to come back to the exception functions seen in the <a class="chapter" href="errors-and-exceptions.html">exceptions chapter</a> 
+    and show how they behave around processes that trap exits.
+    Let's first set the bases to experiment without a system process. I'll successively show the results of uncaught throws, errors and exits in neighboring processes:</p>
+
+<dl>
+    <dt>Exception source: <code>spawn_link(fun() -&gt; ok end)</code></dt>
+    <dd><strong>Untrapped Result</strong>: - nothing - </dd>
+    <dd><strong>Trapped Result</strong>: <samp>{'EXIT', &lt;0.61.0&gt;, normal}</samp></dd>
+    <dd>ở thử nghiệm lệnh này này, tiến trình được exit một cách bình thường, không có bất kỳ một vấn đề  nào xảy ra.
+        Lưu ý là kết quả có đôi chút giống với kết quả của <code>catch exit(normal)</code>, ngoại trừ một sự khác biệt đó là 
+        định danh của tiến trình đươc thêm vào bộ đẻ xác định tiến trình nào đã bị chấm dứt.
+
+        The process exited normally, without a problem. Note that this looks a bit like the result of <code>catch exit(normal)</code>, except a PID is added to the tuple 
+        to know what processed failed.</dd>
+
+    <dt>Exception source: <code>spawn_link(fun() -&gt; exit(reason) end)</code></dt>
+    <dd><strong>Untrapped Result</strong>: <samp>** exception exit: reason</samp></dd>
+    <dd><strong>Trapped Result</strong>: <samp>{'EXIT', &lt;0.55.0&gt;, reason}</samp></dd>
+    <dd>tiến trình đã bị chấm dứt kèm theo một thông báo về  nguyên nhân do người dùng tự định nghĩa. Trong trường hợp này có một điểm cần lưu ý đó là
+        tiến trình sẽ bị crash nếu chúng ta không thiết lập trapped exit lên. Ngược lại, nó sẽ đưa ra một tin nhắc như ở trên. 
+        
+        The process has terminated for a custom reason. In this case, if there is no trapped exit, the process crashes. Otherwise, you get the above message.</dd>
+
+    <dt>Exception source: <code>spawn_link(fun() -&gt; exit(normal) end)</code></dt>
+    <dd><strong>Untrapped Result</strong>: - nothing -</dd>
+    <dd><strong>Trapped Result</strong>: <samp>{'EXIT', &lt;0.58.0&gt;, normal}</samp></dd>
+    <dd>đây là một dạng mô phỏng một tiến trình chấm dứt thành công ở điều kiện binh thường.
+       Đôi khi bạn muốn chấm dứt một tiến trình như một phần của chương trình mà không kèm theo bất cứ ngoại lệ nào xảy ra hãy sủ dụng 
+       cách này.
+
+        This successfully emulates a process terminating normally. In some cases, you might want to kill a process as part of the normal flow of a program, 
+        without anything exceptional going on. This is the way to do it.</dd>
+
+    <dt>Exception source: <code>spawn_link(fun() -&gt; 1/0 end)</code></dt>
+    <dd><strong>Untrapped Result</strong>: <samp>Error in process &lt;0.44.0&gt; with exit value: {badarith, [{erlang, '/', [1,0]}]}</samp></dd>
+    <dd><strong>Trapped Result</strong>: <samp>{'EXIT', &lt;0.52.0&gt;, {badarith, [{erlang, '/', [1,0]}]}}</samp></dd>
+    <dd>thông thường biểu thức <code>try ... catch</code> sẽ không bắt được lỗi <code>{badarith, Reason}</code>
+        và đưa ra kết quả thông báo cùng với 'EXIT'. Hành vi này tương tự việc sử  dụng <code>exit(reason)</code> nhưng khác biệt ở đây là 
+        kết quả thông báo sẽ dược đưa ra chi tiết hơn thông qua một stack trace.
+        The error (<code>{badarith, Reason}</code>) is never caught by a <code>try ... catch</code> block and bubbles up into an <samp>'EXIT'</samp>.
+         At this point, it behaves exactly the same as <code>exit(reason)</code> did, but with a stack trace giving more details about what happened.</dd>
+
+    <dt>Exception source: <code>spawn_link(fun() -&gt; erlang:error(reason) end)</code></dt>
+    <dd><strong>Untrapped Result</strong>: <samp>Error in process &lt;0.47.0&gt; with exit value: {reason, [{erlang, apply, 2}]}</samp></dd>
+    <dd><strong>Trapped Result</strong>: <samp>{'EXIT', &lt;0.74.0&gt;, {reason, [{erlang, apply, 2}]}}</samp></dd>
+    <dd>tương tự như thử nghiệm trên ( <code>1/0</code> ), ngoài trừ việc thay thế  bằng erlang:error(reason)
+        That's normal, <code>erlang:error/1</code> is meant to allow you to do just that.</dd>
+
+    <dt>Exception source: <code>spawn_link(fun() -&gt; throw(rocks) end)</code></dt>
+    <dd><strong>Untrapped Result</strong>: <samp>Error in process &lt;0.51.0&gt; with exit value: {{nocatch, rocks}, [{erlang, apply, 2}]}</samp></dd>
+    <dd><strong>Trapped Result</strong>: <samp>{'EXIT', &lt;0.79.0&gt;, {{nocatch, rocks}, [{erlang, apply, 2}]}}</samp></dd>
+    <dd>Trong thử  nghiệm này tương tự lỗi throw sẽ không được bắt bởi <code>try ... catch</code>.
+        Because the <code>throw</code> is never caught by a <code>try ... catch</code>, it bubbles up into an error, which in turn bubbles up into an <samp>EXIT</samp>. 
+        Without trapping exit, the process fails. Otherwise it deals with it fine.</dd>
+</dl>
+
+<p>Các thử  nghiệm trên là những thử nghiệm trong trường hợp ngoại lệ thường dùng.
+    Trong điều kiện bình thường, mọi thứ sẽ diễn ra mà không có bất kỳ lỗi nào. Đơn giản là các tiến trình sẽ chấm dứt, các tín hiệu khác nhau được gửi đi.  
+     
+    that's about it for usual exceptions. Things are normal: everything goes fine. Exceptional stuff happens: processes die, different signals are sent around.</p>
+
+<p>tiếp theo chúng ta sẽ thử  nghiệm với hàm <code>exit/2</code>. Đây là một trong những hàm được ví như khẩu súng của tiến trình trong Erlang  
+    . Hàm này cho phép chấm dút một tiến trình khác từ xa, và nó khá an toàn. Dưới đây là các thử  nghiệm có thể  gọi hàm này:
+
+    This one is the Erlang process equivalent of a gun. It allows a process to kill another one from a distance, safely. Here are some of the possible calls:</p>
+
+<dl>
+    <dt>Exception source: <code>exit(self(), normal)</code></dt>
+    <dd><strong>Untrapped Result</strong>: <samp>** exception exit: normal</samp></dd>
+    <dd><strong>Trapped Result</strong>: <samp>{'EXIT', &lt;0.31.0&gt;, normal}</samp></dd>
+    <dd>Khi trapping exits không được kích hoạt, <code>exit(self(), normal)</code> sẽ hành động tương tự như <code>exit(normal)</code>. 
+        Ngược lại, bạn sẽ nhận được một tin nhắn cùng với đinh dạng giống với đinh dạng bạn đã thực hiện khi sử  dụng liên kêt ( link ) từ một tiến trình bị chấm dứt.  
+        
+        Otherwise, you receive a message with the same format you would have had by listening to links from foreign processes dying.</dd>
+
+    <dt>Exception source: <code>exit(spawn_link(fun() -&gt; timer:sleep(50000) end), normal)</code></dt>
+    <dd><strong>Untrapped Result</strong>: - nothing -</dd>
+    <dd><strong>Trapped Result</strong>: - nothing -</dd>
+    <dd>Thực tế  đây là lòi gọi <code>exit(Pid, normal)</code>. 
+        Câu lệnh này thực sự không có chức năng gì cả vì một tiến trình không thể  bị ra lệnh chấm dừng từ xa được bởi lí do <code>normal</code>.
+        This command doesn't do anything useful, because a process can not be remotely killed with the reason <code>normal</code> as an argument.</dd>
+
+    <dt>Exception source: <code>exit(spawn_link(fun() -&gt; timer:sleep(50000) end), reason)</code></dt>
+    <dd><strong>Untrapped Result</strong>: <samp>** exception exit: reason</samp></dd>
+    <dd><strong>Trapped Result</strong>: <samp>{'EXIT', &lt;0.52.0&gt;, reason}</samp></dd>
+    <dd>Lệnh này sẽ chấm dứt chính nó từ một tiến trình khác bên ngoài với cùng với <samp>reason</samp>.
+        
+        This is the foreign process terminating for <samp>reason</samp> itself. Looks the same as if the foreign process called <code>exit(reason)</code> on itself.</dd>
+
+    <dt>Exception source: <code>exit(spawn_link(fun() -&gt; timer:sleep(50000) end), kill)</code></dt>
+    <dd><strong>Untrapped Result</strong>: <samp>** exception exit: killed</samp></dd>
+    <dd><strong>Trapped Result</strong>: <samp>{'EXIT', &lt;0.58.0&gt;, killed}</samp></dd>
+    <dd>Thật lạ, tin nhăn nhận được đã thay đổi trong quá trình từ tiến trình chết tới hàm tạo ra tiến trình.
+        kết quả tin nhắc mà chúng ta nhận được lại là <code>killed</code> thay vì <code>kill</code>.
+        Lí giải điều này là do atom <code>kill</code> trong Erlang là một trường hợp đặc biêt của exit signal.
+
+        Surprisingly, the message gets changed from the dying process to the spawner. The spawner now receives <code>killed</code> 
+        instead of <code>kill</code>. That's because <code>kill</code> is a special exit signal. More details on this later.</dd>
+
+    <dt>Exception source: <code>exit(self(), kill)</code></dt>
+    <dd><strong>Untrapped Result</strong>: <samp>** exception exit: killed</samp></dd>
+    <dd><strong>Trapped Result</strong>: <samp>** exception exit: killed</samp></dd>
+    <dd>Oops, nhìn xem, bất kể  chúng ta có thiết lập trap exit hay không thì kết quả vẫn sẽ một ngoại lệ được ném ra cùng với <code>killed</code>. 
+        Oops, look at that. It seems like this one is actually impossible to trap. Let's check something.</dd>
+
+    <dt>Exception source: <code>spawn_link(fun() -&gt; exit(kill) end)</code></dt>
+    <dd><strong>Untrapped Result</strong>: <samp>** exception exit: killed</samp></dd>
+    <dd><strong>Trapped Result</strong>: <samp>{'EXIT', &lt;0.67.0&gt;, kill}</samp></dd>
+    <dd>Thật không thể  hiểu nổi điều gì dang diễn ra vậy. 
+        một tiến trình chám dứt chinh bản thân qua lời gọi hàm <code>exit(kill)</code>, nó sé tự chấm dứt cùng lí do <code>killed</code>
+        . Tuy nhiên khi chúng ta thiết lập trap exit thì điều đó không xảy ra.
+        Now that's getting confusing. When another process kills itself with <code>exit(kill)</code> and we don't trap exits, 
+        our own process dies with the reason <code>killed</code>. However, when we trap exits, things don't happen that way.</dd>
+</dl>
+
+<p>Mặc dù như bạn thấy phẫn lớn các lỗi bạn có thể  thiết lập trap exit để  bắt. 
+    Tuy vậy vân có một số  trường hợp bạn thực sự muốn thẳng tay chấm dứt tiến trình một cách tàn nhẫn: 
+    vd như một tiến trình đã dược thiết lập trap exit nhưng nó vẫn bị mắc kẹt trong một vòng lặp vô hạn và không bao lấy, đọc bất kỳ một tin nhắc nào.
+    Lúc này sử  dụng atom <code>kill</code>, vì nó sẽ hành động như một tính hiệu đặc biệt và không thể  trap được
+    và nó sẽ đảm bảo bất kỳ tiến trình nào của bạn cũng thực sự chấm dứt. 
+    Thông thường, atom <code>kill</code> được sử  dụng như một phướng án lựa chọn cuối cùng khi mà không còn phương án nào khác nữa.
+    
+    While you can trap most exit reasons, there are situations where you might want to brutally murder a process: 
+    maybe one of them is trapping exits but is also stuck in an infinite loop, never reading any message. The <code>kill</code> 
+    reason acts as a special signal that can't be trapped. 
+    This ensures any process you terminate with it will really be dead. Usually, <code>kill</code> is a bit of a last resort, when everything else has failed.</p>
+
+<img class="right" src="static/img/trap.png" width="260" height="195" alt="A mouse trap with a beige laptop on top" title="You know you want that beige laptop" /> 
+
+<p>Bởi vì atom <code>kill</code>  truyền vào như một lí do khẳng định sẽ không bao giờ có thể  
+    trap được. Do đó nó cần phải thay thế  bằng <code>killed</code> trước khi nó nhận được tinh nhắn bởi một tiến trình khác.
+    Nếu không, các tiến trình khác mà được liên kết với nó sẽ chám dứt cùng với lí do <code>kill</code> và lần lượt 
+    chấm dứt các tiên trình lân cận với nó, và cứ tiếp tục vậy, một loạt các tiến trình sẽ chấm dứt.
+     
+    reason can never be trapped, it needs to be changed to <code>killed</code> when other processes receive the message. 
+    If it weren't changed in that manner, every other process linked to it would in turn die for the same <code>kill</code> 
+    reason and would in turn kill its neighbors, and so on. A death cascade would ensue.</p>
+
+<p>Đó là lí do giải thích vì sao khi gọi hàm <code>exit(kill)</code> sẽ được nhìn nhận như  <code>killed</code> 
+    khi nhận được tin nhắn từ một tiến trình khác liên kết với tiến trình hiện tại 
+    nhưng kêt quả vẫn gióng như <code>kill</code> khi trap ở local.
+    
+    This also explains why <code>exit(kill)</code> looks like <code>killed</code> when received from another linked process 
+    (the signal is modified so it doesn't cascade), 
+    but still looks like <code>kill</code> when trapped locally.</p>
+
+<p>Nếu bạn vẫn cảm thấy khó hiểu, đùng lo lắng gì cả bởi vì không chỉ mình bạn đâu, rât nhiều lập trình viên khi đọc tới chương này hay tiếp cận nó cũng cảm thấy như vậy 
+    Exit signals thực sư cảm giác giống như một con quái thú vậy.
+    May mắn thay là không có nhiều trường hợp đặc biệt như các trường hợp được mô tả phía trên. Hơn nữa một khi bạn hiểu được chúng,
+    bạn sẽ hiểu được hầu hầu hết các cơ chế  quản lí lỗi concurrent trong Erlang.
+
+    If you find this all confusing, don't worry. Many programmers feel the same. Exit signals are a bit of a funny beast. 
+    Luckily there aren't many more special cases than the ones described above. Once you understand those, 
+    you can understand most of Erlang's concurrent error management without a problem.</p>
+
+
+<h3><a class="section" name="monitors">Monitors</a></h3>
+
+<p>yeah. Có lẽ bạn không thực sự muốn phải chấm dứt các tiến trình một cách bắt buộc và tàn nhẫn.
+    Có lẽ bạn muốn phát huỷ thế  giới và xuống mồ  cùng với nó.
+    Có lẽ bạn là một kẻ rình mò. Với tất cả những thứ như vậy, một chiêc màn hình giám sát ( monitor ) chính là thứ mà bạn muốn có.
+    
+    Maybe murdering processes isn't what you want. Maybe you don't feel like taking the world down with you once you're gone. Maybe you're more of a stalker. 
+    In that case, monitors might be what you want.</p>
+
+<p>Mói một cách nghiêm túc thì monitor là một loại liên kết đặc biệt giữa hai hay nhiều tiến trình, trong đó: More seriously, monitors are a special type of link with two differences:</p>
+
+<ul>
+    <li>chúng hoạt theo hướng một chiều.</li>
+    <li>chúng có thể  tích lúy ( stack ).</li>
+</ul>
+
+<img class="left" src="static/img/homer.png" width="164" height="379" alt="Ugly Homer Simpson parody" title="Not an example of a good monitor" />
+
+<p>Monitor chính xác là những gì bạn muốn khi một tiến trình muốn biệt điều gì sẽ xảy ra với tiến trình 
+    thứ hai hay tiến trình mà nó liên kết, nhưng không có nghĩa là chúng thực sự quan trọng.
+    
+    Monitors are what you want when a process wants to know what's going on with a second process, but neither of them really are vital to each other.</p>
+
+<p>Một lí do khác, dựa vào danh sách mà chúng ta đã liệt kê ở trên đó là khả năng tích lũy. thoạt nhìn nó có vẻ vô dụng nhưng 
+    khi bạn dùng nó cho việc viết các thư viên thì lại rất đáng giá, bằng cách này bạn sẽ biết được nhưng gì dạng xảy ra với các tiến trình khác để  quản lí một cách dễ  dàng.
+
+    Another reason, as listed above, is stacking the references. Now this might seem useless from a quick look, but it is great for writing libraries 
+    which need to know what's going on with other processes.</p>
+
+<p> Có thể  thấy các liên kết ( links ) có nhiều cấu trúc tổ  chúc hơn.
+    Khi bạn thiết kế  một kiến trúc cho ứng dụng của bạn sẽ càn phải xác định từ những thành phần cơ bản trước, 
+    với Erlang bạn sẽ cần xác định xem các tiến trình sẽ đảm nhiệm những công việc gì và phục thuộc vào đâu.
+    Một số  tiến trình sẽ có tránh nhiệm giám sát các tiến trình khác và để  đảm bảo rằng không có bất kỳ tiến trình nào 
+    hoạt động độc lập cả, ít nhất chúng phải hoạt động có cặp. Thông thường các cấu trúc thường cố  định hoặc được biết trước.
+    Trong trường hợp này các liên kết ko cần thiét phải sử  dụng bên ngoài hàm hay module. 
+
+    You see, links are more of an organizational construct. 
+    When you design the architecture of your application, you determine which process will do which jobs, 
+    and what will depend on what. Some processes will supervise others, some couldn't live without a twin process, 
+    etc. This structure is usually something fixed, known in advance. Links are useful for that and should not necessarily be used outside of it.</p>
+
+<p>Nhưng chuyện gì sẽ xảy ra nếu bạn có 2 hay nhiều thư viên khác nhau mà bạn 
+    muốn gọi chúng để  biêt được chúng còn sống hay đã chết ( tiến trình ) ?.
+    Nêú trong trường hợp đó bạn sử  dụng liên kết, bạn sẽ bắt gặp một vân đề  khi bạn muốn gỡ liên kết giữa một tiến trình.
+    Bởi vì các liển kết không thể  tích lũy được và chỉ một liên kết tồn tại duy nhất giữa 2 tiến trình, 
+    do đó khi bạn gỡ bỏ một liên kết cũng tức là bạn gỡ bỏ tất tất cả các liên kết khác và các giả định về  sự tồn tại của nó đã thiết lập trong các thư viện.
+    Điều đó khad là tệ. do vậy thứ mà bạn cần sẽ là các liên kết có thể  tích lũy được và monitor làm được điêu này.
+    chúng có thể  gỡ bỏ các liên kết một cách riêng rẽ thay vì gỡ bỏ toàn bộ. Hơn nữa, nhờ vào tính chất một chiều, nó rất có ích trong các thư viện 
+    vì các tiến trình không cần phải nhận thức về  sự tồn tại của các thư viện.    
+    
+    But what happens if you have 2 or 3 different libraries that you call and they all need to know whether a process is alive or not? 
+    If you were to use links for this, you would quickly hit a problem whenever you needed to unlink a process. Now, links aren't stackable, 
+    so the moment you unlink one, you unlink them all and mess up all the assumptions put up by the other libraries. 
+    That's pretty bad. So you need stackable links, and monitors are your solution. 
+    They can be removed individually. Plus, being unidirectional is handy in libraries because other processes shouldn't have to be aware of said libraries.</p>
+
+<p>Vậy đó là những gì mà monitor làm được ? Thế  là đủ rồi, Bây giờ chúng ta sẽ đi vào một ví dụ cụ thể. Để sử  dụng monitor chúng ta sẽ gọi tới hàm
+        <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#monitor/2" title="I seeee youuu">erlang:monitor/2</a>, hàm này sẽ nhận hai tham số  đầu vào 
+        trong đó tham số đầu tiên thuộc kiểu atom với giá trị là <samp>process</samp> và tham số  thứ hai là đinh danh của tiến trình ( pid ). 
+    
+    So what does a monitor look like? Easy enough, let's set one up. 
+    The function is <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#monitor/2" title="I seeee youuu">erlang:monitor/2</a>, 
+    where the first argument is the atom <samp>process</samp> and the second one is the pid:</p>
+
+<pre class="brush:eshell">
+1&gt; erlang:monitor(process, spawn(fun() -&gt; timer:sleep(500) end)).
+#Ref&lt;0.0.0.77&gt;
+2&gt; flush().
+Shell got {'DOWN',#Ref&lt;0.0.0.77&gt;,process,&lt;0.63.0&gt;,normal}
+ok
+</pre>
+
+<p>Khi tiến trình giám sát chuyển sang trạng thái ngừng hoạt động.
+    bạn sẽ nhận được một tin nhắc với nội dung <code>{'DOWN', MonitorReference, process, Pid, Reason}</code>.
+    đây là thông tin cho phép bạn ngừng giám sát tiến trình. 
+    Một điều nữa hay nhớ là monitor có thể  tích lùy,
+    do đó nó có thể  ngừng hoạt động đối với một tiến trình nhiều lần. nó cũng cho phép bạn giám sát 
+    mỗi cá nhân tiến trình theo cách riêng. Cũng lưu ý rằng cùng tương tự như liên kết, 
+    có một hàm tự động khởi tạo sinh ( spawn ) ra tiến trình đồng thơi tạo giám sát ( monitoring ) cho tiến trình đó luôn
+    <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#spawn_monitor/1" title="">spawn_monitor/1-3</a>. 
+
+    Every time a process you monitor goes down, 
+    you will receive such a message. 
+    The message is <code>{'DOWN', MonitorReference, process, Pid, Reason}</code>. 
+    The reference is there to allow you to demonitor the process. Remember, monitors are stackable, 
+    so it's possible to take more than one down. References allow you to track each of them in a unique manner. 
+    Also note that as with links, there is an atomic function to spawn a process while monitoring it, 
+    <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#spawn_monitor/1" title="">spawn_monitor/1-3</a>:</p>
+
+<pre class="brush:eshell">
+3&gt; {Pid, Ref} = spawn_monitor(fun() -&gt; receive _ -&gt; exit(boom) end end).
+{&lt;0.73.0&gt;,#Ref&lt;0.0.0.100&gt;}
+4&gt; erlang:demonitor(Ref).
+true
+5&gt; Pid ! die.
+die
+6&gt; flush().
+ok
+</pre>
+
+<p>Trong trường hợp này, chúng ta đã ngừng giám sát một số  tiến trình trước khi nó crash do đó chúng ta không thể  dò được thông tin về 
+    nguyên nhân gây ra lỗi của nó. tường tự như hàm 'monitor', hàm <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#demonitor/2" title="I can't seeee youuuuuu">demonitor/2</a> 
+    cũng được xây dựng sẵn và cung cấp cho chung ta nhiều thông tin hơn. Tham số  đầu tiên của nó gióng với tham số  trong hàm 
+    <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#demonitor/1" title="I can't seeee youuuuuu">demonitor/1</a>, Còn tham số  thứ thuộc kiểu dữ liệu danh 
+    sách dạng, đây là danh sách các tùy chọn tuy nhiên nó chỉ chấp nhận duy nhất 2 tùy chọn đó là <code>info</code> và <code>flush</code>, trong trường hợp sư dụng cá tùy chọn mà 
+    không nằm trong 2 tùy chọn trên thì nó sẽ bỏ qua.
+
+    In this case, we demonitored the other process before it crashed and as such we had no trace of it dying. 
+    The function <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#demonitor/2" title="I can't seeee youuuuuu">demonitor/2</a> 
+    also exists and gives a little bit more information. The second parameter can be a list of options. Only two exist, <code>info</code> and <code>flush</code>:</p>
+
+<pre class="brush:eshell">
+7&gt; f().
+ok
+8&gt; {Pid, Ref} = spawn_monitor(fun() -&gt; receive _ -&gt; exit(boom) end end). 
+{&lt;0.35.0&gt;,#Ref&lt;0.0.0.35&gt;}
+9&gt; Pid ! die.
+die
+10&gt; erlang:demonitor(Ref, [flush, info]).
+false
+11&gt; flush().
+ok
+</pre>
+
+<p>sử  dụng tùy chọn <code>info</code> để  cung cấp thông tin về  monitor có tồn tại hay không khi bạn gỡ bỏ nó.
+    đó là lí do vì sao trong ví dụ trên ở biêỷ thứ thứ 10 chúng ta thấy kết quả <code>false</code> được trả.
+    Đối với tùy chọn  <code>flush</code>, đây là tùy chọn sẽ loại bỏ phần từ <code>DOWN</code>  trong nội dung tin nhắc từ hòm thư nếu nội dung đó 
+    tồn tại.   
+    option tells you if a monitor existed or not when you tried to remove it. This is why the expression 10 returned <code>false</code>. Using <code>flush</code> 
+    as an option will remove the <code>DOWN</code> message from the mailbox if it existed, resulting in <code>flush()</code> finding nothing in the current process' mailbox.</p>
+
+
+<h3><a class="section" name="naming-processes">Naming Processes</a></h3>
+
+<p>Như vậy chúng ta đã tìm hiểu về  liên kết ( link ) và monitor rồi, tuy nhiên có một vấn đề  xót lại mà chúng ta đã quên giải quyết.
+    truóc hết chũng ta sẽ quay trở lại ví dụ module <a class="source" href="static/erlang/linkmon.erl.html">linkmon.erl</a> và thêm một vài hàm vào:
+
+    With links and monitors understood, there is another problem still left to be solved. 
+    Let's use the following functions of the <a class="source" href="static/erlang/linkmon.erl.html">linkmon.erl</a> module:</p>
+
+<pre class="brush:erl">
+start_critic() -&gt;
+    spawn(?MODULE, critic, []).
+
+judge(Pid, Band, Album) -&gt;
+    Pid ! {self(), {Band, Album}},
+    receive
+        {Pid, Criticism} -&gt; Criticism
+    after 2000 -&gt;
+        timeout
+    end.
+
+critic() -&gt;
+    receive
+        {From, {"Rage Against the Turing Machine", "Unit Testify"}} -&gt;
+            From ! {self(), "They are great!"};
+        {From, {"System of a Downtime", "Memoize"}} -&gt;
+            From ! {self(), "They're not Johnny Crash but they're good."};
+        {From, {"Johnny Crash", "The Token Ring of Fire"}} -&gt;
+            From ! {self(), "Simply incredible."};
+        {From, {_Band, _Album}} -&gt;
+            From ! {self(), "They are terrible!"}
+    end,
+    critic().
+</pre>
+
+<p>Bây giờ hãy tưởng tượng rằng chúng ta đang di dạo quanh các cửa hàng để  mua đĩa hát. Khi bước chân vào cửa hàng bạn phát hiện thấy một vài cuốn album nhạc rất thú vị.
+    Nhừng bạn không có nhiều kiến thức về  âm nhạc lên không chắc chắn sẽ mua. Vì vậy bạn quyết định gọi điện thoại cho bạn của mình, một chuyên gia về  bình phẩm âm nhạc.
+
+    Now we'll just pretend we're going around stores, shopping for music. There are a few albums that sound interesting, but we're never quite sure. You decide to call your friend, 
+    the critic.</p>
+
+<pre class="brush:eshell">
+1&gt; c(linkmon).                         
+{ok,linkmon}
+2&gt; Critic = linkmon:start_critic().
+&lt;0.47.0&gt;
+3&gt; linkmon:judge(Critic, "Genesis", "The Lambda Lies Down on Broadway").
+"They are terrible!"
+</pre>
+
+<p>Bống dưng một cơn bão mặt trời quét ngang thành phố  gây mất điện hàng loạt, mọi tín hiệu liên lạc đều bị cắt đứt 
+    Because of a solar storm (I'm trying to find something realistic here), the connection is dropped:</p>
+
+<pre class="brush:eshell">
+4&gt; exit(Critic, solar_storm).
+true
+5&gt; linkmon:judge(Critic, "Genesis", "A trick of the Tail Recursion").
+timeout
+</pre>
+
+<p>Thật phiền phức, giờ chúng ta không nhận được bất kỳ lời bình phẩm nào vê  các album nữa. Vì vây chúng ta cần một giải pháp cho vấn đề  này,
+    chúng ta đã quyết dịnh sẽ viết một chức năng giám sát ( supervisor ) chỉ để  phục hồi lại các tiến trình khi nó chết để  đảm bảo luôn nhận được lời binh phẩm khi cần.
+    
+    Annoying. We can no longer get criticism for the albums. To keep the critic alive, we'll write a basic 'supervisor' process whose only role is to restart it when it goes down:</p>
+
+<pre class="brush:erl">
+start_critic2() -&gt;
+    spawn(?MODULE, restarter, []).
+
+restarter() -&gt;
+    process_flag(trap_exit, true),
+    Pid = spawn_link(?MODULE, critic, []),
+    receive
+        {'EXIT', Pid, normal} -&gt; % not a crash
+            ok;
+        {'EXIT', Pid, shutdown} -&gt; % manual termination, not a crash
+            ok;
+        {'EXIT', Pid, _} -&gt;
+            restarter()
+    end.
+</pre>
+
+<p>Ở đây như bạn thấy chúng ta sẽ có một tiến trình riêng cho việc phục hồi. Nó sẽ bắt đầu tạo ra một tiến trình mới cho việc bình phẩm
+    và trong trường hợp nếu nó đột ngột ngừng hoạt động, hàm <code>restarter/0</code> sẽ được gọi lại và tạo ra một tiến trình hay nói cách theo thực tế  là 
+    tạo ra đường dây liên lạc với người bình phẩm ( critic ).
+    Lưu ý là tôi đã thêm mẫu tin nhắn <code>{'EXIT', Pid, shutdown}</code> để  xét cả trường hợp bạn muốn chủ động châm dứt tiến trình một cách thủ công.
+
+    Here, the restarter will be its own process. It will in turn start the critic's process and if it ever dies of abnormal cause, 
+    <code>restarter/0</code> will loop and create a new critic. Note that I added a clause for <code>{'EXIT', Pid, shutdown}</code> 
+    as a way to manually kill the critic if we ever need to.</p>
+
+<p>Tuy vậy cách tiếp cận trên của chúng ta có một vấn đề  đó là chúng ta không biết được đinh danh của người bình phẩm ( critic ),
+    do đó chúng ta không thể  giao tiếp được và hỏi anh ta về  cho ý kiến về  những cuốn album. Vì thế  một trường nhưng phương án giải quyết đối với vấn đề  này 
+    trong Erlang đó là đặt ra tên cho mỗi người hay mỗi tiến trình. 
+
+    The problem with our approach is that there is no way to find the Pid of the critic, 
+    and thus we can't call him to have his opinion. One of the solutions Erlang has to solve this is to give names to processes.</p>
+
+<p>Bằng cách đặt tên này cho một tiến trình, nó sẽ giúp bạn thay thế  một đinh dạnh không biết trước được bằng một atom.
+    cách sử  dụng atom sẽ tương tự như cách bạn dùng với định danh để  gửi các tin nhắn nhưng dễ  dang hơn.
+    Bạn chỉ cần đặt một cái tên cho một tiến trình thông qua hàm  <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#register/2" title="here be a title. Enjoy">erlang:register/2</a>
+    và sau đó thay thế  tên vào chỗ  đinh danh ( pid ) là đc. Trong trường hợp nếu tiến trình dó ngừng hoạt động,
+    nó sẽ tự động loại bỏ tên đã đăng ký hoặc bạn cũng có thể  chủ động gỡ bỏ bằng cách sử  dụng hàm <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#unregister/1" title="hooray for links">unregister/1</a>.
+    Trong trường hợp bạn không nhớ chính xác các tên mà bạn đã đăng ký, hãy dùng hàm <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#registered/0" title="gotta list em all">registered/0</a>,
+    hoặc trong shell bạn có thể  dùng lệnh <code>regs()</code>, nó sẽ liệt kêt tất cả các tên mà bạn đã đăng ký.
+    Sau dây là hàm   <code>restarter/0</code> được chỉnh sửa lại:
+
+    The act of giving a name to a process allows you to replace the unpredictable pid by an atom. 
+    This atom can then be used exactly as a Pid when sending messages. 
+    To give a process a name, the function <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#register/2" title="here be a title. Enjoy">erlang:register/2</a> is used. 
+    If the process dies, it will automatically lose its name or you can also use 
+    <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#unregister/1" title="hooray for links">unregister/1</a> to do it manually. 
+    You can get a list of all registered processes with <a class="docs" href="http://erldocs.com/18.0/erts/erlang.html#registered/0" title="gotta list em all">registered/0</a> 
+    or a more detailed one with the shell command <code>regs()</code>. Here we can rewrite the <code>restarter/0</code> function as follows:</p>
+
+<pre class="brush:erl">
+restarter() -&gt;
+    process_flag(trap_exit, true),
+    Pid = spawn_link(?MODULE, critic, []),
+    register(critic, Pid),
+    receive
+        {'EXIT', Pid, normal} -&gt; % not a crash
+            ok;
+        {'EXIT', Pid, shutdown} -&gt; % manual termination, not a crash
+            ok;
+        {'EXIT', Pid, _} -&gt;
+            restarter()
+    end. 
+</pre>
+
+<p>như bạn thấy, bất kể  là tiến trình hày đường dây kết nối tơi người bình phầm nào được tạo ra cũng chúng cũng luôn gán 
+    với cái tên 'critic' qua hàm <code>register/2</code>. Việc còn lại lúc này là xóa bỏ một só chức năng trừu tượng vào trong đinh danh ( pid ).
+
+    So as you can see, <code>register/2</code> will always give our critic the name 'critic', no matter what the Pid is. 
+    What we need to do is then remove the need to pass in a Pid from the abstraction functions. Let's try this one:</p>
+
+<pre class="brush:erl">
+judge2(Band, Album) -&gt;
+    critic ! {self(), {Band, Album}},
+    Pid = whereis(critic),
+    receive
+        {Pid, Criticism} -&gt; Criticism
+    after 2000 -&gt;
+        timeout
+    end.
+</pre>
+
+<p>Ở đây dòng <code>Pid = whereis(critic)</code> được sử  dụng để  tìm ra định danh của tiến trình của người bình phẩm hay nói cách khác là xác định địa chỉ của người bình phẩm  
+    để  khớp với mẫu trong biểu thức <code>receive</code>. Bởi vì chúng ta muốn khớp với đinh danh ( pid ) này để  đảm bảo rằng tin nhắc sẽ được khớp chính xác 
+    ( có thể  sẽ có 500 tin nhắn trong hòm thư ), tuy vậy việc làm này của thẻ làn nguồn gốc gây ra một lỗi. Chúng ta sẽ xem xét đoạn mã logic phía trên,
+    giả sử  rằng định danh của người bình phẩm ( critic ) trong hai dòng đầu của hàm luôn không thay đổi, Tuy vậy sẽ có một số  giả thiết sau xảy ra:
+        
+    is used to find the critic's process identifier in order to pattern match against it in the <code>receive</code> expression. We want to match with this pid, 
+    because it makes sure we will match on the right message (there could be 500 of them in the mailbox as we speak!) This can be the source of a problem though. 
+    The code above assumes that the critic's pid will remain the same between the first two lines of the function. However, it is completely plausible the following will happen:</p>
+
+<pre class="expand">
+  1. critic ! Message
+                        2. critic receives
+                        3. critic replies
+                        4. critic dies
+  5. whereis fails
+                        6. critic is restarted
+  7. code crashes
+</pre>
+
+<p>Or yet, this is also a possibility:</p>
+
+<pre class="expand">
+  1. critic ! Message
+                           2. critic receives
+                           3. critic replies
+                           4. critic dies
+                           5. critic is restarted
+  6. whereis picks up
+     wrong pid
+  7. message never matches
+</pre>
+            
+<p>Mọi thứ đèu có thể  xảy ra và chắc rằng nếu 
+    trong trường hợp trên giá trị trị của atom <samp>critic</samp> được sử  dụng ở nhiều tiến trình khác nhau, và nó được biêt tới như một 
+    giá trị cùng chia sẻ trạng thái (<em>shared state</em>). bởi vì nó có thể  được truy cập và chỉnh sửa bởi nhiều tiến trinh trong cùng một thời điểm do 
+    đo kết quả không nhất quán ( inconsistent ) và dễ  dẫn tới lỗi trong phần mềm. <em>race condition</em> là một trong những thuật ngữ phổ  biến để  chỉ lỗi trên,
+
+    The possibility that things go wrong in a different process can make another one go wrong if we don't do things right. 
+    In this case, the value of the <samp>critic</samp> atom can be seen from multiple processes. This is known as <em>shared state</em>. 
+    The problem here is that the value of <samp>critic</samp> can be accessed <em>and</em> modified by different processes at virtually the same time, 
+    resulting in inconsistent information and software errors. 
+    The common term for such things is a <em>race condition</em>. Race conditions are particularly dangerous because they depend on the timing of events. 
+    In pretty much every concurrent and parallel language out there, this timing depends on unpredictable factors such as how busy the processor is, 
+    where the processes go, and what data is being processed by your program.</p>
+
+<div class="note koolaid">
+    <p><strong>Don't drink too much kool-aid:</strong><br />
+    Chắc hẳn bạn cũng đã từng nghe nói rằng Erlang thường không có race conditions hay deadlocks và viết mã song song trong Erlang khá an toàn.
+    Điều này không hẳn là sai trong nhiều trường hợp, nhưng không bao giơ được phép đặt giả thiết là mã mà bạn viết luôn luôn an toàn.
+    chức năng đăng ký tên cho các tiến trình ở trên là một ví dù điển hình về  mã son song không thực hiện đúng như những gì mong đợi.
+     
+    You might have heard that Erlang is usually free of race conditions or deadlocks and makes parallel code safe.
+     This is true in many circumstances, but never assume your code is really that safe. 
+     Named processes are only one example of the multiple ways in which parallel code can go wrong.</p>
+
+    <p>Ngoài ra còn một số  ví dụ khác như truy câp và chính sửa các file, cật nhật cùng một bản ghi trong cơ sở dữ liệu từ nhiều tiến trình khác tại một thời điểm, etc 
+        record  Other examples include access to files on the computer (to modify them), updating the same database records from many different processes, etc.</p>
+</div>
+
+<p>May mắn  thay, đoạn mã trên tương đối dễ  dàng giải quyết băng cách giả định thay đổi tên của các tiến trình, để  làm điều này chúng ta sẽ sử dụng hàm <code>make_ref()</code>
+    , hàm này sẽ tạo ra các đinh danh với các giá trị hoàn toàn khác nhau. Bây giờ chúng ta sẽ sửa lại hàm <code>critic/0</code>  một chút, 
+    nào để  chắc chắn hãy tạo ra hàm  <code>critic2/0</code> , <code>judge2/2</code>và copy nội dung của hàm <code>critic/0</code>,  <code>judge/3</code>
+    vao và sủa như sau:
+    
+    Luckily for us, it's relatively easy to fix the code above if we don't assume the named process remains the same. Instead, we'll use references (created with
+     <code>make_ref()</code>) as unique values to identify messages. We'll need to rewrite the <code>critic/0</code> 
+     function into <code>critic2/0</code> and <code>judge/3</code> into <code>judge2/2</code>:</p>
+
+<pre class="brush:erl">
+judge2(Band, Album) -&gt;
+    Ref = make_ref(),
+    critic ! {self(), Ref, {Band, Album}},
+    receive
+        {Ref, Criticism} -&gt; Criticism
+    after 2000 -&gt;
+        timeout
+    end.
+
+critic2() -&gt;
+    receive
+        {From, Ref, {"Rage Against the Turing Machine", "Unit Testify"}} -&gt;
+            From ! {Ref, "They are great!"};
+        {From, Ref, {"System of a Downtime", "Memoize"}} -&gt;
+            From ! {Ref, "They're not Johnny Crash but they're good."};
+        {From, Ref, {"Johnny Crash", "The Token Ring of Fire"}} -&gt;
+            From ! {Ref, "Simply incredible."};
+        {From, Ref, {_Band, _Album}} -&gt;
+            From ! {Ref, "They are terrible!"}
+    end,
+    critic2().
+</pre>
+
+<p>sau đó thay đổi đổi lại hàm <code>restarter/0</code> để  nó gọi tới khởi tạo tiến trình cho hàm <code>critic2/0</code> thày vì 
+    <code>critic/0</code>. Đối với các hàm còn lại chúng ta vẫn giữa nguyên không thay dổi gì hết, 
+    Sau đó chạy lại chương trình, đừng ngạc nhiên khi kết quả vân giống lúc trước , người dùng cũng không cảm thấy có điều gì khác biệt cả .
+    bởi vì thực tế  chúng ta không thay đổi vất ky logic nào hét mà chúng ta chỉ thay đổi lại tên hàm và đối số truyền vảo.
+    Tất cả những gì họ nhìn thấy chỉ đoạn mã trông gọn gàn hơn trước và họ không cần phải quan tâm tơi vấn để  truyền một đinh danh khi gọi hàm nữa.
+      
+    And then change <code>restarter/0</code> to fit by making it spawn <code>critic2/0</code> rather than <code>critic/0</code>. 
+    Now the other functions should keep working fine. The user won't see a difference. 
+    Well, they will because we renamed functions and changed the number of parameters, 
+    but they won't know what implementation details were changed and why it was important. 
+    All they'll see is that their code got simpler and they no longer need to send a pid around function calls:</p>
+
+<pre class="brush:eshell">
+6&gt; c(linkmon).
+{ok,linkmon}
+7&gt; linkmon:start_critic2().
+&lt;0.55.0&gt;
+8&gt; linkmon:judge2("The Doors", "Light my Firewall").
+"They are terrible!"
+9&gt; exit(whereis(critic), kill).
+true
+10&gt; linkmon:judge2("Rage Against the Turing Machine", "Unit Testify").     
+"They are great!"
+</pre>
+
+<p>Bây giờ ngay cả khi chúng ta chấm dứt tiến trình critic, thì ngay lập tức một tiến trình khác sẽ được tao ra.
+    Đó là nhờ sử  dụng các tiến trình được đặt tên. bạn hãy thử  gọi hàm <code>linkmon:judge/2</code> mà không cùng với đăng ký tên tiến trình xem,
+    kiểu gì bạn cũng sẽ thấy một lỗi <samp>bad argument</samp> được ném ra bởi hoạt động của toán tử  <code>!</code>
+    trong hàm này, như vậy nó yêu cầu bạn phải đảm bảo chắc rằng các tiến chính phải được đăng ký tên nếu không chúng sẽ gây ra lỗi 
+    And now, even though we killed the critic
+    That's the usefulness of named processes. Had you tried to call <code>linkmon:judge/2</code> without a registered process, 
+    a <samp>bad argument</samp> error would have been thrown by the <code>!</code> operator inside the function, 
+    making sure that processes that depend on named ones can't run without them.</p>
+
+<div class="note">
+    <p><strong>Lưu ý:</strong> chắc bạn còn nhớ trong bài học về  kiểu dữ liệu , tôi đã đề  cập về  vấn đề  phạm vi giới hạn số  lượng được phép  
+        sử  dụng đối với kiểu dữ liệu atom trong một máy ảo phải không. Có thể  bạn chưa từng gặp các trường hợp yêu cầu các atom được tạo ra một cách tự động,
+        . Nhưng giờ tôi một đề  cập một điều nữa đó là tên của các tiến trính lên được đặt tên cho các dịch vị quan trong duy nhất đối trong một máy ảo và 
+        chúng lên được chạy trong toàn bộ thời gian của ứng dụng. 
+        If you remember earlier texts, atoms can be used in a limited (though high) number. 
+        You shouldn't ever create dynamic atoms. This means naming processes should be reserved to important services unique to an instance of the VM and processes 
+        that should be there for the whole time your application runs.</p>
+
+    <p>Nếu bạn cần các tiến trình được đặt tên nhưng it khi sử  dụng chúng hoặc chỉ sử  dụng chúng khi cần hoặc
+        chúng không phải là duy nhất trong một máy ảo, thì bạn lên biểu diễn chúng dưới dạng một nhóm thay vì riêng rẽ.
+        So với sử  dụng các kiểu tên động thì lên liên kết cả khôi phúc chúng cùng nhau nếu chúng crash bởi cùng một lí do.
+
+        If you need named processes but they are transient or there isn't any of them which can be unique to the VM, 
+        it may mean they need to be represented as a group instead. Linking and restarting them together if they crash might be the sane option, 
+        rather than trying to use dynamic names.</p>
+</div>
+
+<p>Trong chương tiép theo chúng ta sẽ đi sâu vào các kiến thức để chúng ta có thể  lập trình được concurrent trong Erlang và viết một ứng dụng thực tế.
+    In the next chapter, we'll put the recent knowledge we gained on concurrent programming with Erlang to practice by writing a real application.</p>
+				<ul class="navigation">
+											<li><a href="more-on-multiprocessing.html" title="Previous chapter">&lt; Previous</a></li>
+										
+					<li><a href="contents.html" title="Index">Index</a></li>
+					
+											<li><a href="designing-a-concurrent-application.html" title="Next chapter">Next &gt;</a></li>
+									</ul>
+			</div><!-- content -->
+			<div id="footer">
+				<a href="http://creativecommons.org/licenses/by-nc-nd/3.0/" title="Creative Commons License Details"><img src="static/img/cc.png" width="88" height="31" alt="Creative Commons Attribution Non-Commercial No Derivative License" /></a>
+				<p>Except where otherwise noted, content on this site is licensed under a Creative Commons Attribution Non-Commercial No Derivative License</p>
+			</div> <!-- footer -->
+		</div> <!-- wrapper -->
+		<div id="grass" />
+	<script type="text/javascript" src="static/js/shCore.js"></script>
+	<script type="text/javascript" src="static/js/shBrushErlang2.js%3F11"></script>
+	<script type="text/javascript">
+		SyntaxHighlighter.defaults.gutter = false;
+		SyntaxHighlighter.all();
+	</script>
+	</body>
+</html>

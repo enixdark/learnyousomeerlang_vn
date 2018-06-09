@@ -1,0 +1,635 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="Content-Style-Type" content="text/css" />
+		<meta name="keywords" content="Erlang, multiprocessing, process, state, message, timeout, selective receive, mailbox, receive, recursion" />
+		<meta name="description" content="Additional concepts about multiprocessing in Erlang. Includes examples on how to keep state, avoid locks with timeouts and how to handle selective receives." />
+        <meta name="google-site-verification" content="mi1UCmFD_2pMLt2jsYHzi_0b6Go9xja8TGllOSoQPVU" />
+		<link rel="stylesheet" type="text/css" href="static/css/screen.css%3Fv3.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="static/css/sh/shCore.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="static/css/sh/shThemeLYSE2.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="static/css/print.css" media="print" />
+		<link href="rss" type="application/rss+xml" rel="alternate" title="LYSE news" />
+		<link rel="icon" type="image/png" href="favicon.ico" />
+		<link rel="apple-touch-icon" href="static/img/touch-icon-iphone.png" />
+		<link rel="apple-touch-icon" sizes="72x72" href="static/img/touch-icon-ipad.png" />
+		<link rel="apple-touch-icon" sizes="114x114" href="static/img/touch-icon-iphone4.png" />
+		<title>More On Multiprocessing | Learn You Some Erlang for Great Good!</title>
+	</head>
+	<body>
+		<div id="wrapper">
+			<div id="header">
+				<h1>Learn you some Erlang</h1>
+				<span>for great good!</span>
+			</div> <!-- header -->
+			<div id="menu">
+				<ul>
+					<li><a href="content.html" title="Home">Home</a></li>
+					<li><a href="faq.html" title="Frequently Asked Questions">FAQ</a></li>
+					<li><a href="rss" title="Latest News">RSS</a></li>
+					<li><a href="static/erlang/learn-you-some-erlang.zip" title="Source Code">Code</a></li>
+				</ul>
+			</div><!-- menu -->
+			<div id="content">
+            <div class="noscript"><noscript>Hey there, it appears your Javascript is disabled. That's fine, the site works without it. However, you might prefer reading it with syntax highlighting, which requires Javascript!</noscript></div>
+<h2>More On Multiprocessing</h2>
+
+<h3><a class="section" name="state-your-state">State Your State</a></h3>
+
+<img class="right" src="static/img/turkey.png" width="140" height="157" alt="a roasted turkey leg" />
+
+<p>Trong chương trước chúng ta đã được học về  concurrency và đã làm một vài ví dụ cụ thể , nhưng 
+    nếu chỉ vói những công cụ như vậy thì chúng ta vân chưa thể  làm  được gì nhiều. 
+    Các mẫu ví dụ trước đó chúng ta đã viết không phải không hữu ích, chỉ có điều hầu hết các mẫu ví dụ đó chỉ đưa ra cơ bản cách để  chúng 
+    ta thao tác vơi concurrency thông qua việc nhận gửi , phản hồi tin nhắn hay nói cách khác chúng ta mới chỉ làm việc với các hàm cùng và các tin nhắn, còn đầu vẫn chưa khai thác được
+    những lợi thế  lớn khác của tiến trình và actor. Để  khắc phục đièu này, chúng ta sẽ đi vào tìm hiẻu tiến trành và trạng thái của nó.
+
+    The examples shown in the previous chapter were all right for demonstrative purposes, 
+    but you won't go far with only that in your toolkit. It's not that the examples were bad, 
+    it's mostly that there is not a huge advantage to processes and actors if they're just functions with messages. 
+    To fix this, we have to be able to hold state in a process.</p>
+
+<p>Đầu tiên, Chúng ta sẽ bắt đầu với file mới được gọi tên là  <a class="source" href="static/erlang/kitchen.erl.html">kitchen.erl</a> 
+    trong file module này, chúng ta sẽ định nghĩa một hàm gọi tên là 'tủ lạnh (fridge)', hàm này sẽ đóng vai trò như một tiến trình và thực hiện 
+    các chức năng của một chiếc tủ lạnh. Nó sẽ định nghĩa hai hành động: lưu trữ thực phẩm vào trong tủ lạnh và lấy thực phẩm từ trong đó ra.
+    Bạn chỉ được phếp lấy thực phẩm ra khỏi tủ nếu như trong tủ đã có thực phảm đấy rồi. Sau đây là các hàm sẽ thực hiện ý tưởng của chúng ta:
+     
+    The process will allow two operations: storing food in the fridge and taking food from the fridge. 
+    It should only be possible to take food that has been stored beforehand. 
+    The following function can act as the base for our process:</p>
+
+<pre class="brush:erl">
+-module(kitchen).
+-compile(export_all).
+
+fridge1() -&gt;
+    receive
+        {From, {store, _Food}} -&gt;
+            From ! {self(), ok},
+            fridge1();
+        {From, {take, _Food}} -&gt;
+            %% uh....
+            From ! {self(), not_found},
+            fridge1();
+        terminate -&gt;
+            ok
+    end.
+</pre>
+
+<p>Dường như có điều gì đó sai sai ở đây ? Khi chúng ta hỏi về  thực phẩm đang lưu trữ trong tủ, 
+    tiến trình lên trả về  <samp>ok</samp>, nhưng nhìn vào đoạn mã trên, chúng ta không thấy bất kỳ dòng nào liên quan tới việc lưu trữ thực phẩm hết ? 
+    Hàm  <code>fridge1()</code> chỉ đơn giản là một hàm đệ quy để  giúp chúng ta giữ được tiến trình đang chạy mà thôi và nó được gọi ngay từ lúc bắt đàu khi mới tạo mới tiến trìnn 
+    và không thấy có bất kỳ dấu hiẹu nào trong việc lưu trữ trạng thái cả.
+    Trong đoạn mã bạn chắc cũng nhỉn thấy phần khớp mẫu chúng ta gọi để  lấy thực phẩm, vì chúng ta không có bất kỳ thông tin nào về  trạng thái của tủ để  xử  lí
+    do đó sẽ không có gì đẻ  lấy hêt và chỉ còn cách phan hồi lại tin nhắn cùng với nội dung <samp>not_found</samp>.
+    Để  giải quyết vân đề  này chúng ta cần một có trạng thái cả tủ lạnh cho việc tìm, lưu trữ vào lấy thực phẩm từ dó ra, vì vậy 
+    chúng ta sẽ phải thêm một biến state tới hàm.</p>
+
+    
+    something's wrong with it. When we ask to store the food, the process should reply with <samp>ok</samp>, 
+    but there is nothing actually storing the food; <code>fridge1()</code> is called and then the function starts from scratch,
+     without state. You can also see that when we call the process to take food from the fridge,
+      there is no state to take it from and so the only thing to reply is <samp>not_found</samp>. 
+      In order to store and take food items, we'll need to add state to the function.</p>
+
+<p>Hãy nhớ lại trong các chương trước đó chúng ta đã học về  đệ quy đuổi và cách sử  dụng biến tạm thời như một đối số  trong hàm để  lưu trữ kết quả, hơn nữa chúng ta cũng được 
+    biết rằng bản chất của tiến trình chỉ đơn giản như là một hàm. Nhờ vậy chúng ta có thể  sử  dụng đệ quy để  lưu trữ trạng thái của một tiến trình thông qua đối số của hàm.
+    áp dụng vào trường hợp của chúng ta với hàm frigde thì có thể  lưu trữ tất cả các loại thực phẩm dưới dạng một danh sách, khi một người nào đó muốn ăn hok có thể  tìm kiếm 
+    trong danh sách này.    
+    
+    Vì vậy Nhờ vào sự trự giúp của đệ quy chúng ta có thể  lưu trữ trạng thái của một tiến trình bằng cách 
+    đặt chúng vào một biến lưu trữ  With the help of recursion, the state to a process can then be held entirely in the parameters of the function. In the case of our fridge process, 
+    a possibility would be to store all the food as a list, and then look in that list when someone needs to eat something:</p>
+
+<pre class="brush:erl">
+fridge2(FoodList) -&gt;
+    receive
+        {From, {store, Food}} -&gt;
+            From ! {self(), ok},
+            fridge2([Food|FoodList]);
+        {From, {take, Food}} -&gt;
+            case lists:member(Food, FoodList) of
+                true -&gt;
+                    From ! {self(), {ok, Food}},
+                    fridge2(lists:delete(Food, FoodList));
+                false -&gt;
+                    From ! {self(), not_found},
+                    fridge2(FoodList)
+            end;
+        terminate -&gt;
+            ok
+    end.
+</pre>
+
+<p>Điều đầu tiên chú cần lưu ý là hàm <code>fridge2/1</code> chỉ nhận một tham số  đầu vào để  lưu trữ trạng thái, chúng ta sẽ gọi là <var>FoodList</var>.
+    Trong hàm này chúng ta sẽ định nghĩa lại các đoạn mẫu, khi chúng ta gửi một tin nhắc tới khớp với mẫu <code>{From, {store, Food}}, nó sẽ thêm một giá trị <var>Food</var>
+    vào bên trong danh sách <var>FoodList</var>. Tại lần lặp tiếp theo từ lời gọi đệ quy, chúng ta có thể  lấy đồ  mà chúng ta muốn ra 
+    từ danh sách đó. Để  tìm kiếm phần từ, giá trị cần tìm trong danh sách ra, chúng ta sẽ sử  dụng hàm <code><a class="docs" href="http://erldocs.com/18.0/lists.html#member/2" 
+        title="The lists club counts me as a member">lists:member/2</a></code>, hàm này sẽ giúp chúng ta 
+        tìm kiếm giá trị <var>Food</var> có tồn tại hay không trong danh sách <var>FoodList</var>. Nếu nó tồn tại chúng ta sẽ phản hồi lại 
+        tiến trình cùng với loại bỏ giá trị đó ra khỏi <var>FoodList</var>, ngược lại chúng ta chỉ phản hổi lại một atom <samp>not_found</samp>.
+      The first thing to notice is that <code>fridge2/1</code> takes one argument, <var>FoodList</var>. 
+      You can see that when we send a message that matches <code>{From, {store, Food}}</code>, 
+      the function will add <var>Food</var> to <var>FoodList</var> before going. 
+      Once that recursive call is made, 
+      it will then be possible to retrieve the same item. In fact, 
+      I implemented it there. The function uses <code><a class="docs" href="http://erldocs.com/18.0/lists.html#member/2" 
+        title="The lists club counts me as a member">lists:member/2</a></code> to check whether <var>Food</var> is part of <var>FoodList</var> or not. 
+        Depending on the result, the item is sent back to the calling process (and removed from <var>FoodList</var>) or <samp>not_found</samp> is sent back otherwise:</p>
+
+<pre class="brush:eshell">
+1&gt; c(kitchen).
+{ok,kitchen}
+2&gt; Pid = spawn(kitchen, fridge2, [[baking_soda]]).
+&lt;0.51.0&gt;
+3&gt; Pid ! {self(), {store, milk}}.
+{&lt;0.33.0&gt;,{store,milk}}
+4&gt; flush().
+Shell got {&lt;0.51.0&gt;,ok}
+ok
+</pre>
+
+<p>Tuyệt, chức năng lưu trữ đã hoạt động chính xác. Tiếp đó chúng ta sẽ thử  thêm một vài dư liệu khác nữa và lấy chúng ra khỏi xem sao.</p>
+
+<pre class="brush:eshell">
+5&gt; Pid ! {self(), {store, bacon}}.
+{&lt;0.33.0&gt;,{store,bacon}}
+6&gt; Pid ! {self(), {take, bacon}}.
+{&lt;0.33.0&gt;,{take,bacon}}
+7&gt; Pid ! {self(), {take, turkey}}.
+{&lt;0.33.0&gt;,{take,turkey}}
+8&gt; flush().
+Shell got {&lt;0.51.0&gt;,ok}
+Shell got {&lt;0.51.0&gt;,{ok,bacon}}
+Shell got {&lt;0.51.0&gt;,not_found}
+ok
+</pre>
+
+<p>Như những gì mong đợi, đầu tiên chúng ta đã đặt thịt xông khói ( bacon ) vào, và sau đó lấy được nó ra từ tủ lạnh rồi.
+    tương tự khi chúng ta yêu cầu lấy thịt gà ( turkey ) trong tủ lạnh ra, nhưng bởi vì chúng ta chưa đặt nó vào trong tủ lạnh do đó 
+    không thể  tìm thấy đươc, đó là lí do vì sao chúng ta nhận được kết quả là <code>{&lt;0.51.0&gt;,not_found}</code>.</p>
+
+
+<h3><a class="section" name="secret-messages">We love messages, but we keep them secret</a></h3>
+
+<p>Trong ví dụ trước chúng ta đã viêt một chương trình mô phỏng chiếc tủ lạnh rồi, tuy nhiên một số lập trình viên có thể  sẽ cảm thấy khó chịu khi muốn sư dụng các chức năng trong 
+    tủ lạnh thì họ phải biết cụ thể  các giao thức tin nhắn được tao ra cho từng quá trình. điều đó thật sự gây không cần thiết.
+    Thay vào đó chúng ta có thể  tạo ra các tin nhắn trừu tượng bằng cách sử  dụng các hàm đối với việc gửi nhận tin nhắn:
+
+    Something annoying with the previous example is that the programmer who's going to use the fridge has to know about the protocol that's been invented for that process. 
+    That's a useless burden. A good way to solve this is to abstract messages away with the help of functions dealing with receiving and sending them:</p>
+
+<pre class="brush:erl">
+store(Pid, Food) -&gt;
+    Pid ! {self(), {store, Food}},
+    receive
+        {Pid, Msg} -&gt; Msg
+    end.
+
+take(Pid, Food) -&gt;
+    Pid ! {self(), {take, Food}},
+    receive
+        {Pid, Msg} -&gt; Msg
+    end.
+</pre>
+
+<p>Đó trông nó gọn gàng hơn nhiều:</p>
+
+<pre class="brush:eshell">
+9&gt; c(kitchen).
+{ok,kitchen}
+10&gt; f().
+ok
+11&gt; Pid = spawn(kitchen, fridge2, [[baking_soda]]).
+&lt;0.73.0&gt;
+12&gt; kitchen:store(Pid, water).
+ok
+13&gt; kitchen:take(Pid, water).
+{ok,water}
+14&gt; kitchen:take(Pid, juice).
+not_found
+</pre>
+
+<p>Giờ chúng ta không cần phải quan tâm về  cách thức hoạt động của các tin nhắn nữa, thay vào đó chúng ta chỉ dựa trên <code>self()</code> 
+    hay một đoạn atom nào bằng cách gọi hàm <code>take</code> hay <code>store</code> mà thôi. Hay chính xác nhưng gì chúng ta cần chỉ đơn giản là 
+    một định danh của tiến trình gửi đi và các hàm cần gọi thôi. Việc làm này sẽ giúp chúng ta ấn dấu được những thông tin không cần thiết và tập trung xây dừng các 
+    chức năng cho tủ lạnh của một dễ  dàng hơn.
+
+    We don't have to care about how the messages work anymore, if sending <code>self()</code> or a precise atom like <code>take</code> or <code>store</code> is needed: 
+    all that's needed is a pid and knowing what functions to call. This hides all of the dirty work and makes it easier to build on the fridge process.</p>
+
+<p>Tất cả những gì chúng ta có thể  làm vơi chiếc tủ lạnh giờ thật dễ  dàng, việc còn lại chúng lúc này là ẩn giấu nốt thông tin để  tạo ra một tiến trình 
+    mới cho tủ lạnh. Mặc dù chúng ta đã ẩn giấu việc xử  lí các tin nhắn để  quá trình thao tác trở lên dễ  dàng và gọn gàng hơn rồi, nhưng vẫn lên để  lập trình viên 
+    chủ động hơn trong quá trình tạo tạo ra các tiến trình.
+    Tôi sẽ thêm hàm <code>start/1</code> cho chức năng tạo mới một tiến trình:
+    
+    One thing left to do would be to hide that whole part about needing to spawn a process. 
+    We dealt with hiding messages, 
+    but then we still expect the user to handle the creation of the process. 
+    I'll add the following <code>start/1</code> function:</p>
+
+<pre class="brush:erl">
+start(FoodList) -&gt;
+    spawn(?MODULE, fridge2, [FoodList]).
+</pre>
+
+<img class="right" src="static/img/abstraction.png" width="400" height="160" alt="Two tin cans with a string, where the tin cans somehow represent the abstraction layer between the vibrating string and the voice" />
+
+<p>Ở đây bạn nhìn thấy một biến khá lạ: <code>?MODULE</code>, thực sự nó không có gì đặc biệt cả, đây chỉ là một macro thay thế  cho tên của module hiện tại mà thôi.
+    Dường như cách viết này không đem lại thuận lời gì hết cả. Nhưng bạn đừng vội nhận xét bởi vì một chốc thôi chúng ta sẽ thấy những lợi ích mà nó mang lại.
+    Trong module này thành phần quan trong nhất đó là tính nhất quán khi gọi các hàm <code>take/2</code>, <code>store/2</code>, hãy để  ý rằng mọi hoạt xứ lí các 
+    chức năng liên quan tới tủ lạnh của bạn giờ đều thông qua module <a class="source" href="static/erlang/kitchen.erl.html">kitchen</a>.
+    Trong trường hợp bạn muốn thêm một chức năng ghi lại ( logging ) các thông tin đối với các hoạt động trong tủ lạnh khi bắt đầu hay khi tạo ra ra một tiến trình mới ( ta sẽ gọi là là freezer ),
+    điều này rất dễ  dàng với hàm mà chúng ta đã tạo ra <code>start/1</code>, bạn chỉ cần thêm chức năng đó vào bên trong hàm này nhưng nếu
+    bạn sử  dụng duy nhất việc tạo mới một tiến trình với hàm <code>spawn/3</code> thì mỗi khi bắt đầu tiến trình bạn sẽ phải tạo thêm một lời gọi khác 
+    , điều này có thẻ gây ra một số  sai xót hay thậm chí là lỗi.     
+
+    is a macro returning the current module's name.
+     It doesn't look like there are any advantages to writing such a function, but there really are some. 
+     The essential part of it would be consistency with the calls to <code>take/2</code> and <code>store/2</code>: 
+     everything about the fridge process is now handled by the <a class="source" href="static/erlang/kitchen.erl.html">kitchen</a> module. 
+     If you were to add logging when the fridge process is started or start a second process (say a freezer), it would be really easy to do inside our <code>start/1</code> function. 
+     However if the spawning is left for the user to do through <code>spawn/3</code>, 
+     then every place that starts a fridge now needs to add the new calls. That's prone to errors and errors suck.</p>
+
+<p>Tiếp theo hãy xem xét trường vd sau:</p>
+
+<pre class="brush:eshell">
+15&gt; f().
+ok
+16&gt; c(kitchen).
+{ok,kitchen}
+17&gt; Pid = kitchen:start([rhubarb, dog, hotdog]).
+&lt;0.84.0&gt;
+18&gt; kitchen:take(Pid, dog).
+{ok,dog}
+19&gt; kitchen:take(Pid, dog).
+not_found
+</pre>
+
+<p>Yay! kỳ diệu thật chúng ta lôi nguyên cả con chó ra khỏi tủ lạnh, 
+    trí tưởng tượng của chúng ta thật phong phú 
+
+     The dog has got out of the fridge and our abstraction is complete!</p>
+
+
+<h3><a class="section" name="time-out">Time Out</a></h3>
+
+<p>Tiếp đó chúng ta thử  một vd nhỏ cùng với hàm <code>pid(A,B,C)</code>, hàm này nhận 3 tham số  đầu vào <var>A</var>, <var>B</var> và <var>C</var> là các số  nguyên để  
+    để  tạo thành một đinh danh. Hãy thử  gọi hàm <code>kitchen:take/2</code> với một định danh không tồn tại xem sao:</p>
+
+    Let's try a little something with the help of the command <code>pid(A,B,C)</code>, which lets us change the 3 integers <var>A</var>, <var>B</var> and <var>C</var> into a pid. 
+    Here we'll deliberately feed <code>kitchen:take/2</code> a fake one:</p>
+
+<pre class="brush:eshell">
+20&gt; kitchen:take(pid(0,250,0), dog).
+
+</pre>
+
+<p>Woops. dường như shell đã treo ( đừng vội tắt phần shell đạng bị treo đi , bởi vì chỉ lát thôi chúng ta
+        xử  lí no ) . Và nguyên nhân của việc này là do sau khi chúng ta gọi hàm <code>take/2</code>.
+    Vậy chính xác chuyện gì đãy xảy ra vậy? để  giải thích việc này trước hết chúng ta sẽ phải tìm hiểu nguyên nhân, 
+    trước tiên hãy phân tích hoạt động diễn ra trong trường hợp bình thường đã:
+     
+     The shell is frozen. This happened because of how <code>take/2</code> was implemented. To understand what goes on, let's first revise what happens in the normal case:</p>
+
+<ol>
+
+    <li>đầu tiên một tin nhắc yêu cầu lấy thực ra phẩm ra được gửi đi từ bạn ( hay shell ) tới tủ lanh và tiến hành xử  lí A message to take food is sent from you (the shell) to the fridge process;</li>
+    <li>Trong lúc đó tiến trình của bạn sẽ chuyển sang chế  nhân ( receive mode ) và chờ một tin nhắn mới xuất hiện Your process switches to receive mode and waits for a new message;</li>
+    <li>Trong lúc này tủ lạnh sẽ dựa vào thông tin mà bạn đã gửi trước đó để  loại bỏ thứ mà bạn muốn lấy ra khỏi nó và gửi lại về  cho bạn kèm với lời nhắn 'ok'
+        The fridge removes the item and sends it to your process;</li>
+    <li>Cuối cùng bạn nhận được món mà mình muốn và thưởng thức nó
+         Your process receives it and moves on with its life.</li>
+</ol>
+
+<img class="right" src="static/img/hourglass.png" width="83" height="161" alt="Hourglass" title="'tok tok' sounds more like 'scrprptprptpprptrptpt' in the context of hourglasses" />
+
+<p>Và đây là trường hợp mà khiến cho shell bị treo: 
+    And here's what happens when the shell freezes:</p>
+
+<ol>
+    <li>Bạn gửi một tin nhắc đi kèm thông tin để  lấy món mà muốn lấy tới một địa chỉ không tồn tại .A message to take food is sent from you (the shell) to an unknown process;</li>
+    <li>Trong lúc đó tiến trình của bạn sẽ chuyển sang chế  nhân ( receive mode ) và chờ một tin nhắn mới xuất hiện</li>
+    <li>tiến trình mà bạn gửi tới không tồn tại hoặc thông điệp bạn gưi tới không khớp với mẫu của nó và không có gì xảy ra hay phản hồi lại cả 
+        The unknown process either doesn't exist or doesn't expect such a message and does nothing with it;</li>
+    <li>tiến trình của bạn ( shell ) sẽ luôn luôn ở trạng thái đợi ( receive mode ) Your shell process is stuck in receive mode.</li>
+</ol>
+
+<p>Thât sự tê khi mà không có bất kỳ một lỗi nào ở đây để  xử  lí cả.
+    Không có bất kỳ điều gì xảy ra, chương trình của bạn chỉ ở trạng thái chờ.
+    Tòm lại, bất kỳ một tương tác nào cùng với các hoạt động bất đồng bộ ( cách mà tin nhắn được truyền trong Erlang cho tới ) phải cần một cách để  loại bỏ sau khoảng thời gian 
+    nếu như không nhận được một tín hiệu phản hồi nào khác kể  từ lúc nó bắt đầu khởi tạo.
+    Bạn sẽ làm gì khi mà một một trang web hay một hình ành mà bạn mất quá nhiều thời gian để  tải hay như việc một ai đó không bắt máy trả lời điện thoại hay 
+    tới trễ  cuộc họp. Dĩ liên là bạn sẽ cần phải làm điều gì đó khi chờ đợi quá lâu, tương tự Erlang cũng có một cách giải quyét cho vấn đề  này, hay chính xác hơn là 
+    nhũng người phát triển Erlang đã tính tới tình huống này và thiết kế  nó như môt phần của <code>receive</code>.
+
+    That's annoying, especially because there is no error handling possible here. 
+    Nothing illegal happened, the program is just waiting. 
+    In general, anything dealing with asynchronous operations (which is how message passing is done in Erlang) needs a way to give up after a certain period of time 
+    if it gets no sign of receiving data. A web browser does it when a page or image takes too long to load, you do it when someone takes too long before answering 
+    the phone or is late at a meeting. Erlang certainly has an appropriate mechanism for that, and it's part of the <code>receive</code> construct:</p>
+
+<pre class="brush:erl">
+receive
+    Match -&gt; Expression1
+after Delay -&gt;
+    Expression2
+end.
+</pre>
+
+<p>đoạn nằm giữa <code>receive</code> và <code>after</code> tương tự như những gì mà chúng ta đã biết khi thao tác với biểu thức này 
+    . phần <code>after</code> sẽ tự động được kích hoạt khi mà không nhận được bất kỳ tin nhắn phản hồi nào khớp với các mẫu trong <var>Match</var> và 
+    thời gian chờ vượt quá giá trị <var>Delay</var> ( giá trị số  nguyễn xác định bằng mili giây ), khi đó biểu thức  <var>Expression2</var> sẽ được thực hiện.
+
+    is exactly the same that we already know. The <code>after</code> part will be triggered if as much time as <var>Delay</var> (an integer representing milliseconds) 
+    has been spent without receiving a message that matches the <var>Match</var> pattern. When this happens, <var>Expression2</var> is executed.</p>
+
+<p>Để  minh họa cho biểu thức này, chúng ta sẽ viết hai hàm giao tiếp  <code>store2/2</code> và <code>take2/2</code>, hai hàm này sẽ thực hiện tương tự 
+    như hai <code>store/2</code> và <code>take/2</code> trước đó nhưng chúng ta sẽ thêm trường hợp bổ  sung cho hai hàm này,
+    chúng ta sẽ thêm diều kiện trong biểu thức 'receive', nếu sau 3 giấy kể từ lúc bắt đầu gửi tin nhắc di, nếu không nhận được 
+    bất kỳ phản hồi nao nó sẽ dừng việc chờ đợi lại.
+
+    with the exception that they will stop waiting after 3 seconds:</p>
+
+<pre class="brush:erl">
+store2(Pid, Food) -&gt;
+    Pid ! {self(), {store, Food}},
+    receive
+        {Pid, Msg} -&gt; Msg
+    after 3000 -&gt;
+        timeout
+    end.
+
+take2(Pid, Food) -&gt;
+    Pid ! {self(), {take, Food}},
+    receive
+        {Pid, Msg} -&gt; Msg
+    after 3000 -&gt;
+        timeout
+    end.
+</pre>
+
+<p>Nào giờ quay trở lại đoạn shell lúc nãy đang bị treo, bạn có thể  dụng  <code><a class="chapter" href="starting-out.html#shell-commands">^G</a></code> để 
+    thoát khỏi trạng thái treo sau hãy kiẻm tra lại với hai hàm chúng ta vừa viết. 
+    Now you can unfreeze the shell with <code><a class="chapter" href="starting-out.html#shell-commands">^G</a></code> and try the new interface functions:</p>
+
+<pre class="brush:erl">
+User switch command
+ --&gt; k 
+ --&gt; s
+ --&gt; c
+Eshell V5.7.5  (abort with ^G)
+1&gt; c(kitchen).
+{ok,kitchen}
+2&gt; kitchen:take2(pid(0,250,0), dog).
+timeout
+</pre>
+
+<p>And now it works. </p>
+
+<div class="note">
+    <p><strong>Lưu ý:</strong> Như tôi đã nói mệnh đề  <code>after</code> chỉ chấp nhận giá trị số  nguyên và tính bằng đơn vị là mili giây ,
+        tuy vạy thực tế  là bạn có thể  sử  dụng atom <code>infinity</code> nữa. Trong ví dụ này chúng ta không sử  dụng atom này cũng như hầu hết các trường hợp ( cách sử  dụng này 
+        tương tự như không sử  dụng timeout lên bạn có thể  loại bỏ sau mệnh đề  after ). 
+        only takes milliseconds as a value, but it is actually possible to use the atom <code>infinity</code>. 
+        While this is not useful in many cases (you might just remove the <code>after</code> clause altogether), 
+        it is sometimes used when the programmer can submit the wait time to a function where receiving a result is expected. 
+        That way, if the programmer really wants to wait forever, he can.</p>
+</div>
+
+<p>Ngoài ra có một số  công cụ xử  lí thời gian khác hữu ích hơn là việc loại loại bỏ sau khi phải chờ trong một khoảng thơi gian dai.
+    Một trong những vd đơn giản đó là sử  dụng hàm mà trước đó chúng ta đã từng dùng <code><a class="docs" href="http://erldocs.com/18.0/timer.html#sleep/1" title="a lullaby for your code">timer:sleep/1</a></code>,
+    . Sau đây là vd minh họa về  cách sử  dụng hàm này ( hay tạo ra một file module mới và đặt tên là <a class="source" href="static/erlang/multiproc.erl.html">multiproc.erl</a>), sau 
+    đó gõ các doạn mã sau vào: </p>
+
+    There are uses to such timers other than giving up after too long. 
+    One very simple example is how the <code><a class="docs" href="http://erldocs.com/18.0/timer.html#sleep/1" title="a lullaby for your code">timer:sleep/1</a></code> 
+    function we've used before works. Here's how it is implemented (let's put it in a new <a class="source" href="static/erlang/multiproc.erl.html">multiproc.erl</a> module):</p>
+
+<pre class="brush:erl">
+sleep(T) -&gt;
+    receive
+    after T -&gt; ok
+    end.
+</pre>
+
+<p>trong trường hợp cụ thể  này, bên trong mệnh đề  <code>receive</code> chúng sẽ không định nghĩa bấy kỳ một mẫu tin nhắn nào đẻ khớp hết. Thay vào đo 
+    chúng ra sử  dụng mệnh đề  <code>after</code> như một cách để  tạo ra thời gian chờ với giá trị từ biến T được truyền vào hàm.
+    In this specific case, no message will ever be matched in the <code>receive</code> part of the construct because there is no pattern. 
+    Instead, the <code>after</code> part of the construct will be called once the delay <var>T</var> has passed.</p>
+
+<p>Ngoài giá trị cụ thể  và atom ra còn có một trường hợp khác của timeout là sử  dụng giá trị 0:</p>
+
+<pre class="brush:erl">
+flush() -&gt;
+    receive
+        _ -&gt; flush()
+    after 0 -&gt;
+        ok
+    end.
+</pre>
+
+<p>Bằng cách này, nó sẽ gọi tới biểu thức trong <code>after</code> ngay khi không có bất kỳ mẫu tin nhắc nào được khớp.
+    Với ví dù trên, hàm <code>flush</code> sẽ không quan tâm tới mẫu tin nhắc mà thay vào bất kỳ tin nhắc nào tới cũng sẽ được khớp và 
+    gọi lại lời gọi đệ quy bằng hàm <code>flush/0</code>, nó sẽ lặp lại như vậy cho tới khi không còn tin nhắc nào trong hòm thư.
+    Một khi không còn tin nhắc nào, đoạn mã <code>after 0 -&gt; ok</code>  sẽ được thực thi và trả về  kết quả.
+
+    When that happens, the Erlang VM will try and find a message that fits one of the available patterns. 
+    In the case above, anything matches. As long as there are messages, the <code>flush/0</code> function will recursively call itself until the mailbox is empty. 
+    Once this is done, the <code>after 0 -&gt; ok</code> part of the code is executed and the function returns.</p>
+
+
+<h3><a class="section" name="selective-receives">Selective Receives</a></h3>
+
+<p>khái niệm 'flushing' cho phép thực hiện một <em> selective receive</em>, tức là bạn có thể  dựa trên mức độ ưu tiên của tin nhắn
+    để  lấy nó ra thay vì lấy theo thứ tự trong hòm thư thông qua các lời gọi hàm lồng nhau.
+
+    This 'flushing' concept makes it possible to implement a <em> selective receive</em> which can give a priority to the messages you receive by nesting calls:</p>
+
+<pre class="brush:erl">
+important() -&gt;
+    receive
+        {Priority, Message} when Priority &gt; 10 -&gt;
+            [Message | important()]
+    after 0 -&gt;
+        normal()
+    end.
+
+normal() -&gt;
+    receive
+        {_, Message} -&gt;
+            [Message | normal()]
+    after 0 -&gt;
+        []
+    end.
+</pre>
+
+<p>Hàm này sẽ  xây đưng một danh sách tất các cả tin nhắc cùng với độ ưu tiên lớn hơn 10 được trước tiên 
+    This function will build a list of all messages with those with a priority above 10 coming first:</p>
+
+<pre class="brush:eshell">
+1&gt; c(multiproc).
+{ok,multiproc}
+2&gt; self() ! {15, high}, self() ! {7, low}, self() ! {1, low}, self() ! {17, high}.       
+{17,high}
+3&gt; multiproc:important().
+[high,high,low,low]
+</pre>
+
+<p>Bởi vì tôi đã sử  dụng mệnh đề  <code>after 0</code>, do đó mọi tin nhắn sẽ được lấy ra khỏi hòm thư cho tới không còn tin nhắn nào nữa, 
+    nhưng ở đây có một sự khác biêt so với trước đó là những tin nhắc có độ ưu tiên lớn hơn 10 sẽ được lấy ra trước tiên sau đó mới tới các tin nhắn khác, với 
+    các tin nhắc còn lại có độ ưu tiên dưới hoặc bằng 10 sẽ được lưu trữ trong hàm <code>normal/0</code>. 
+    
+    Because I used the <code>after 0</code> bit, every message will be obtained until none is left, 
+    but the process will try to grab all those with a priority above 10 before even considering the other messages, which are accumulated in the <code>normal/0</code> call.</p>
+
+<p>phương pháp luyện tập này trông có vẻ thú nhưng, nhưng hãy cẩn thận, trong một số  trường chúng không thực sự an toàn do cách các selective receives hoạt động trong Erlang.
+    
+    hIf this practice looks interesting, be aware that is is sometimes unsafe due to the way selective receives work in Erlang.</p>
+
+<p>Khi một tin nhắn được gưi tới một tiến trình, chúng sẽ lưu trữ trong hòm thư cho tới khi tiến trình 
+    nhận đọc chúng và khớp chúng với các mâu của tiến trình đó. Ở <a class="chapter" href="the-hitchhikers-guide-to-concurrency.html">chương trước</a>,
+    các tin nhắn đươc lưu trữ theo thứ tự chúng được nhận, do đó mỗi khi bạn đọc một tin nhắc và khớp nó với mẫu, bạn sẽ bắt đầu từ 
+    từ tin nhắn cũ nhất ha chính xác là tin nhắc được gửi đi tới đầu tiên.
+
+      When messages are sent to a process, they're stored in the mailbox until the process reads them and they match a pattern there. 
+      As said in the <a class="chapter" href="the-hitchhikers-guide-to-concurrency.html">previous chapter</a>, 
+      the messages are stored in the order they were received. This means every time you match a message, it begins by the oldest one.</p>
+
+<p>nó sẽ cố  tìm kiếm tuần tự mẫu tương ứng cần khớp trong mệnh để  <code>receive</code> cho tới khi tìm được chính xác mẫu đó.
+    Một khi tìm được, tin nhắn đó sẽ được loại bỏ khỏi hòm thư và thực thi đoạn lệnh cho tới <code>receive</code> tiếp theo.
+    
+    That oldest message is then tried against every pattern of the <code>receive</code> until one of them matches. 
+    When it does, the message is removed from the mailbox and the code for the process executes normally until the next <code>receive</code>. 
+    When this next <code>receive</code> is evaluated, the VM will look for the oldest message currently in the mailbox (the one after the one we removed), and so on.</p>
+
+<img class="center explanation" src="static/img/msg-match.png" width="260" height="329" 
+alt="Visual explanation of how message matching is done when a message from the mailbox does match" title="look at them arrows! woo!" />
+
+<p>Trong trường hợp không có bất cứ mãu nào khớp với mẫu tin nhắc được gửi tới, chúng ta sẽ đặt tin nhắn đó vào trông một <em>save queue</em> và chuyển sang tin nhắc tiếp theo.
+    Nêu tin nhắn tiếp theo mà khớp thì tin nhắn thứ nhất sẽ đượt lấy ra khỏi hàng đợi và đặt lại vào đâu hòm thư để  thử  lại. 
+    When there is no way to match a given message, it is put in a <em>save queue</em> and the next message is tried. 
+    If the second message matches, the first message is put back on top of the mailbox to be retried later.</p>
+
+<img class="center explanation" src="static/img/msg-nomatch.png" width="347" height="339" 
+alt="Visual explanation of how messages that won't match are moved back and forth from the mailbox to a save queue" title="graphs aren't my forte" />
+
+<p>Cách làm này cho phép bạn chỉ cần quan tâm tới những tin nhăn mà bạn quan tâm tới và bỏ qua các tin nhắn không cần thiết và có thể  xử  lí chúng sau
+    đó theo như cách mà hình minh họa phía trên trình bày. Đây là một trong những tinh chất của <em>selective receives</em>. 
+    Mặc dù cách làm này có mặt tốt nhưng nó có một số  vấn đề  nhất định, trong trường hợp tiến trình của bận cần phải xử  lí rất nhiều tin nhắn không cần thiết,
+    nó sẽ cần phải dành rất nhiều thời gian để  xử  lí ( kích thước của các tiến trình cũng sẽ tăng lên )  
+
+    This lets you only care about the messages that are useful. Ignoring some messages to handle them later in the manner described above is the essence of <em>selective receives</em>. 
+    While they're useful, the problem with them is that if your process has a lot of messages you never care about, 
+    reading useful messages will actually take longer and longer (and the processes will grow in size too).</p>
+
+<p>Dựa vào hình minh họa trên, giả sử  chúng ta muốn lấy tin nhăn thứ 367 để  xử  lí nhưng để  làm điều đó tiến trình sẽ phải 
+    lấy các tin nhắn trước đó ( các tin nhắn 366 và trước đó  ) ra để  kiểm tra, sau khi kiểm tra xong chúng sẽ được đẩy vào hàng đợi, 
+    lúc này tin nhắn tiếp theo hay tin nhắn mà chúng ta cầm tìm được lấy ra và xử  lí đồng thời 
+    các tin nhắn trong hàng đợi sẽ được lấy ra để  đẩy trở lại hòm thư.
+    Tuy nhiên trong trường hợp số lượng tin nhắn lớn, khi đó quá trình tìm kiếm các tin nhắn cần tìm sẽ phải dò sâu hơn và sẽ mất nhiều thơi gian cho việc này hơn.   
+    In the drawing above, 
+    imagine we want the 367th message, 
+    but the first 366 are junk ignored by our code. To get the 367th message, 
+    the process needs to try to match the 366 first ones. 
+    Once it's done and they've all been put in the queue, 
+    the 367th message is taken out and the first 366 are put back on top of the mailbox. 
+    The next useful message could be burrowed much deeper and take even longer to be found.</p>
+
+<p>Đây là một trong những nguyên nhân thường xuyên ảnh hưởng tới hiệu suất của chương trình trong Erlang.
+    nếu ứng dụng của bạn chạy chậm, và bạn biết có quá nhiều lượng tin nhắn được gửi.
+    This kind of receive is a frequent cause of performance problems in Erlang. 
+    If your application is running slow and you know there are lots of messages going around, 
+    this could be the cause.</p>
+
+<p>Trường hợp nếu 'selective receives' là nguyên nhân gây ra ảnh hưởng nghiệm trọng xuất phát từ đoạn mã của bạn,
+    Điều đàu tiên hãy tự hỏi bạn thận mình vì sao bạn nhận những tin nhắn mà bạn không thực sự cần chúng, các tin nhắc 
+    đó đã gửi tới đúng địa chỉ hay không ? nội dung tin nhắn có khớp chính xác hay không ? định dạng tin nhắc có đúng ko ? 
+    bạn có đang sử dụng một tiến trình ở nhiều nơi hay không ?   
+    Việc trả lời một trong các câu hỏi trên sẽ giúp bạn giải quyết được vấn đề  này.
+
+    If such selective receives are effectively causing a massive slowdown in your code, 
+    the first thing to do is to ask yourself is why you are getting messages you do not want. 
+    Are the messages sent to the right processes? Are the patterns correct? Are the messages formatted incorrectly? 
+    Are you using one process where there should be many? 
+    Answering one or many of these questions could solve your problem.</p>
+
+<p>Để  giảm thiểu một phần rủi ro gây ra bởi các tin nhắc rác không thực sự cần thiết trong hom thư của một tiến trình
+    , các lập trình viên Erlang thường lựa chọn một số  biện pháp để  loại bỏ các sự kiện như vậy.
+    Một trong những biện pháp theo quy tắc chuẩn có dạng như sau:
+
+    Because of the risks of having useless messages polluting a process' mailbox, 
+    Erlang programmers sometimes take a defensive measure against such events. A standard way to do it might look like this:</p>
+
+<pre class="brush:erl">
+receive
+    Pattern1 -&gt; Expression1;
+    Pattern2 -&gt; Expression2;
+    Pattern3 -&gt; Expression3;
+    ...
+    PatternN -&gt; ExpressionN;
+    Unexpected -&gt;
+        io:format("unexpected message ~p~n", [Unexpected])
+end.
+</pre>
+
+<p>Mẫu trên đảm bảo rằng phải có ít nhất một mẫu tin nhắn đuọc khớp trong mệnh đề  'receive' 
+    . Chúng ta sử  dụng biến <var>Unexpected</var> để  khớp với bất kỳ mẫu nào được gửi tới, các tin nhắn sẽ được lấy ra khỏi hòm thư đông thời 
+    sẽ hiển thị một cảnh bảo lên màn hình. Tùy thuộc vào yêu cầu của ứng dụng, bạn có thể  lưu trữ các tin nhắn vào bên trong các 
+    bản ghi khác nhau để  có thể  dễ  dang tìm kiếm thông tin của chúng sau này một cách dễ  dàng hơn.
+    Vd như trong trường hợp, bạn gửi tin nhắc tới sai địa chỉ hay địa chỉ không tồn tại, sẽ thật xấu hổ  khi mà chúng ta để  mất thông tin 
+    về  lỗi kia và phát hiện được nguyên nhân vì sao các tiến trình khác không nhận được thông tin mà nó đáng lẽ phải nhận được.
+
+    What this does is make sure any message will match at least one clause. 
+    The <var>Unexpected</var> variable will match anything, take the unexpected message out of the mailbox and show a warning. 
+    Depending on your application, you might want to store the message into some kind of logging facility where you will be able to find information about it later on: 
+    if the messages are going to the wrong process, it'd be a shame to lose them for good and have a hard time finding why that other process doesn't receive what it should.</p>
+
+<p>Đối với trường hợp bạn cần phải làm việc cùng với một tin nhắn kèm theo độ ưu tiên và không muốn sử  dụng một mẫu để  khớp với tất cả các trường hợp ( catch-all ),
+    thì có một cách khá thông minh cho trường hợp này đó là thực hiện hàm <a class="external" href="http://en.wikipedia.org/wiki/Min-heap" 
+    title="Min heap description, but no implementation. If you want one, I could try to write one">min-heap</a>  hoặc module <code>gb_trees</code> và 
+    trích xuất tất cả các tin nhắn nhận được.
+    
+    In the case you do need to work with a priority in your messages and can't use such a catch-all clause, a smarter way to do it would be to implement a 
+    <a class="external" href="http://en.wikipedia.org/wiki/Min-heap" title="Min heap description, but no implementation. If you want one, I could try to write one">min-heap</a> 
+    or use the <code>gb_trees</code> module and dump every received message in it (make sure to put the priority number first in the key so it gets used for sorting the messages). 
+    Then you can just search for the <code><a class="docs" href="http://erldocs.com/18.0/gb_trees.html#take_smallest/1" title="oh erldocs!">smallest</a></code> 
+    or <code><a class="docs" href="http://erldocs.com/18.0/gb_trees.html#take_largest/1" title="The element that's the most on the right">largest</a></code> element 
+    in the data structure according to your needs.</p>
+
+<p>In most cases, this technique should let you receive messages with a priority more efficiently than selective receives. However, it could slow you down 
+    if most messages you receive have the highest priority possible. As usual, the trick is to profile and measure before optimizing.</p>
+
+<div class="note">
+    <p><strong>Note:</strong> Since R14A, a new optimization has been added to Erlang's compiler. It simplifies selective receives in very specific cases of back-and-forth communications between processes. An example of such a function is <code>optimized/1</code> in <a class="source" href="static/erlang/multiproc.erl.html">multiproc.erl</a>.</p>
+
+    <p>To make it work, a reference (<code>make_ref()</code>) has to be created in a function and then sent in a message. In the same function, a selective receive is then made. If no message can match unless it contains the same reference, the compiler automatically makes sure the VM will skip messages received before the creation of that reference.</p>
+
+    <p>Note that you shouldn't try to coerce your code to fit such optimizations. The Erlang developers only look for patterns that are frequently used and then make them faster. If you write idiomatic code, optimizations should come to you. Not the other way around.</p>
+</div>
+
+<p>With these concepts understood, the next step will be to do error handling with multiple processes.</p>
+				<ul class="navigation">
+											<li><a href="the-hitchhikers-guide-to-concurrency.html" title="Previous chapter">&lt; Previous</a></li>
+										
+					<li><a href="contents.html" title="Index">Index</a></li>
+					
+											<li><a href="errors-and-processes.html" title="Next chapter">Next &gt;</a></li>
+									</ul>
+			</div><!-- content -->
+			<div id="footer">
+				<a href="http://creativecommons.org/licenses/by-nc-nd/3.0/" title="Creative Commons License Details"><img src="static/img/cc.png" width="88" height="31" alt="Creative Commons Attribution Non-Commercial No Derivative License" /></a>
+				<p>Except where otherwise noted, content on this site is licensed under a Creative Commons Attribution Non-Commercial No Derivative License</p>
+			</div> <!-- footer -->
+		</div> <!-- wrapper -->
+		<div id="grass" />
+	<script type="text/javascript" src="static/js/shCore.js"></script>
+	<script type="text/javascript" src="static/js/shBrushErlang2.js%3F11"></script>
+	<script type="text/javascript">
+		SyntaxHighlighter.defaults.gutter = false;
+		SyntaxHighlighter.all();
+	</script>
+	</body>
+</html>
